@@ -1,0 +1,123 @@
+/* =========================================
+   1. CONFIGURACIÓN GLOBAL (BOX SIZING)
+   ========================================= */
+/* Esto es CRUCIAL: hace que el padding y el border no aumenten
+   el tamaño ancho de los elementos. Facilita mucho el diseño. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* =========================================
+   2. RESET DE MÁRGENES Y BASE
+   ========================================= */
+/* Quitamos márgenes por defecto para tener control total */
+body,
+h1,
+h2,
+h3,
+h4,
+p,
+figure,
+blockquote,
+dl,
+dd,
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+}
+
+/* Configuración base del cuerpo */
+body {
+  min-height: 100vh; /* Asegura que el body ocupe al menos toda la pantalla */
+  text-rendering: optimizeSpeed; /* Mejora la renderización */
+  line-height: 1.5; /* Altura de línea legible por defecto */
+  font-family: 'Be Vietnam Pro', sans-serif; /* Tu fuente preferida */
+  color: #333; /* Color de texto base (gris oscuro suave, mejor que negro puro) */
+  background-color: #fff;
+  -webkit-font-smoothing: antialiased; /* Suavizado de fuentes en Mac/iOS */
+}
+
+/* =========================================
+   3. IMÁGENES Y MEDIA
+   ========================================= */
+/* Hacemos que las imágenes sean responsivas por defecto */
+img,
+picture {
+  max-width: 100%;
+  display: block; /* Elimina el espacio blanco extraño debajo de las imágenes */
+}
+
+/* =========================================
+   4. FORMULARIOS (INPUTS, BOTONES)
+   ========================================= */
+/* Por defecto, los inputs no heredan la fuente. Esto lo corrige. */
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+/* =========================================
+   5. LISTAS
+   ========================================= */
+/* Quitamos los puntos de las listas, a menos que tengan una clase específica */
+ul,
+ol {
+  list-style: none;
+}
+
+/* =========================================
+   6. TIPOGRAFÍA (SOLUCIÓN A TU PROBLEMA)
+   ========================================= */
+/* Definimos tamaños base para los encabezados para que no se vean planos */
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 700;
+  line-height: 1.1;
+  margin-bottom: 0.5em; /* Espacio debajo de los títulos */
+}
+
+h1 {
+  font-size: 2.5rem;
+}
+h2 {
+  font-size: 2rem;
+}
+h3 {
+  font-size: 1.75rem;
+}
+h4 {
+  font-size: 1.5rem;
+}
+
+/* Enlaces sin subrayado por defecto, pero con cursor de mano */
+a {
+  text-decoration: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+/* =========================================
+   7. ACCESIBILIDAD
+   ========================================= */
+/* Reduce animaciones para gente que lo prefiere en su sistema operativo */
+@media (prefers-reduced-motion: reduce) {
+  html:focus-within {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,27 @@
+### =========================
+### REGISTER - Crear usuario
+### =========================
+POST http://localhost:3000/users/register
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "1234"
+}
+
+###
+
+### =========================
+### LOGIN - Obtener token
+### =========================
+POST http://localhost:3000/users/login
+Content-Type: application/json
+
+{
+  "email": "test@test.com",
+  "password": "1234"
+}
+
+###
+GET http://localhost:3000/users/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OThhMzVmY2Q0MTY2MDBiZWRlMTRjNjIiLCJpYXQiOjE3NzA2NjU0NzgsImV4cCI6MTc3MDY2OTA3OH0.SRgbCq8YoNTP24Xjr03MYFZgHOGc3L8dDZTqbggDM1Y

@@ -1,0 +1,15 @@
+### Obtener todos los productos
+GET http://localhost:3000/products
+Accept: application/json
+
+###
+
+### Crear un nuevo producto (requiere token)
+POST http://localhost:3000/products
+Content-Type: application/json
+Authorization: Bearer YOUR_JWT_TOKEN
+
+{
+  "name": "Producto de prueba",
+  "price": 49.99
+}
