@@ -1,4 +1,5 @@
 const connectDB = require("../db/mongo");
+const { ObjectId } = require("mongodb");
 
 // Obtener todos los productos
 async function getAllProducts() {
@@ -17,7 +18,7 @@ async function createProduct(productData) {
 
   const result = await collection.insertOne(productData);
   return { ...productData, _id: result.insertedId };
-};
+}
 
 async function deleteProduct(id) {
   try {
@@ -37,8 +38,21 @@ async function deleteProduct(id) {
   }
 }
 
+async function getProductById(id) {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("products");
+
+    return await collection.findOne({ _id: new ObjectId(id) });
+  } catch (error) {
+    console.error("Error al obtener el producto:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
   deleteProduct,
+  getProductById,
 };

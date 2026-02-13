@@ -26,10 +26,21 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// POST para crear un producto
-router.post('/', async function (req, res, next) {
+router.get("/:id", async (req, res) => {
   try {
-    const { title,
+    const id = req.params.id;
+    const product = await productService.getProductById(id);
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener producto" });
+  }
+});
+
+// POST para crear un producto
+router.post("/", async function (req, res, next) {
+  try {
+    const {
+      title,
       description,
       short_description,
       price,
@@ -44,7 +55,9 @@ router.post('/', async function (req, res, next) {
       dim_h,
       weight,
       average_rating,
-      custom_slug } = req.body;
+      custom_slug,
+      image,
+    } = req.body;
 
     const newProduct = new Product(
       title,
@@ -62,7 +75,8 @@ router.post('/', async function (req, res, next) {
       dim_h,
       weight,
       average_rating,
-      custom_slug
+      custom_slug,
+      image,
     );
 
     const product = await productService.createProduct(newProduct);
@@ -70,16 +84,15 @@ router.post('/', async function (req, res, next) {
     res.status(201).json({
       success: true,
       message: "Producto creado correctamente",
-      data: product
+      data: product,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
       message: "Error al crear el producto",
-      error: error.message
+      error: error.message,
     });
   }
 });
-
 
 module.exports = router;

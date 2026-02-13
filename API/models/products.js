@@ -15,7 +15,8 @@ class Product {
     dim_h = 0,
     weight = 0,
     average_rating = 0,
-    custom_slug = null
+    custom_slug = null,
+    image = null,
   ) {
     this.title = title;
     this.description = description;
@@ -28,18 +29,17 @@ class Product {
     this.manage_stock = Boolean(manage_stock);
     this.type = type;
 
-    // Dimensiones
     this.dimensions = {
       l: Number(dim_l),
       w: Number(dim_w),
       h: Number(dim_h),
-      weight: Number(weight)
+      weight: Number(weight),
     };
 
     this.average_rating = Number(average_rating);
 
-    // Generación automática del slug basada en el título 
-    // (a menos que se pase uno manualmente)
+    this.image = image;
+
     this.slug = custom_slug || this.generateSlug(this.title);
   }
 
@@ -52,7 +52,7 @@ class Product {
       .toString()
       .toLowerCase()
       .trim()
-      .normalize('NFD')
+      .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")

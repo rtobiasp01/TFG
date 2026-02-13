@@ -1,0 +1,86 @@
+.form-container {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  flex-wrap: wrap; /* Permite que la imagen baje si la pantalla es pequeña */
+  width: 100%;
+  max-width: 1200px; /* Ajusta según el tamaño deseado */
+  margin: 0 auto; /* Centra el formulario en la página */
+  box-sizing: border-box;
+}
+
+.form-fields {
+  flex: 2;
+  min-width: 400px; /* Evita que los campos se encojan demasiado */
+}
+
+.form-image {
+  flex: 1;
+  max-width: 300px;
+  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.checkbox-group {
+  flex-direction: row;
+  align-items: center;
+}
+
+.checkbox-group label {
+  margin-left: 5px;
+}
+
+.image-preview img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.submit-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  align-self: flex-start; /* Botón alineado a la izquierda de los campos */
+}
+
+.submit-btn:hover {
+  background-color: #45a049;
+}
+
+/* Opcional: mejora para pantallas pequeñas */
+@media (max-width: 900px) {
+  .form-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-image {
+    max-width: 100%;
+    min-width: 100%;
+  }
+}

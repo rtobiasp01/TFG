@@ -8,10 +8,14 @@ import { Product } from '../interfaces/product';
 export class ProductService {
   private http = inject(HttpClient);
 
-  private API_URL: string = 'http://localhost:3000';
+  private API_URL: string = 'http://localhost:3000/products';
 
   getAll() {
-    const productos = this.http.get<Product[]>(`${this.API_URL}/products`);
+    const productos = this.http.get<Product[]>(this.API_URL);
     return productos;
+  }
+
+  getById(id: string) {
+    return this.http.get<Product>(`${this.API_URL}/${id}`);
   }
 }

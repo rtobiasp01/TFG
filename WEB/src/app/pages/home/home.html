@@ -1,6 +1,8 @@
-<p>home works!</p>
+<h1>Lista de productos</h1>
 @for (product of (products$ | async) ?? []; track product._id) {
   <div>{{ product.title }}</div>
+  <img src="{{ product.image }}" alt="{{ product.title }}" />
+  <button [routerLink]="['/product-form', product._id]">Ver</button>
 } @empty {
   <div>No hay productos disponibles.</div>
 }

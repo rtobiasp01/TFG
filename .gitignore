@@ -13,7 +13,7 @@
 /yarn.lock
 
 # Environment files
-/.env
+# ACTIVAR MAS TARDE!!!!!!!!!!!!!!!!!!!!! /.env
 
 # Angular CLI and build artefacts
 /.angular-cli.json

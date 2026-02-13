@@ -3,7 +3,11 @@ GET http://localhost:3000/products
 Accept: application/json
 
 ###
-DELETE http://localhost:3000/products/698eeeb925429741afdc0cd7
+GET http://localhost:3000/products/698f4ad2ba88a0d06e820e39
+Accept: application/json
+
+###
+DELETE http://localhost:3000/products/698a3a96d563f53f162b815a
 Accept: application/json
 
 ### Crear un nuevo producto (Teclado Mecánico)
@@ -26,7 +30,8 @@ Content-Type: application/json
   "dim_h": 3.5,
   "weight": 1.2,
   "average_rating": 4.8,
-  "custom_slug": null
+  "custom_slug": null,
+  "image" : "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9lcy52/aXJiYWMuY29tL3Zh/ci9zaXRlL3N0b3Jh/Z2UvaW1hZ2VzL19h/bGlhc2VzL2FydGlj/bGVfMjkweDIwMC85/LzEvNS83LzQ3NTE5/LTItZW5nLUlOVC9k/MWQ1ZGE1ZTM4NTct/cGVycm8tc2luLXJh/emEucG5n"
 }
 
 ### Crear un producto con Slug Personalizado
