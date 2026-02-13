@@ -3,13 +3,51 @@ GET http://localhost:3000/products
 Accept: application/json
 
 ###
+DELETE http://localhost:3000/products/698eeeb925429741afdc0cd7
+Accept: application/json
 
-### Crear un nuevo producto (requiere token)
+### Crear un nuevo producto (Teclado Mecánico)
 POST http://localhost:3000/products
 Content-Type: application/json
-Authorization: Bearer YOUR_JWT_TOKEN
 
 {
-  "name": "Producto de prueba",
-  "price": 49.99
+  "title": "Teclado Mecánico RGB Pro V2",
+  "description": "Un teclado mecánico de alto rendimiento con interruptores red, retroiluminación RGB personalizable y estructura de aluminio.",
+  "short_description": "Teclado mecánico gamer con switches red.",
+  "price": 129.99,
+  "sale_price": 99.50,
+  "sku": "KEY-RGB-PRO-V2",
+  "stock_status": "in_stock",
+  "stock_quantity": 45,
+  "manage_stock": true,
+  "type": "simple",
+  "dim_l": 45.5,
+  "dim_w": 15.2,
+  "dim_h": 3.5,
+  "weight": 1.2,
+  "average_rating": 4.8,
+  "custom_slug": null
+}
+
+### Crear un producto con Slug Personalizado
+POST http://localhost:3000/products
+Content-Type: application/json
+
+{
+  "title": "Silla Gamer Ergonómica",
+  "description": "Silla con soporte lumbar y cervical.",
+  "short_description": "Silla pro para largas sesiones.",
+  "price": 250.00,
+  "sale_price": null,
+  "sku": "CHAIR-PRO-01",
+  "stock_status": "in_stock",
+  "stock_quantity": 10,
+  "manage_stock": true,
+  "type": "simple",
+  "dim_l": 70,
+  "dim_w": 70,
+  "dim_h": 130,
+  "weight": 20,
+  "average_rating": 5.0,
+  "custom_slug": "oferta-silla-gamer-exclusiva"
 }

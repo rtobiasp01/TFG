@@ -11,6 +11,7 @@ export class ProductService {
   private API_URL: string = 'http://localhost:3000';
 
   getAll() {
-    return this.http.get(`${this.API_URL}/products`);
+    const productos = this.http.get<Product[]>(`${this.API_URL}/products`);
+    return productos;
   }
 }

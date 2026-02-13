@@ -11,18 +11,34 @@ async function getAllProducts() {
   }
 }
 
-// Crear un nuevo producto
-async function createProduct(product) {
+async function createProduct(productData) {
+  const db = await connectDB();
+  const collection = db.collection("products");
+
+  const result = await collection.insertOne(productData);
+  return { ...productData, _id: result.insertedId };
+};
+
+async function deleteProduct(id) {
   try {
     const db = await connectDB();
-    return await db.collection("products").insertOne(product);
+    const collection = db.collection("products");
+
+    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+
+    if (result.deletedCount === 0) {
+      throw new Error("No se encontró el producto para eliminar.");
+    }
+
+    return { message: "Producto eliminado correctamente", id };
   } catch (error) {
-    console.error("Error al crear el producto:", error);
-    throw new Error("No se pudo crear el producto.");
+    console.error("Error al eliminar el producto:", error);
+    throw error;
   }
 }
 
 module.exports = {
   getAllProducts,
   createProduct,
+  deleteProduct,
 };
