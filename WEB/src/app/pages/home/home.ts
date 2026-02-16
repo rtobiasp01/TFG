@@ -2,6 +2,8 @@ import { Component, inject } from '@angular/core';
 import { ProductService } from '../../services/product-service';
 import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { Observable } from 'rxjs';
+import { Product } from '../../interfaces/product';
 
 @Component({
   selector: 'app-home',
@@ -13,5 +15,5 @@ import { RouterLink } from '@angular/router';
 export class Home {
   private productService = inject(ProductService);
 
-  products$ = this.productService.getAll();
+  products$: Observable<Product[]> = this.productService.getAll();
 }

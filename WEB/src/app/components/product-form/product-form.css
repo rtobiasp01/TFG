@@ -1,86 +1,259 @@
-.form-container {
+/* --- LAYOUT GENERAL --- */
+.info-form {
   display: flex;
-  gap: 20px;
+  flex-direction: row;
+  gap: 2em;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  max-width: 1200px;
+  margin: 20px auto;
   align-items: flex-start;
-  flex-wrap: wrap; /* Permite que la imagen baje si la pantalla es pequeña */
+}
+
+.info-izquierda {
+  flex: 3;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+}
+
+.info-derecha {
+  flex: 1;
+  background: #f9f9f9;
+  padding: 1.5em;
+  border-radius: 1rem;
+  border: 1px solid #e8e8e8;
+  position: sticky;
+  top: 20px;
+}
+
+/* --- ESTILOS DE INPUTS DEL FORMULARIO --- */
+.form-product-title input {
   width: 100%;
-  max-width: 1200px; /* Ajusta según el tamaño deseado */
-  margin: 0 auto; /* Centra el formulario en la página */
+  padding: 10px 0;
+  font-size: 2rem;
+  font-weight: bold;
+  border: none;
+  border-bottom: 2px solid #e8e8e8;
+  outline: none;
+  background: transparent;
+  color: #333;
+}
+
+.form-product-title input:focus {
+  border-bottom-color: #70c489;
+}
+
+/* --- TABS SYSTEM (REPARADO) --- */
+.radio-inputs {
+  display: flex;
+  flex-wrap: wrap; /* Permite que el contenido ocupe la siguiente "fila" */
+  background-color: #e8e8e8;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  width: 100%;
   box-sizing: border-box;
 }
 
-.form-fields {
-  flex: 2;
-  min-width: 400px; /* Evita que los campos se encojan demasiado */
+.radio {
+  display: contents; /* El label no genera caja, sus hijos sí */
 }
 
-.form-image {
+.radio-inputs .name {
   flex: 1;
-  max-width: 300px;
-  min-width: 200px;
-  display: flex;
-  flex-direction: column;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  text-align: center;
+  border-radius: 0.5rem;
+  font-weight: 500;
+  transition: 0.2s;
+  order: 1; /* Las pestañas siempre arriba */
+}
+
+.radio input[type='radio'] {
+  display: none;
+}
+
+/* Estado activo de la pestaña */
+.radio input:checked + .name {
+  background-color: #fff;
+  color: #70c489;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Contenido de la pestaña */
+.radio .content {
+  display: none;
+  width: 100%;
+  order: 2; /* El contenido siempre abajo de las pestañas */
+  padding: 2rem 0;
+  background: transparent;
+}
+
+/* Mostrar contenido cuando el radio está checkeado */
+.radio input:checked ~ .content {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+/* --- GRID DENTRO DE LOS CONTENIDOS --- */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.2rem;
 }
 
 .form-group {
-  margin-bottom: 15px;
   display: flex;
   flex-direction: column;
+  gap: 0.4rem;
 }
 
-.form-group input,
-.form-group textarea,
-.form-group select {
-  padding: 8px;
-  font-size: 14px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+.form-group.full-width {
+  grid-column: span 2;
+}
+
+.form-group label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666;
+}
+
+/* Estilo de los inputs reales */
+.content input:not([type='checkbox']),
+.content textarea,
+.content select {
+  padding: 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.95rem;
   width: 100%;
   box-sizing: border-box;
+}
+
+.content input:focus {
+  border-color: #70c489;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(112, 196, 137, 0.1);
 }
 
 .checkbox-group {
   flex-direction: row;
   align-items: center;
+  gap: 10px;
+  grid-column: span 2;
 }
 
-.checkbox-group label {
-  margin-left: 5px;
+/* --- IMAGEN --- */
+.image-preview-area {
+  width: 100%;
+  min-height: 180px;
+  border: 2px dashed #ccc;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.image-preview img {
-  max-width: 100%;
-  height: auto;
-  margin-top: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.submit-btn {
-  margin-top: 20px;
-  padding: 10px 20px;
-  font-size: 16px;
-  background-color: #4caf50;
+/* --- CONTENEDOR DE GUARDADO --- */
+.data-save-container {
+  background: white;
+  border-radius: 0.8rem;
+  border: 1px solid #e8e8e8;
+  padding: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.save-header h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+/* --- CONTROL DE VISIBILIDAD (SWITCH) --- */
+.visibility-control {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  padding: 8px 0;
+}
+
+.visibility-text {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #555;
+}
+
+/* Estilo del Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 40px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: 0.4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: '';
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #70c489;
+}
+
+input:checked + .slider:before {
+  transform: translateX(18px);
+}
+
+/* --- BOTÓN PRINCIPAL --- */
+.btn-primary {
+  width: 100%; /* Ocupa todo el ancho disponible */
+  background-color: #70c489;
   color: white;
   border: none;
-  border-radius: 5px;
+  padding: 0.8rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
   cursor: pointer;
-  align-self: flex-start; /* Botón alineado a la izquierda de los campos */
+  transition: background 0.3s;
 }
 
-.submit-btn:hover {
-  background-color: #45a049;
-}
-
-/* Opcional: mejora para pantallas pequeñas */
-@media (max-width: 900px) {
-  .form-container {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .form-image {
-    max-width: 100%;
-    min-width: 100%;
-  }
+.btn-primary:hover {
+  background-color: #5ab575;
 }

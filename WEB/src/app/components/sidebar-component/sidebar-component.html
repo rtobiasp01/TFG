@@ -1,0 +1,24 @@
+<div class="sidebar-container" [class.collapsed]="isCollapsed()">
+  <div class="sidebar-header">
+    <span class="logo-text" *ngIf="!isCollapsed()">Mi App</span>
+    <button class="toggle-btn" (click)="toggleSidebar()">
+      {{ isCollapsed() ? '➤' : '◀' }}
+    </button>
+  </div>
+
+  <ul class="nav-list">
+    <li *ngFor="let item of menuItems">
+      <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
+        <span class="icon">{{ item.icon }}</span>
+        <span class="label" *ngIf="!isCollapsed()">{{ item.label }}</span>
+      </a>
+    </li>
+  </ul>
+
+  <div class="sidebar-footer">
+    <div class="user-info">
+      <span class="avatar">U</span>
+      <span class="username" *ngIf="!isCollapsed()">Usuario</span>
+    </div>
+  </div>
+</div>

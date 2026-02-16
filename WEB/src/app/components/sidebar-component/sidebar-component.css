@@ -1,0 +1,131 @@
+/* Definimos las variables en el host del componente */
+:host {
+  --primary-color: #2c3e50;
+  --hover-color: #34495e;
+  --active-color: #3498db;
+  --text-color: #ecf0f1;
+  --width-expanded: 250px;
+  --width-collapsed: 70px;
+  --transition-speed: 0.3s;
+}
+
+.sidebar-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: var(--width-expanded);
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  transition: width var(--transition-speed) ease;
+  overflow-x: hidden;
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+/* --- Estado Colapsado --- */
+.sidebar-container.collapsed {
+  width: var(--width-collapsed);
+}
+
+.sidebar-container.collapsed .logo-text,
+.sidebar-container.collapsed .label,
+.sidebar-container.collapsed .username {
+  display: none;
+}
+
+.sidebar-container.collapsed .nav-item {
+  justify-content: center;
+}
+
+/* --- Cabecera --- */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  height: 60px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo-text {
+  font-weight: bold;
+  font-size: 1.2rem;
+  white-space: nowrap;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 5px;
+}
+
+.toggle-btn:hover {
+  color: var(--active-color);
+}
+
+/* --- Navegación --- */
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1; /* Empuja el footer hacia abajo */
+}
+
+.nav-list li {
+  width: 100%;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 15px 1rem;
+  color: var(--text-color);
+  text-decoration: none;
+  transition: background var(--transition-speed);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.nav-item:hover {
+  background-color: var(--hover-color);
+}
+
+.nav-item.active {
+  background-color: var(--active-color);
+  border-left: 4px solid #fff;
+}
+
+.icon {
+  font-size: 1.2rem;
+  min-width: 30px; /* Mantiene el ancho del icono fijo */
+  text-align: center;
+}
+
+.label {
+  margin-left: 10px;
+}
+
+/* --- Footer --- */
+.sidebar-footer {
+  padding: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  background: var(--active-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}
