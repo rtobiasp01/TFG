@@ -18,4 +18,12 @@ export class ProductService {
   getById(id: string) {
     return this.http.get<Product>(`${this.API_URL}/${id}`);
   }
+
+  create(product: any) {
+    return this.http.post<Product>(this.API_URL, product);
+  }
+
+  update(id: string, product: any) {
+    return this.http.put<Product>(`${this.API_URL}/${id}`, product);
+  }
 }

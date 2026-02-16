@@ -2,6 +2,9 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product-service';
 import { ActivatedRoute } from '@angular/router';
+import { Product } from '../../interfaces/product';
+import { UploadService } from '../../services/upload-service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-product-form',
@@ -10,89 +13,139 @@ import { ActivatedRoute } from '@angular/router';
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
 })
-export class ProductForm implements OnInit {
+export class ProductForm {
   private productService = inject(ProductService);
+  private uploadService = inject(UploadService);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
+  private router = inject(Router);
 
-  // Signal para controlar si estamos en modo edición o creación
-  productId = signal<string | null>(null);
+  id = signal<string>('');
+  productoActual = signal<Product | null>(null);
 
-  // Definición del formulario con sus validaciones
   productForm = this.fb.group({
-    title: ['', Validators.required],
+    title: ['', [Validators.required, Validators.minLength(3)]],
     description: [''],
     short_description: [''],
-    type: ['simple'],
-    custom_slug: [''],
-    price: [0, Validators.required],
-    sku: [''],
-    stock_status: ['in_stock'],
-    stock_quantity: [0],
+    type: ['simple', Validators.required],
+    slug: [''],
+    price: [0, [Validators.required, Validators.min(0.01)]],
+    sku: ['', Validators.required],
+    stock_status: ['in_stock', Validators.required],
+    stock_quantity: [0, [Validators.min(0)]],
     manage_stock: [false],
-    dim_l: [0],
-    dim_w: [0],
-    dim_h: [0],
-    weight: [0],
-    isVisible: [true],
-    image: [null], // El input file se gestiona diferente
+    dim_l: [0, [Validators.min(0)]],
+    dim_w: [0, [Validators.min(0)]],
+    dim_h: [0, [Validators.min(0)]],
+    weight: [0, [Validators.min(0)]],
+    image: [''],
   });
 
-  // Variable auxiliar para mostrar la vista previa (opcional)
-  selectedFile: File | null = null;
+  constructor() {
+    const idProducto = this.route.snapshot.paramMap.get('id');
 
-  ngOnInit(): void {
-    const id = this.route.snapshot.paramMap.get('id');
+    if (idProducto) {
+      this.id.set(idProducto);
 
-    if (id) {
-      this.productId.set(id);
-      // Simulación de llamada a la API
-      this.productService.getById(id).subscribe((product) => {
+      this.productService.getById(this.id()).subscribe((product) => {
+        this.productoActual.set(product);
+        this.imagePath.set(product.image);
+
         if (product) {
-          // LA CLAVE: patchValue autorrellena el formulario con las claves que coincidan
-          this.productForm.patchValue(product as any);
+          this.productForm.patchValue(product);
+          this.productForm.patchValue({
+            dim_h: product.dimensions.h,
+            dim_l: product.dimensions.l,
+            dim_w: product.dimensions.w,
+            weight: product.dimensions.weight,
+          });
         }
       });
     }
   }
 
-  // Método general que se dispara al enviar el formulario
   onSubmit(): void {
     if (this.productForm.invalid) {
       alert('Por favor rellena los campos obligatorios');
       return;
     }
 
-    const formData = this.productForm.getRawValue();
+    // Si hay un archivo nuevo para subir...
+    if (this.fileToUpload) {
+      this.uploadService.subirArchivo(this.fileToUpload).subscribe({
+        next: (res: any) => {
+          const file = res.fileDetails;
 
-    const payload = {
-      ...formData,
-    };
+          this.productForm.patchValue({
+            image: 'http://localhost:3000/' + file.path,
+          });
 
-    if (this.productId()) {
+          this.enviarFormularioFinal();
+        },
+        error: (err) => {
+          console.error('Error al subir', err);
+          alert('Hubo un error al subir la imagen. No se pudo guardar el producto.');
+        },
+      });
+    } else {
+      this.enviarFormularioFinal();
+    }
+  }
+
+  private enviarFormularioFinal(): void {
+    const payload = this.productForm.getRawValue();
+
+    if (this.id()) {
       this.actualizar(payload);
     } else {
       this.guardar(payload);
     }
+
+    this.router.navigate(['home']);
   }
 
-  // Método para crear
   guardar(data: any): void {
-    alert(`CREANDO PRODUCTO NUEVO:\n\n${JSON.stringify(data, null, 2)}`);
+    this.productService.create(data).subscribe((response) => {
+      console.log(response);
+    });
   }
 
   actualizar(data: any): void {
-    alert(
-      `ACTUALIZANDO PRODUCTO EXISTENTE (ID: ${this.productId()}):\n\n${JSON.stringify(data, null, 2)}`,
-    );
+    this.productService.update(this.id(), data).subscribe((response) => {
+      console.log(response);
+    });
   }
+
+  // Atributo donde guardaremos la ruta o nombre
+  imagePath = signal<string>('');
+  fileToUpload: File | null = null;
 
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
 
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-      this.selectedFile = file;
+
+      this.fileToUpload = file;
+
+      // Guardar una URL local temporal para mostrarla
+      const relativePath = URL.createObjectURL(file);
+      this.imagePath.set(relativePath);
+    }
+  }
+
+  subirImagen() {
+    if (this.fileToUpload) {
+      this.uploadService.subirArchivo(this.fileToUpload).subscribe({
+        next: (res: any) => {
+          let file = res.fileDetails;
+
+          this.productForm.patchValue({
+            image: file.path,
+          });
+        },
+        error: (err) => console.error('Error al subir', err),
+      });
     }
   }
 }

@@ -50,9 +50,32 @@ async function getProductById(id) {
   }
 }
 
+async function updateProduct(id, updateData) {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("products");
+
+    // Usamos $set para actualizar solo los campos enviados en updateData
+    const result = await collection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData },
+    );
+
+    if (result.matchedCount === 0) {
+      throw new Error("No se encontró el producto para actualizar.");
+    }
+
+    return { message: "Producto actualizado correctamente", id, ...updateData };
+  } catch (error) {
+    console.error("Error al actualizar el producto:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
   deleteProduct,
   getProductById,
+  updateProduct,
 };

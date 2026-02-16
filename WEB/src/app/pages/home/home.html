@@ -1,8 +1,44 @@
 <h1>Lista de productos</h1>
-@for (product of (products$ | async) ?? []; track product._id) {
-  <div>{{ product.title }}</div>
-  <img src="{{ product.image }}" alt="{{ product.title }}" />
-  <button [routerLink]="['/product-form', product._id]">Ver</button>
-} @empty {
-  <div>No hay productos disponibles.</div>
-}
+<table>
+  <thead>
+    <tr>
+      <th><input type="checkbox" /></th>
+      <th><a href="#">Image</a></th>
+      <th><a href="#">Name</a></th>
+      <th><a href="#">SKU</a></th>
+      <th><a href="#">Stock</a></th>
+      <th><a href="#">Price</a></th>
+      <th><a href="#">Actions</a></th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (product of (products$ | async) ?? []; track product._id) {
+      <tr>
+        <td>
+          <input type="checkbox" />
+        </td>
+        <td>
+          <img src="{{ product.image }}" alt="{{ product.title }}" />
+        </td>
+        <td>
+          <p>{{ product.title }}</p>
+        </td>
+        <td>
+          <p>{{ product.sku }}</p>
+        </td>
+        <td>
+          <p>{{ product.stock_quantity }}</p>
+        </td>
+        <td>
+          <p>{{ product.price | currency: 'EUR' }}</p>
+        </td>
+        <td>
+          <a [routerLink]="['/product-form', product._id]">Editar</a>
+          <a href="#">Eliminar</a>
+        </td>
+      </tr>
+    } @empty {
+      <div>No hay productos disponibles.</div>
+    }
+  </tbody>
+</table>

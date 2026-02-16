@@ -12,6 +12,10 @@ export const routes: Routes = [
     component: ProductForm,
   },
   {
+    path: 'product-form',
+    component: ProductForm,
+  },
+  {
     path: '',
     redirectTo: 'home',
     pathMatch: 'full',

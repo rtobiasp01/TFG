@@ -1,8 +1,12 @@
+import { Dimensions } from './dimensions';
+
 export interface Product {
   _id: string;
   title: string;
   price: number;
   description: string;
-  stock: number;
+  sku: string;
+  stock_quantity: number;
+  dimensions: Dimensions;
   image: string;
 }

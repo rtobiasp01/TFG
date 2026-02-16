@@ -4,11 +4,12 @@ import { AsyncPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { Observable } from 'rxjs';
 import { Product } from '../../interfaces/product';
+import { CurrencyPipe } from '@angular/common';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [AsyncPipe, RouterLink],
+  imports: [AsyncPipe, RouterLink, CurrencyPipe],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })

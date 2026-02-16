@@ -95,4 +95,49 @@ router.post("/", async function (req, res, next) {
   }
 });
 
+// PUT /api/products/:id - Actualizar un producto
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const updateData = {
+      title: req.body.title,
+      description: req.body.description,
+      short_description: req.body.short_description,
+      price: req.body.price,
+      sale_price: req.body.sale_price,
+      sku: req.body.sku,
+      stock_status: req.body.stock_status,
+      stock_quantity: req.body.stock_quantity,
+      manage_stock: req.body.manage_stock,
+      type: req.body.type,
+      dim_l: req.body.dim_l,
+      dim_w: req.body.dim_w,
+      dim_h: req.body.dim_h,
+      weight: req.body.weight,
+      average_rating: req.body.average_rating,
+      custom_slug: req.body.custom_slug,
+      image: req.body.image,
+    };
+
+    Object.keys(updateData).forEach(
+      (key) => updateData[key] === undefined && delete updateData[key],
+    );
+
+    const updatedProduct = await productService.updateProduct(id, updateData);
+
+    res.json({
+      success: true,
+      message: "Producto actualizado correctamente",
+      data: updatedProduct,
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error al actualizar el producto",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;

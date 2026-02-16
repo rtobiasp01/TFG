@@ -7,7 +7,7 @@
 >
   <div class="info-form">
     <div class="info-izquierda">
-      <h2>{{ productId() ? 'Editar Producto' : 'Crear Producto' }}</h2>
+      <h2>{{ id() ? 'Editar Producto' : 'Crear Producto' }}</h2>
 
       <div class="form-product-title">
         <input
@@ -54,11 +54,11 @@
               </div>
 
               <div class="form-group">
-                <label for="custom_slug">Slug personalizado:</label>
+                <label for="slug">Slug personalizado:</label>
                 <input
                   type="text"
-                  id="custom_slug"
-                  formControlName="custom_slug"
+                  id="slug"
+                  formControlName="slug"
                   placeholder="url-amigable-del-producto"
                 />
               </div>
@@ -148,17 +148,9 @@
           <h3>Publicación</h3>
         </div>
 
-        <div class="visibility-control">
-          <label class="switch">
-            <input type="checkbox" id="isVisible" formControlName="isVisible" />
-            <span class="slider"></span>
-          </label>
-          <span class="visibility-text">Producto visible</span>
-        </div>
-
         <div class="save-actions">
           <button type="submit" class="btn-primary">
-            {{ productId() ? 'Actualizar Producto' : 'Guardar Producto' }}
+            {{ id() ? 'Actualizar Producto' : 'Guardar Producto' }}
           </button>
         </div>
       </div>
@@ -166,12 +158,11 @@
       <div class="image-upload-container">
         <h3>Imagen del producto</h3>
         <label for="image" class="upload-btn">Subir imagen</label>
-        <input type="file" id="image" (change)="onFileSelected($event)" accept="image/*" />
+        <input type="file" (change)="onFileSelected($event)" id="image" accept="image/*" />
         <div class="image-preview-area">
-          <img
-            src="{{ selectedFile ? selectedFile.name : 'Vista previa' }}"
-            alt="imagen previsualizada del producto"
-          />
+          @if (imagePath()) {
+            <img [src]="imagePath()" alt="Imagen producto" />
+          }
         </div>
       </div>
     </div>
