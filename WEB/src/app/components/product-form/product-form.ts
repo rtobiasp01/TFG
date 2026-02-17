@@ -5,7 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { Product } from '../../interfaces/product';
 import { UploadService } from '../../services/upload-service';
 import { Router } from '@angular/router';
-
+import { AtributeService } from '../../services/atribute-service';
+import { Atribute } from '../../interfaces/atribute';
 @Component({
   selector: 'app-product-form',
   standalone: true,
@@ -16,12 +17,16 @@ import { Router } from '@angular/router';
 export class ProductForm {
   private productService = inject(ProductService);
   private uploadService = inject(UploadService);
+  private atributeService = inject(AtributeService);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private router = inject(Router);
 
   id = signal<string>('');
   productoActual = signal<Product | null>(null);
+
+  atributes: Atribute[] = [];
+  atributeValues = signal<Atribute[]>([]);
 
   productForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -61,6 +66,11 @@ export class ProductForm {
           });
         }
       });
+
+      this.atributeService.getAll().subscribe({
+        next: (value) => (this.atributes = value),
+        error: (err) => console.error('Observable emitted an error: ' + err),
+      });
     }
   }
 
@@ -70,7 +80,6 @@ export class ProductForm {
       return;
     }
 
-    // Si hay un archivo nuevo para subir...
     if (this.fileToUpload) {
       this.uploadService.subirArchivo(this.fileToUpload).subscribe({
         next: (res: any) => {
@@ -116,10 +125,8 @@ export class ProductForm {
     });
   }
 
-  // Atributo donde guardaremos la ruta o nombre
   imagePath = signal<string>('');
   fileToUpload: File | null = null;
-
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
 
@@ -128,7 +135,6 @@ export class ProductForm {
 
       this.fileToUpload = file;
 
-      // Guardar una URL local temporal para mostrarla
       const relativePath = URL.createObjectURL(file);
       this.imagePath.set(relativePath);
     }
@@ -147,5 +153,15 @@ export class ProductForm {
         error: (err) => console.error('Error al subir', err),
       });
     }
+  }
+
+  changeAtributeValues(event: Event) {
+    const element = event.target as HTMLSelectElement;
+    const valor = element.value;
+
+    this.atributeService.getByName(valor).subscribe({
+      next: (listado) => this.atributeValues.set(listado),
+      error: (err) => console.log(err),
+    });
   }
 }

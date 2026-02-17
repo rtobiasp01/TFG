@@ -8,7 +8,7 @@ Content-Type: application/json
 
 {
   "name" : "talla",
-  "value" : "L"
+  "value" : "M"
 }
 
 ### GET NAME
