@@ -129,3 +129,40 @@
   justify-content: center;
   font-weight: bold;
 }
+
+.arrow {
+  margin-left: auto;
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.submenu {
+  list-style: none;
+  padding: 0;
+  background-color: rgba(0, 0, 0, 0.1); /* Fondo ligeramente más oscuro */
+}
+
+.sub-item {
+  padding-left: 2rem !important; /* Indentación */
+  font-size: 0.9rem;
+}
+
+.has-children {
+  cursor: pointer;
+}
+
+/* Animación suave para el submenú (opcional) */
+.submenu {
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

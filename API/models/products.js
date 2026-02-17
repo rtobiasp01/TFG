@@ -17,6 +17,9 @@ class Product {
     average_rating = 0,
     custom_slug = null,
     image = null,
+    gallery = [],
+    attributes = [],
+    visible = true
   ) {
     this.title = title;
     this.description = description;
@@ -38,7 +41,13 @@ class Product {
 
     this.average_rating = Number(average_rating);
 
+    // Gestión de imágenes
     this.image = image;
+    this.gallery = Array.isArray(gallery) ? gallery : [];
+
+    // Atributos y Visibilidad
+    this.attributes = Array.isArray(attributes) ? attributes : [];
+    this.visible = Boolean(visible);
 
     this.slug = custom_slug || this.generateSlug(this.title);
   }
@@ -57,6 +66,15 @@ class Product {
       .replace(/[^a-z0-9 -]/g, "")
       .replace(/\s+/g, "-")
       .replace(/-+/g, "-");
+  }
+
+  /**
+   * Método de utilidad para añadir una foto a la galería
+   */
+  addGalleryImage(url) {
+    if (url && typeof url === "string") {
+      this.gallery.push(url);
+    }
   }
 }
 

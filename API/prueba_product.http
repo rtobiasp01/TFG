@@ -56,3 +56,28 @@ Content-Type: application/json
   "average_rating": 5.0,
   "custom_slug": "oferta-silla-gamer-exclusiva"
 }
+
+
+#####
+PUT http://localhost:3000/products/698af7ef29af679244f7b964
+Content-Type: application/json
+
+{
+  "title": "Teclado Mecánico RGB Pro",
+  "description": "Un teclado mecánico de alto rendimiento con interruptores red, retroiluminación RGB personalizable y estructura de aluminio.",
+  "short_description": "Teclado mecánico gamer con switches red.",
+  "price": 129.99,
+  "sale_price": 99.50,
+  "sku": "KEY-RGB-PRO-V2",
+  "stock_status": "in_stock",
+  "stock_quantity": 45,
+  "manage_stock": true,
+  "type": "simple",
+  "dim_l": 45.5,
+  "dim_w": 15.2,
+  "dim_h": 3.5,
+  "weight": 1.2,
+  "average_rating": 4.8,
+  "custom_slug": null,
+  "image" : "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/rs:fit:500:0:1:0/g:ce/aHR0cHM6Ly9lcy52/aXJiYWMuY29tL3Zh/ci9zaXRlL3N0b3Jh/Z2UvaW1hZ2VzL19h/bGlhc2VzL2FydGlj/bGVfMjkweDIwMC85/LzEvNS83LzQ3NTE5/LTItZW5nLUlOVC9k/MWQ1ZGE1ZTM4NTct/cGVycm8tc2luLXJh/emEucG5n"
+}

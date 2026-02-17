@@ -50,6 +50,7 @@
                 <select id="type" formControlName="type">
                   <option value="simple">Simple</option>
                   <option value="variable">Variable</option>
+                  <option value="virtual">Virtual</option>
                 </select>
               </div>
 
@@ -136,6 +137,22 @@
                 <label for="weight">Peso (kg):</label>
                 <input type="number" id="weight" formControlName="weight" step="0.01" min="0" />
               </div>
+            </div>
+          </div>
+        </label>
+        <label class="radio">
+          <input type="radio" name="radio" />
+          <span class="name">Atributos</span>
+          <div class="content">
+            <div class="form-grid">
+              <!-- <div class="form-group">
+                <label for="name">Nombre</label>
+                <input type="text" id="name" formControlName="name" />
+              </div>
+              <div class="form-group">
+                <label for="value">Valor</label>
+                <input type="text" id="value" formControlName="value" />
+              </div> -->
             </div>
           </div>
         </label>

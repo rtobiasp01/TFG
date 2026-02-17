@@ -39,45 +39,8 @@ router.get("/:id", async (req, res) => {
 // POST para crear un producto
 router.post("/", async function (req, res, next) {
   try {
-    const {
-      title,
-      description,
-      short_description,
-      price,
-      sale_price,
-      sku,
-      stock_status,
-      stock_quantity,
-      manage_stock,
-      type,
-      dim_l,
-      dim_w,
-      dim_h,
-      weight,
-      average_rating,
-      custom_slug,
-      image,
-    } = req.body;
 
-    const newProduct = new Product(
-      title,
-      description,
-      short_description,
-      price,
-      sale_price,
-      sku,
-      stock_status,
-      stock_quantity,
-      manage_stock,
-      type,
-      dim_l,
-      dim_w,
-      dim_h,
-      weight,
-      average_rating,
-      custom_slug,
-      image,
-    );
+    const newProduct = new Product(req.body);
 
     const product = await productService.createProduct(newProduct);
 
@@ -118,6 +81,9 @@ router.put("/:id", async (req, res) => {
       average_rating: req.body.average_rating,
       custom_slug: req.body.custom_slug,
       image: req.body.image,
+      gallery: req.body.gallery,
+      atributes: req.body.atributes,
+      visible: req.body.visible,
     };
 
     Object.keys(updateData).forEach(
