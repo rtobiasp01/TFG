@@ -1,8 +1,8 @@
 class Atributes {
-    constructor(name, value) {
-        this.name = name;
-        this.value = value;
-    }
+  constructor(name) {
+    this.name = name;
+    this.values = {};
+  }
 }
 
 module.exports = Atributes;

@@ -1,3 +1,4 @@
+import { Atribute } from './atribute';
 import { Dimensions } from './dimensions';
 
 export interface Product {
@@ -9,4 +10,5 @@ export interface Product {
   stock_quantity: number;
   dimensions: Dimensions;
   image: string;
+  atributes: Atribute[];
 }

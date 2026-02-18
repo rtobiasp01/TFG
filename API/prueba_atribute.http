@@ -7,14 +7,22 @@ POST http://localhost:3000/atributes
 Content-Type: application/json
 
 {
-  "name" : "Color",
-  "value" : "Rojo"
+  "name": "Color",
+  "values": []
 }
 
 ### GET NAME
-GET http://localhost:3000/atributes/Colo
+GET http://localhost:3000/atributes/C
 Accept: application/json 
 
+### PUT values
+PUT http://localhost:3000/atributes/699614419d17b97c4bfe2363
+Content-Type: application/json
+
+{
+  "value": "Azul"
+}
+
 ### DELETE
-DELETE http://localhost:3000/atributes/699461e682d609f5b8eebfdd
+DELETE http://localhost:3000/atributes/699614259d17b97c4bfe2361
 Accept: application/json 

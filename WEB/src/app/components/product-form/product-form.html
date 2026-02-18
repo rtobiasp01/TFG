@@ -1,9 +1,8 @@
 <form
   [formGroup]="productForm"
   (submit)="onSubmit()"
+  (keydown.enter)="$event.preventDefault()"
   id="productForm"
-  novalidate
-  enctype="multipart/form-data"
 >
   <div class="info-form">
     <div class="info-izquierda">
@@ -153,28 +152,46 @@
               </thead>
               <tbody>
                 <tr>
-                  <td>
-                    <input
-                      type="text"
-                      id="miInput"
-                      list="opcionesBD"
-                      placeholder="Escribe algo..."
-                      (input)="buscarAtributos($event)"
-                    />
+                  @for (atribute of productoActual()?.atributes; track atribute._id) {
+                    <td>{{ atribute.name }}</td>
 
-                    <datalist id="opcionesBD">
-                      @for (atribute of atributes; track atribute._id) {
-                        <option value="{{ atribute.name }}">{{ atribute.name }}</option>
+                    <td>
+                      @for (value of atribute.values; track $index) {
+                        <p>{{ value }}</p>
                       }
-                    </datalist>
+                    </td>
+                  }
+                </tr>
+                <tr>
+                  <td>
+                    <mat-form-field appearance="outline" style="width: 100%">
+                      <input
+                        type="text"
+                        placeholder="Busca un atributo..."
+                        matInput
+                        [formControl]="atributeControl"
+                        [matAutocomplete]="auto"
+                        (input)="buscarAtributos($event)"
+                        (blur)="validarSeleccion()"
+                      />
 
-                    <button id="btnAccion">Ejecutar Acción</button>
+                      <mat-autocomplete #auto="matAutocomplete">
+                        @for (atribute of atributeSelected(); track atribute._id) {
+                          <mat-option [value]="atribute.name">
+                            {{ atribute.name }}
+                          </mat-option>
+                        }
+                      </mat-autocomplete>
+                    </mat-form-field>
+                    @if (attributeExists() && atributeControl.value !== '') {
+                      <button type="button" class="btn-nuevo">
+                        Crear "{{ atributeControl.value }}"
+                      </button>
+                    }
                   </td>
                   <td>
                     <select name="atribute-values" id="atribute-values">
-                      @for (item of atributeValues(); track $index) {
-                        <option value="{{ item.value }}">{{ item.value }}</option>
-                      }
+                      <option value="">Selecciona valor...</option>
                     </select>
                   </td>
                 </tr>

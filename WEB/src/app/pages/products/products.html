@@ -12,7 +12,7 @@
     </tr>
   </thead>
   <tbody>
-    @for (product of (products$ | async) ?? []; track product._id) {
+    @for (product of products(); track product._id) {
       <tr>
         <td>
           <input type="checkbox" />

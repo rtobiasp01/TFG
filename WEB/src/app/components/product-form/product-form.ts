@@ -1,16 +1,21 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
 import { ProductService } from '../../services/product-service';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../interfaces/product';
 import { UploadService } from '../../services/upload-service';
-import { Router } from '@angular/router';
 import { AtributeService } from '../../services/atribute-service';
 import { Atribute } from '../../interfaces/atribute';
+
+// Imports de Angular Material
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatInputModule } from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, MatAutocompleteModule, MatInputModule, MatFormFieldModule],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
 })
@@ -24,9 +29,13 @@ export class ProductForm {
 
   id = signal<string>('');
   productoActual = signal<Product | null>(null);
-
   atributes: Atribute[] = [];
-  atributeValues = signal<Atribute[]>([]);
+  atributeSelected = signal<Atribute[]>([]);
+  imagePath = signal<string>('');
+  fileToUpload: File | null = null;
+
+  // Control para el buscador de atributos
+  atributeControl = new FormControl('');
 
   productForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -48,14 +57,11 @@ export class ProductForm {
 
   constructor() {
     const idProducto = this.route.snapshot.paramMap.get('id');
-
     if (idProducto) {
       this.id.set(idProducto);
-
       this.productService.getById(this.id()).subscribe((product) => {
         this.productoActual.set(product);
         this.imagePath.set(product.image);
-
         if (product) {
           this.productForm.patchValue(product);
           this.productForm.patchValue({
@@ -66,6 +72,39 @@ export class ProductForm {
           });
         }
       });
+      this.atributeService.getAll().subscribe({
+        next: (res) => (this.atributes = res),
+      });
+    }
+  }
+
+  // Lógica de búsqueda mejorada
+  buscarAtributos(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+
+    if (value.length > 1) {
+      const regex = new RegExp(value, 'i');
+
+      const filteredAtributes = this.atributes.filter((atribute) => regex.test(atribute.name));
+
+      this.atributeSelected.set(filteredAtributes);
+
+      const existeExacto = this.atributes.some((a) => a.name.toLowerCase() === value.toLowerCase());
+
+      this.attributeExists.set(!existeExacto);
+    } else {
+      this.atributeSelected.set([]);
+      this.attributeExists.set(false);
+    }
+  }
+
+  attributeExists = signal<boolean>(true);
+  validarSeleccion() {
+    const valor = this.atributeControl.value;
+    const existe = this.atributeSelected().some((a) => a.name === valor);
+    if (!existe && valor !== '') {
+      this.atributeControl.setValue('');
+      this.attributeExists.set(false);
     }
   }
 
@@ -79,16 +118,14 @@ export class ProductForm {
       this.uploadService.subirArchivo(this.fileToUpload).subscribe({
         next: (res: any) => {
           const file = res.fileDetails;
-
           this.productForm.patchValue({
             image: 'http://localhost:3000/' + file.path,
           });
-
           this.enviarFormularioFinal();
         },
         error: (err) => {
           console.error('Error al subir', err);
-          alert('Hubo un error al subir la imagen. No se pudo guardar el producto.');
+          alert('Error al subir la imagen.');
         },
       });
     } else {
@@ -98,67 +135,28 @@ export class ProductForm {
 
   private enviarFormularioFinal(): void {
     const payload = this.productForm.getRawValue();
-
     if (this.id()) {
       this.actualizar(payload);
     } else {
       this.guardar(payload);
     }
-
     this.router.navigate(['home']);
   }
 
   guardar(data: any): void {
-    this.productService.create(data).subscribe((response) => {
-      console.log(response);
-    });
+    this.productService.create(data).subscribe();
   }
 
   actualizar(data: any): void {
-    this.productService.update(this.id(), data).subscribe((response) => {
-      console.log(response);
-    });
+    this.productService.update(this.id(), data).subscribe();
   }
 
-  imagePath = signal<string>('');
-  fileToUpload: File | null = null;
   onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-
     if (input.files && input.files.length > 0) {
       const file = input.files[0];
-
       this.fileToUpload = file;
-
-      const relativePath = URL.createObjectURL(file);
-      this.imagePath.set(relativePath);
-    }
-  }
-
-  subirImagen() {
-    if (this.fileToUpload) {
-      this.uploadService.subirArchivo(this.fileToUpload).subscribe({
-        next: (res: any) => {
-          let file = res.fileDetails;
-
-          this.productForm.patchValue({
-            image: file.path,
-          });
-        },
-        error: (err) => console.error('Error al subir', err),
-      });
-    }
-  }
-
-  buscarAtributos(event: Event) {
-    const element = event.target as HTMLInputElement;
-    const value = element.value;
-
-    if (value.length > 1) {
-      this.atributeService.getByName(value).subscribe({
-        next: (value) => (this.atributes = value),
-        error: (err) => console.error('Observable emitted an error: ' + err),
-      });
+      this.imagePath.set(URL.createObjectURL(file));
     }
   }
 }
