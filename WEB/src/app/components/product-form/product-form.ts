@@ -66,11 +66,6 @@ export class ProductForm {
           });
         }
       });
-
-      this.atributeService.getAll().subscribe({
-        next: (value) => (this.atributes = value),
-        error: (err) => console.error('Observable emitted an error: ' + err),
-      });
     }
   }
 
@@ -155,13 +150,15 @@ export class ProductForm {
     }
   }
 
-  changeAtributeValues(event: Event) {
-    const element = event.target as HTMLSelectElement;
-    const valor = element.value;
+  buscarAtributos(event: Event) {
+    const element = event.target as HTMLInputElement;
+    const value = element.value;
 
-    this.atributeService.getByName(valor).subscribe({
-      next: (listado) => this.atributeValues.set(listado),
-      error: (err) => console.log(err),
-    });
+    if (value.length > 1) {
+      this.atributeService.getByName(value).subscribe({
+        next: (value) => (this.atributes = value),
+        error: (err) => console.error('Observable emitted an error: ' + err),
+      });
+    }
   }
 }

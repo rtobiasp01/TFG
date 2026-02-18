@@ -27,7 +27,9 @@ async function insertOne(data) {
 async function getByName(atribute_name) {
     try {
         const db = await connectDB();
-        return await db.collection("atributes").find({ name: atribute_name }).toArray();
+        const regex = new RegExp(`^${atribute_name}`, 'i');
+
+        return await db.collection("atributes").find({ nombre: regex }).toArray();
     } catch (error) {
         throw error;
     }

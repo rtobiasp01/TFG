@@ -154,15 +154,21 @@
               <tbody>
                 <tr>
                   <td>
-                    <select
-                      name="atribute-names"
-                      id="atribute-names"
-                      (change)="changeAtributeValues($event)"
-                    >
-                      @for (item of atributes; track $index) {
-                        <option value="{{ item.name }}">{{ item.name }}</option>
+                    <input
+                      type="text"
+                      id="miInput"
+                      list="opcionesBD"
+                      placeholder="Escribe algo..."
+                      (input)="buscarAtributos($event)"
+                    />
+
+                    <datalist id="opcionesBD">
+                      @for (atribute of atributes; track atribute._id) {
+                        <option value="{{ atribute.name }}">{{ atribute.name }}</option>
                       }
-                    </select>
+                    </datalist>
+
+                    <button id="btnAccion">Ejecutar Acción</button>
                   </td>
                   <td>
                     <select name="atribute-values" id="atribute-values">

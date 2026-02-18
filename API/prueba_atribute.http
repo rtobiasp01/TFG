@@ -7,12 +7,12 @@ POST http://localhost:3000/atributes
 Content-Type: application/json
 
 {
-  "name" : "talla",
-  "value" : "M"
+  "name" : "Color",
+  "value" : "Rojo"
 }
 
 ### GET NAME
-GET http://localhost:3000/atributes/talla
+GET http://localhost:3000/atributes/Colo
 Accept: application/json 
 
 ### DELETE
