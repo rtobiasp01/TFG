@@ -1,5 +1,5 @@
 class Product {
-  constructor(
+  constructor({
     title,
     description,
     short_description,
@@ -18,9 +18,9 @@ class Product {
     custom_slug = null,
     image = null,
     gallery = [],
-    attributes = [],
-    visible = true
-  ) {
+    atributes = [],
+    visible = true,
+  } = {}) {
     this.title = title;
     this.description = description;
     this.short_description = short_description;
@@ -46,7 +46,7 @@ class Product {
     this.gallery = Array.isArray(gallery) ? gallery : [];
 
     // Atributos y Visibilidad
-    this.attributes = Array.isArray(attributes) ? attributes : [];
+    this.atributes = atributes;
     this.visible = Boolean(visible);
 
     this.slug = custom_slug || this.generateSlug(this.title);

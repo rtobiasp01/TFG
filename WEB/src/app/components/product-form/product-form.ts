@@ -159,4 +159,26 @@ export class ProductForm {
       this.imagePath.set(URL.createObjectURL(file));
     }
   }
+
+  getRandomColor(index: number): string {
+    const colors = [
+      '#3182ce',
+      '#38a169',
+      '#e53e3e',
+      '#d69e2e',
+      '#805ad5',
+      '#dd6b20',
+      '#319795',
+      '#d53f8c',
+    ];
+    return colors[index % colors.length];
+  }
+
+  removeValue(attr: any, value: string) {
+    attr.values = attr.values.filter((v: string) => v !== value);
+  }
+
+  nuevoAtributo(nombre: string) {
+    this.productoActual()?.atributes.push();
+  }
 }

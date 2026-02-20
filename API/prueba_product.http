@@ -32,17 +32,16 @@ Content-Type: application/json
   "average_rating": 4.8,
   "custom_slug": null,
   "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/...",
-  "atributes": {
-    "Color": {
-      "values": ["Negro", "Blanco"]
-    },
-    "Switch": {
-      "values": ["Red", "Blue", "Brown"]
-    },
-    "Distribución": {
-      "values": ["ISO-ES", "ANSI-US"]
-    }
+  "atributes": [
+  {
+    "name": "Color",
+    "values": ["Negro", "Blanco"]
+  },
+  {
+    "name": "Switch",
+    "values": ["Red", "Blue", "Brown"]
   }
+]
 }
 
 ### Crear un producto con Slug Personalizado

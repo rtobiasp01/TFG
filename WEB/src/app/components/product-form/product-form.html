@@ -143,56 +143,61 @@
           <input type="radio" name="radio" />
           <span class="name">Atributos</span>
           <div class="content">
-            <table>
+            <table class="attributes-table">
               <thead>
                 <tr>
-                  <th>Nombre</th>
-                  <th>Valor</th>
+                  <th style="width: 40%">Nombre</th>
+                  <th style="width: 60%">Valor</th>
                 </tr>
               </thead>
               <tbody>
-                <tr>
-                  @for (atribute of productoActual()?.atributes; track atribute._id) {
-                    <td>{{ atribute.name }}</td>
-
+                @for (attr of productoActual()?.atributes; track $index) {
+                  <tr>
                     <td>
-                      @for (value of atribute.values; track $index) {
-                        <p>{{ value }}</p>
-                      }
+                      <strong>{{ attr.name }}</strong>
                     </td>
-                  }
-                </tr>
+                    <td>
+                      <div class="tags-container">
+                        @for (val of attr.values; track $index) {
+                          <span class="badge-tag" [style.backgroundColor]="getRandomColor($index)">
+                            {{ val }}
+                            <button
+                              type="button"
+                              class="remove-tag"
+                              (click)="removeValue(attr, val)"
+                            >
+                              &times;
+                            </button>
+                          </span>
+                        }
+                      </div>
+                    </td>
+                  </tr>
+                }
+
                 <tr>
                   <td>
                     <mat-form-field appearance="outline" style="width: 100%">
                       <input
                         type="text"
-                        placeholder="Busca un atributo..."
+                        placeholder="Atributo..."
                         matInput
                         [formControl]="atributeControl"
                         [matAutocomplete]="auto"
                         (input)="buscarAtributos($event)"
-                        (blur)="validarSeleccion()"
                       />
-
                       <mat-autocomplete #auto="matAutocomplete">
                         @for (atribute of atributeSelected(); track atribute._id) {
-                          <mat-option [value]="atribute.name">
-                            {{ atribute.name }}
-                          </mat-option>
+                          <mat-option [value]="atribute.name">{{ atribute.name }}</mat-option>
                         }
                       </mat-autocomplete>
                     </mat-form-field>
+
                     @if (attributeExists() && atributeControl.value !== '') {
-                      <button type="button" class="btn-nuevo">
+                      <button type="button" class="btn-nuevo" (click)="nuevoAtributo(atributeControl.value)">
                         Crear "{{ atributeControl.value }}"
                       </button>
                     }
-                  </td>
-                  <td>
-                    <select name="atribute-values" id="atribute-values">
-                      <option value="">Selecciona valor...</option>
-                    </select>
                   </td>
                 </tr>
               </tbody>
