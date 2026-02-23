@@ -39,7 +39,6 @@ router.get("/:id", async (req, res) => {
 // POST para crear un producto
 router.post("/", async function (req, res, next) {
   try {
-
     const newProduct = new Product(req.body);
 
     const product = await productService.createProduct(newProduct);
@@ -82,7 +81,7 @@ router.put("/:id", async (req, res) => {
       custom_slug: req.body.custom_slug,
       image: req.body.image,
       gallery: req.body.gallery,
-      atributes: req.body.atributes,
+      attributes: req.body.attributes,
       visible: req.body.visible,
     };
 

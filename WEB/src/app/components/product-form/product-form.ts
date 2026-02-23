@@ -1,11 +1,11 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators, FormControl } from '@angular/forms';
+import { Component, inject, signal } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductService } from '../../services/product-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../interfaces/product';
 import { UploadService } from '../../services/upload-service';
-import { AtributeService } from '../../services/atribute-service';
-import { Atribute } from '../../interfaces/atribute';
+import { AttributeService } from '../../services/attribute-service';
+import { Attribute } from '../../interfaces/attribute';
 
 // Imports de Angular Material
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
@@ -22,20 +22,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 export class ProductForm {
   private productService = inject(ProductService);
   private uploadService = inject(UploadService);
-  private atributeService = inject(AtributeService);
+  private attributeService = inject(AttributeService);
   private route = inject(ActivatedRoute);
   private fb = inject(FormBuilder);
   private router = inject(Router);
 
+  // Signals para estado reactivo
   id = signal<string>('');
   productoActual = signal<Product | null>(null);
-  atributes: Atribute[] = [];
-  atributeSelected = signal<Atribute[]>([]);
   imagePath = signal<string>('');
-  fileToUpload: File | null = null;
+  attributeSelected = signal<Attribute[]>([]);
+  attributeValueSelected = signal<string[]>([]);
+  attributeExists = signal<boolean>(true);
+  attributeValueExists = signal<boolean>(true);
 
-  // Control para el buscador de atributos
-  atributeControl = new FormControl('');
+  // Estado compartido
+  attributes = signal<Attribute[]>([]);
+  fileToUpload: File | null = null;
 
   productForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -53,6 +56,8 @@ export class ProductForm {
     dim_h: [0, [Validators.min(0)]],
     weight: [0, [Validators.min(0)]],
     image: [''],
+    attributeControl: [''],
+    attributeValueControl: [''],
   });
 
   constructor() {
@@ -72,39 +77,144 @@ export class ProductForm {
           });
         }
       });
-      this.atributeService.getAll().subscribe({
-        next: (res) => (this.atributes = res),
+      this.attributeService.getAll().subscribe({
+        next: (res) => this.attributes.set(res),
       });
     }
   }
 
-  // Lógica de búsqueda mejorada
+  // MÉTODOS DE BÚSQUEDA
   buscarAtributos(event: Event) {
     const value = (event.target as HTMLInputElement).value;
 
     if (value.length > 1) {
       const regex = new RegExp(value, 'i');
+      const filteredAttributes = this.attributes().filter((attribute) =>
+        regex.test(attribute.name),
+      );
+      this.attributeSelected.set(filteredAttributes);
 
-      const filteredAtributes = this.atributes.filter((atribute) => regex.test(atribute.name));
-
-      this.atributeSelected.set(filteredAtributes);
-
-      const existeExacto = this.atributes.some((a) => a.name.toLowerCase() === value.toLowerCase());
-
+      const existeExacto = this.attributes().some(
+        (a) => a.name.toLowerCase() === value.toLowerCase(),
+      );
       this.attributeExists.set(!existeExacto);
     } else {
-      this.atributeSelected.set([]);
+      this.attributeSelected.set([]);
       this.attributeExists.set(false);
     }
   }
 
-  attributeExists = signal<boolean>(true);
+  buscarValoresAtributo(event: Event) {
+    const value = (event.target as HTMLInputElement).value;
+
+    if (value.length > 1) {
+      const regex = new RegExp(value, 'i');
+      const valoresDisponibles = this.attributes().find(
+        (a) => a.name === this.productForm.get('attributeControl')?.value,
+      )?.values;
+
+      if (valoresDisponibles) {
+        const valoresFiltrados = valoresDisponibles.filter((v) => regex.test(v));
+
+        this.attributeValueSelected.set(valoresFiltrados);
+
+        const existeExacto = valoresFiltrados.some((a) => a.toLowerCase() === value.toLowerCase());
+        this.attributeValueExists.set(!existeExacto);
+      }
+    } else {
+      this.attributeValueSelected.set([]);
+      this.attributeValueExists.set(false);
+    }
+  }
+
+  // MÉTODOS DE SELECCIÓN Y VALIDACIÓN
+  onAttributeSelected(selectedValue: string): void {
+    const existeExacto = this.attributes().some(
+      (a) => a.name.toLowerCase() === selectedValue.toLowerCase(),
+    );
+    this.attributeExists.set(!existeExacto);
+    this.attributeSelected.set([]);
+  }
+
+  onAttributeValueSelected(selectedValue: string) {
+    const valoresDisponibles = this.attributes().find(
+      (a) => a.name === this.productForm.get('attributeControl')?.value,
+    )?.values;
+
+    if (valoresDisponibles) {
+      const existeExacto = valoresDisponibles.some(
+        (a) => a.toLowerCase() === selectedValue.toLowerCase(),
+      );
+
+      const attribute = 
+
+      this.attributeValueExists.set(!existeExacto);
+      this.attributeValueSelected.set([]);
+    }
+  }
+
   validarSeleccion() {
-    const valor = this.atributeControl.value;
-    const existe = this.atributeSelected().some((a) => a.name === valor);
+    const valor = this.productForm.get('attributeControl')?.value;
+    const existe = this.attributeSelected().some((a) => a.name === valor);
     if (!existe && valor !== '') {
-      this.atributeControl.setValue('');
+      this.productForm.get('attributeControl')?.setValue('');
       this.attributeExists.set(false);
+    }
+  }
+
+  // MÉTODOS DE CREACIÓN
+  nuevoAtributo(nombre: string) {
+    this.attributeService.insertOne({ name: nombre, values: [] }).subscribe({
+      next: () => {
+        this.attributeService.getAll().subscribe({
+          next: (data) => {
+            this.attributes.set(data);
+            this.attributeExists.set(false);
+            const value = this.productForm.get('attributeControl')?.value;
+            if (value) {
+              const regex = new RegExp(value, 'i');
+              const filteredAttributes = this.attributes().filter((attribute) =>
+                regex.test(attribute.name),
+              );
+              this.attributeSelected.set(filteredAttributes);
+            }
+          },
+        });
+      },
+    });
+  }
+
+  nuevoAtributoValue(nombre: string) {
+    const attributeName = this.productForm.get('attributeControl')?.value;
+    if (attributeName) {
+      const selectedAttribute = this.attributes().find(
+        (a) => a.name.toLowerCase() === attributeName.toLowerCase(),
+      );
+
+      if (selectedAttribute) {
+        this.attributeService.insertValue(selectedAttribute._id, { value: nombre }).subscribe({
+          next: () => {
+            this.attributeService.getAll().subscribe({
+              next: (data) => {
+                this.attributes.set(data);
+
+                this.attributeValueExists.set(false);
+
+                const value = this.productForm.get('attributeValueControl')?.value;
+                if (value) {
+                  const regex = new RegExp(value, 'i');
+                  const updatedValues =
+                    data.find((a) => a._id === selectedAttribute._id)?.values || [];
+
+                  const filteredValues = updatedValues.filter((v) => regex.test(v));
+                  this.attributeValueSelected.set(filteredValues);
+                }
+              },
+            });
+          },
+          error: (err) => console.error('Error al añadir valor:', err),
+        });
+      }
     }
   }
 
@@ -148,18 +258,10 @@ export class ProductForm {
   }
 
   actualizar(data: any): void {
-    this.productService.update(this.id(), data).subscribe();
+    this.productService.update(this.id(), this.productoActual()).subscribe();
   }
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      const file = input.files[0];
-      this.fileToUpload = file;
-      this.imagePath.set(URL.createObjectURL(file));
-    }
-  }
-
+  // MÉTODOS DE UTILIDAD
   getRandomColor(index: number): string {
     const colors = [
       '#3182ce',
@@ -178,7 +280,13 @@ export class ProductForm {
     attr.values = attr.values.filter((v: string) => v !== value);
   }
 
-  nuevoAtributo(nombre: string) {
-    this.productoActual()?.atributes.push();
+  // MÉTODOS DE ARCHIVO
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const file = input.files[0];
+      this.fileToUpload = file;
+      this.imagePath.set(URL.createObjectURL(file));
+    }
   }
 }

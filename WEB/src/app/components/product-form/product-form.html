@@ -151,7 +151,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (attr of productoActual()?.atributes; track $index) {
+                @for (attr of productoActual()?.attributes; track $index) {
                   <tr>
                     <td>
                       <strong>{{ attr.name }}</strong>
@@ -180,22 +180,71 @@
                     <mat-form-field appearance="outline" style="width: 100%">
                       <input
                         type="text"
-                        placeholder="Atributo..."
+                        placeholder="Buscar atributo..."
                         matInput
-                        [formControl]="atributeControl"
-                        [matAutocomplete]="auto"
+                        formControlName="attributeControl"
+                        [matAutocomplete]="autoAtributos"
                         (input)="buscarAtributos($event)"
                       />
-                      <mat-autocomplete #auto="matAutocomplete">
-                        @for (atribute of atributeSelected(); track atribute._id) {
-                          <mat-option [value]="atribute.name">{{ atribute.name }}</mat-option>
+                      <mat-autocomplete #autoAtributos="matAutocomplete">
+                        @for (attribute of attributeSelected(); track attribute._id) {
+                          <mat-option
+                            [value]="attribute.name"
+                            (onSelectionChange)="onAttributeSelected(attribute.name)"
+                            >{{ attribute.name }}</mat-option
+                          >
                         }
                       </mat-autocomplete>
                     </mat-form-field>
 
-                    @if (attributeExists() && atributeControl.value !== '') {
-                      <button type="button" class="btn-nuevo" (click)="nuevoAtributo(atributeControl.value)">
-                        Crear "{{ atributeControl.value }}"
+                    @if (
+                      attributeExists() &&
+                      productForm.get('attributeControl')?.value !== '' &&
+                      productForm.get('attributeControl')?.value !== null
+                    ) {
+                      <button
+                        type="button"
+                        class="btn-nuevo"
+                        (click)="nuevoAtributo(productForm.get('attributeControl')?.value!)"
+                      >
+                        Crear "{{ productForm.get('attributeControl')?.value }}"
+                      </button>
+                    }
+                  </td>
+                  <td>
+                    <mat-form-field appearance="outline" style="width: 100%">
+                      <input
+                        type="text"
+                        placeholder="Valor del atributo..."
+                        matInput
+                        formControlName="attributeValueControl"
+                        [matAutocomplete]="autoValores"
+                        (input)="buscarValoresAtributo($event)"
+                      />
+                      <mat-autocomplete #autoValores="matAutocomplete">
+                        @for (value of attributeValueSelected(); track $index) {
+                          <mat-option
+                            [value]="value"
+                            (onSelectionChange)="onAttributeValueSelected(value)"
+                            >{{ value }}</mat-option
+                          >
+                        }
+                      </mat-autocomplete>
+                    </mat-form-field>
+
+                    @if (
+                      attributeValueExists() &&
+                      productForm.get('attributeValueControl')?.value !== '' &&
+                      productForm.get('attributeValueControl')?.value !== null
+                    ) {
+                      <button
+                        type="button"
+                        class="btn-nuevo"
+                        (click)="
+                          nuevoAtributoValue(productForm.get('attributeValueControl')?.value!)
+                        "
+                      >
+                        Crear "{{ productForm.get('attributeValueControl')?.value }}"
                       </button>
                     }
                   </td>

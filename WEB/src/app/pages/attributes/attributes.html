@@ -1,0 +1,16 @@
+<table>
+  <thead>
+    <tr>
+      <th>Nombre</th>
+      <th>Valor</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (attribute of attributes(); track attribute._id) {
+      <tr>
+        <td>{{ attribute.name }}</td>
+        <td>{{ attribute.values }}</td>
+      </tr>
+    }
+  </tbody>
+</table>

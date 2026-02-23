@@ -1,0 +1,27 @@
+#### GET
+GET http://localhost:3000/attributes
+Accept: application/json 
+
+### POST
+POST http://localhost:3000/attributes
+Content-Type: application/json
+
+{
+  "name": "Capacidad"
+}
+
+### GET NAME
+GET http://localhost:3000/attributes/C
+Accept: application/json 
+
+### PUT values
+PUT http://localhost:3000/attributes/699ca4d5cb2d3df0c41e245e
+Content-Type: application/json
+
+{
+  "value": "Azul"
+}
+
+### DELETE
+DELETE http://localhost:3000/attributes/699ca718cb2d3df0c41e2460
+Accept: application/json 
