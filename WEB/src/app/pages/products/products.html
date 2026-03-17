@@ -1,9 +1,9 @@
 <h1>Lista de productos</h1>
+<button [routerLink]="['/product-form']">Agregar producto</button>
 <table>
   <thead>
     <tr>
-      <th><input type="checkbox" /></th>
-      <th><a href="#">Image</a></th>
+      <th><input type="checkbox" id="chk_main" (change)="markAllAsChecked($event)"/></th>
       <th><a href="#">Name</a></th>
       <th><a href="#">SKU</a></th>
       <th><a href="#">Stock</a></th>
@@ -16,9 +16,6 @@
       <tr>
         <td>
           <input type="checkbox" />
-        </td>
-        <td>
-          <img src="{{ product.image }}" alt="{{ product.title }}" />
         </td>
         <td>
           <p>{{ product.title }}</p>

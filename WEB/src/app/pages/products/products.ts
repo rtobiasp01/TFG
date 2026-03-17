@@ -25,4 +25,23 @@ export class Products {
   deleteProduct(id: string) {
     this.productService.delete(id).subscribe();
   }
+
+  markAllAsChecked(event: any) {
+
+    const chk_main = document.getElementById("chk_main") as HTMLInputElement;
+    const markAll = chk_main.checked;
+
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+
+    checkboxes.forEach((chk) => {
+      const checkbox = chk as HTMLInputElement;
+
+      if (markAll) {
+        checkbox.checked = true;
+      } else {
+        checkbox.checked = false;
+      }
+
+    });
+  }
 }

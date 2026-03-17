@@ -7,7 +7,7 @@ GET http://localhost:3000/products/698f4ad2ba88a0d06e820e39
 Accept: application/json
 
 ###
-DELETE http://localhost:3000/products/699355087d9cc74b7d0f7ddc
+DELETE http://localhost:3000/products/69b9901ed08f5a33dd9fdc1f
 Accept: application/json
 
 ### Crear un nuevo producto (Teclado Mecánico)
@@ -31,17 +31,7 @@ Content-Type: application/json
   "weight": 1.2,
   "average_rating": 4.8,
   "custom_slug": null,
-  "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/...",
-  "attributes": [
-  {
-    "name": "Color",
-    "values": ["Negro", "Blanco"]
-  },
-  {
-    "name": "Switch",
-    "values": ["Red", "Blue", "Brown"]
-  }
-]
+  "image": ""
 }
 
 ### Crear un producto con Slug Personalizado
@@ -89,19 +79,5 @@ Content-Type: application/json
   "weight": 1.2,
   "average_rating": 4.8,
   "custom_slug": null,
-  "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/...",
-  "attributes": [
-  {
-    "name": "Color",
-    "values": ["Negro", "Blanco"]
-  },
-  {
-    "name": "Switch",
-    "values": ["Red", "Blue", "Brown"]
-  },
-  {
-    "name": "Cargos",
-    "values": ["Red", "Blue", "Brown"]
-  }
-]
+  "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/..."
 }

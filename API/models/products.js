@@ -18,7 +18,6 @@ class Product {
     custom_slug = null,
     image = null,
     gallery = [],
-    attributes = [],
     visible = true,
   } = {}) {
     this.title = title;
@@ -45,8 +44,7 @@ class Product {
     this.image = image;
     this.gallery = Array.isArray(gallery) ? gallery : [];
 
-    // Atributos y Visibilidad
-    this.attributes = attributes;
+    // Visibilidad
     this.visible = Boolean(visible);
 
     this.slug = custom_slug || this.generateSlug(this.title);

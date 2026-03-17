@@ -81,7 +81,6 @@ router.put("/:id", async (req, res) => {
       custom_slug: req.body.custom_slug,
       image: req.body.image,
       gallery: req.body.gallery,
-      attributes: req.body.attributes,
       visible: req.body.visible,
     };
 
