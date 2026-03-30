@@ -141,6 +141,102 @@
             </div>
           </label>
         }
+
+        @if (showVariantsTab()) {
+          <label class="radio">
+            <input type="radio" name="radio" />
+            <span class="name">Variantes</span>
+            <div class="content">
+              <div class="variants-header">
+                <button type="button" class="btn-secondary" (click)="addVariant()">Añadir variante</button>
+              </div>
+
+              <div formArrayName="variantes" class="variants-container">
+                @for (variant of variantesControls(); track $index; let variantIndex = $index) {
+                  <div class="variant-card" [formGroupName]="variantIndex">
+                    <div class="variant-card-header">
+                      <h4>Variante #{{ variantIndex + 1 }}</h4>
+                      <button type="button" class="btn-danger" (click)="removeVariant(variantIndex)">Eliminar</button>
+                    </div>
+
+                    <div class="form-grid">
+                      <div class="form-group full-width">
+                        <label>Atributos de la variante (clave / valor):</label>
+                        <div formArrayName="attributes" class="variant-attributes-container">
+                          @for (attribute of variantAttributesControls(variantIndex); track $index; let attrIndex = $index) {
+                            <div class="variant-attribute-row" [formGroupName]="attrIndex">
+                              <input type="text" formControlName="key" placeholder="Ej: color" />
+                              <input type="text" formControlName="value" placeholder="Ej: blanco" />
+                              <button
+                                type="button"
+                                class="btn-danger btn-small"
+                                (click)="removeVariantAttribute(variantIndex, attrIndex)"
+                              >
+                                Quitar
+                              </button>
+                            </div>
+                          }
+
+                          <button type="button" class="btn-secondary btn-small" (click)="addVariantAttribute(variantIndex)">
+                            Añadir atributo
+                          </button>
+                        </div>
+                      </div>
+
+                      <div class="form-group">
+                        <label>Stock:</label>
+                        <input type="number" formControlName="stock" min="0" />
+                      </div>
+
+                      <div class="form-group">
+                        <label>Precio adicional (€):</label>
+                        <input type="number" formControlName="precio_adicional" min="0" step="0.01" />
+                      </div>
+
+                      <div class="form-group full-width">
+                        <label>Imágenes (URLs separadas por coma):</label>
+                        <textarea
+                          formControlName="imagenes_text"
+                          rows="2"
+                          placeholder="https://img1.jpg, https://img2.jpg"
+                        ></textarea>
+                      </div>
+
+                      <div class="form-group checkbox-group">
+                        <input type="checkbox" formControlName="has_custom_physical_attributes" />
+                        <label style="margin: 0">Usar atributos físicos propios</label>
+                      </div>
+                    </div>
+
+                    @if (variant.get('has_custom_physical_attributes')?.value) {
+                      <div class="form-grid" formGroupName="physical_attributes">
+                        <div class="form-group">
+                          <label>Largo (cm):</label>
+                          <input type="number" formControlName="length" step="0.01" min="0" />
+                        </div>
+
+                        <div class="form-group">
+                          <label>Ancho (cm):</label>
+                          <input type="number" formControlName="width" step="0.01" min="0" />
+                        </div>
+
+                        <div class="form-group">
+                          <label>Alto (cm):</label>
+                          <input type="number" formControlName="height" step="0.01" min="0" />
+                        </div>
+
+                        <div class="form-group">
+                          <label>Peso (kg):</label>
+                          <input type="number" formControlName="weight" step="0.01" min="0" />
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+          </label>
+        }
       </div>
     </div>
 

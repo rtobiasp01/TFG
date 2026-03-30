@@ -87,3 +87,94 @@ Content-Type: application/json
   "custom_slug": null,
   "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/..."
 }
+
+### Crear producto con variantes (color + talla)
+POST http://localhost:3000/products
+Content-Type: application/json
+
+{
+  "title": "Camiseta Premium",
+  "description": "Camiseta de algodón peinado con varias tallas y colores.",
+  "short_description": "Camiseta premium unisex.",
+  "price": 50,
+  "sku": "CAM",
+  "stock_status": "in_stock",
+  "stock_quantity": 0,
+  "manage_stock": false,
+  "type": "variable",
+  "physical_attributes": {
+    "length": 30,
+    "width": 20,
+    "height": 2,
+    "weight": 0.2
+  },
+  "variantes": [
+    {
+      "color": "Blanco",
+      "talla": "S",
+      "stock": 50,
+      "precio_adicional": 10,
+      "imagenes": [
+        "https://cdn.tienda.com/cam-blanco-s-1.jpg",
+        "https://cdn.tienda.com/cam-blanco-s-2.jpg"
+      ]
+    },
+    {
+      "color": "Negro",
+      "talla": "M",
+      "stock": 25,
+      "precio_adicional": 5,
+      "imagenes": [
+        "https://cdn.tienda.com/cam-negro-m-1.jpg"
+      ],
+      "physical_attributes": {
+        "weight": "220g"
+      }
+    }
+  ],
+  "image": ""
+}
+
+### Actualizar variantes de producto variable
+PUT http://localhost:3000/products/69ca244bec3087831395a860
+Content-Type: application/json
+
+{
+  "type": "variable",
+  "variantes": [
+    {
+      "color": "Blanco",
+      "talla": "L",
+      "stock": 40,
+      "precio_adicional": 12,
+      "imagenes": [
+        "https://cdn.tienda.com/cam-blanco-l-1.jpg"
+      ]
+    },
+    {
+      "color": "Azul",
+      "talla": "M",
+      "stock": 30,
+      "precio_adicional": 8,
+      "imagenes": [
+        "https://cdn.tienda.com/cam-azul-m-1.jpg"
+      ],
+      "physical_attributes": {
+        "weight": 0.25
+      }
+    }
+  ]
+}
+
+### Actualizar solo atributos físicos padre (las variantes sin physical_attributes heredarán estos valores)
+PUT http://localhost:3000/products/69ca244bec3087831395a860
+Content-Type: application/json
+
+{
+  "physical_attributes": {
+    "length": 32,
+    "width": 21,
+    "height": 2,
+    "weight": 0.22
+  }
+}

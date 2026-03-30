@@ -62,6 +62,23 @@ router.put("/:id", async (req, res) => {
   try {
     const { id } = req.params;
 
+    const existingProduct = await productService.getProductById(id);
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Producto no encontrado",
+      });
+    }
+
+    const mergedProductData = {
+      ...existingProduct,
+      ...req.body,
+    };
+
+    delete mergedProductData._id;
+
+    const normalizedProduct = new Product(mergedProductData);
+
     const updateData = {
       title: req.body.title,
       description: req.body.description,
@@ -73,7 +90,12 @@ router.put("/:id", async (req, res) => {
       stock_quantity: req.body.stock_quantity,
       manage_stock: req.body.manage_stock,
       type: req.body.type,
-      physical_attributes: req.body.physical_attributes,
+      physical_attributes:
+        req.body.physical_attributes !== undefined
+          ? normalizedProduct.physical_attributes
+          : undefined,
+      variantes:
+        req.body.variantes !== undefined ? normalizedProduct.variantes : undefined,
       average_rating: req.body.average_rating,
       custom_slug: req.body.custom_slug,
       image: req.body.image,
