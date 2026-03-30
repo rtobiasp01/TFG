@@ -23,6 +23,7 @@ export class ProductForm {
 
   readonly id = signal<string>(this.route.snapshot.paramMap.get('id') || '');
   readonly imagePath = signal<string>('');
+  readonly showLogisticsTab = signal<boolean>(true);
   fileToUpload: File | null = null;
 
   readonly productForm = this.fb.group({
@@ -51,10 +52,16 @@ export class ProductForm {
         next: (product: Product) => {
           this.imagePath.set(product.image || '');
           this.productForm.patchValue(product);
+          this.updateLogisticsTabVisibility(product.type);
+          this.updateStockQuantityState(product.manage_stock ?? false);
         },
         error: (err) => console.error('Error al cargar producto:', err),
       });
+      return;
     }
+
+    this.updateLogisticsTabVisibility(this.productForm.get('type')?.value ?? 'simple');
+    this.updateStockQuantityState(false);
   }
 
   onSubmit(): void {
@@ -102,4 +109,28 @@ export class ProductForm {
       this.imagePath.set(URL.createObjectURL(file));
     }
   }
+
+  onProductTypeSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.updateLogisticsTabVisibility(input.value);
+  }
+
+  private updateLogisticsTabVisibility(type: string): void {
+    this.showLogisticsTab.set(type === 'simple');
+  }
+
+  onManageStockChange(): void {
+    const manageStock = this.productForm.get('manage_stock')?.value ?? false;
+    this.updateStockQuantityState(manageStock);
+  }
+
+  private updateStockQuantityState(manageStock: boolean): void {
+    const stockQuantityControl = this.productForm.get('stock_quantity');
+    if (manageStock) {
+      stockQuantityControl?.enable();
+    } else {
+      stockQuantityControl?.disable();
+    }
+  }
+
 }
