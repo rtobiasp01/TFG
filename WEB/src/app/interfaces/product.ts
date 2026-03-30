@@ -1,5 +1,5 @@
 
-import { Dimensions } from './dimensions';
+import { PhysicalAttributes } from './physical_attributes'
 
 export interface Product {
   _id: string;
@@ -8,6 +8,6 @@ export interface Product {
   description: string;
   sku: string;
   stock_quantity: number;
-  dimensions: Dimensions;
+  physical_attributes?: PhysicalAttributes;
   image: string;
 }

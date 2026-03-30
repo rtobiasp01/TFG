@@ -119,18 +119,18 @@
           <input type="radio" name="radio" />
           <span class="name">Logística</span>
           <div class="content">
-            <div class="form-grid">
+            <div class="form-grid" formGroupName="physical_attributes">
               <div class="form-group">
-                <label for="dim_l">Largo (cm):</label>
-                <input type="number" id="l" formControlName="dim_l" step="0.01" min="0" />
+                <label for="length">Largo (cm):</label>
+                <input type="number" id="length" formControlName="length" step="0.01" min="0" />
               </div>
               <div class="form-group">
-                <label for="dim_w">Ancho (cm):</label>
-                <input type="number" id="w" formControlName="dim_w" step="0.01" min="0" />
+                <label for="width">Ancho (cm):</label>
+                <input type="number" id="width" formControlName="width" step="0.01" min="0" />
               </div>
               <div class="form-group">
-                <label for="dim_h">Alto (cm):</label>
-                <input type="number" id="h" formControlName="dim_h" step="0.01" min="0" />
+                <label for="height">Alto (cm):</label>
+                <input type="number" id="height" formControlName="height" step="0.01" min="0" />
               </div>
               <div class="form-group">
                 <label for="weight">Peso (kg):</label>

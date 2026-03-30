@@ -36,10 +36,12 @@ export class ProductForm {
     stock_status: ['in_stock', Validators.required],
     stock_quantity: [0, [Validators.min(0)]],
     manage_stock: [false],
-    dim_l: [0, [Validators.min(0)]],
-    dim_w: [0, [Validators.min(0)]],
-    dim_h: [0, [Validators.min(0)]],
-    weight: [0, [Validators.min(0)]],
+    physical_attributes: this.fb.group({
+      length: [0, [Validators.min(0)]],
+      width: [0, [Validators.min(0)]],
+      height: [0, [Validators.min(0)]],
+      weight: [0, [Validators.min(0)]],
+    }),
     image: [''],
   });
 

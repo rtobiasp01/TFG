@@ -7,7 +7,7 @@ GET http://localhost:3000/products/698f4ad2ba88a0d06e820e39
 Accept: application/json
 
 ###
-DELETE http://localhost:3000/products/69b9901ed08f5a33dd9fdc1f
+DELETE http://localhost:3000/products/69c6daa98e38cfca2a590a4e
 Accept: application/json
 
 ### Crear un nuevo producto (Teclado Mecánico)
@@ -25,10 +25,12 @@ Content-Type: application/json
   "stock_quantity": 45,
   "manage_stock": true,
   "type": "simple",
-  "dim_l": 45.5,
-  "dim_w": 15.2,
-  "dim_h": 3.5,
-  "weight": 1.2,
+  "physical_attributes": {
+    "length": 45.5,
+    "width": 15.2,
+    "height": 3.5,
+    "weight": 1.2
+  },
   "average_rating": 4.8,
   "custom_slug": null,
   "image": ""
@@ -49,17 +51,19 @@ Content-Type: application/json
   "stock_quantity": 10,
   "manage_stock": true,
   "type": "simple",
-  "dim_l": 70,
-  "dim_w": 70,
-  "dim_h": 130,
-  "weight": 20,
+  "physical_attributes": {
+    "length": 70,
+    "width": 70,
+    "height": 130,
+    "weight": 20
+  },
   "average_rating": 5.0,
   "custom_slug": "oferta-silla-gamer-exclusiva"
 }
 
 
 #####
-PUT http://localhost:3000/products/69988575335e11b01fb2b2b7
+PUT http://localhost:3000/products/69ca13cc2d7fd99f229d5706
 Content-Type: application/json
 
 {
@@ -73,10 +77,12 @@ Content-Type: application/json
   "stock_quantity": 45,
   "manage_stock": true,
   "type": "simple",
-  "dim_l": 45.5,
-  "dim_w": 15.2,
-  "dim_h": 3.5,
-  "weight": 1.2,
+  "physical_attributes": {
+    "length": 45.5,
+    "width": 15.2,
+    "height": 3.5,
+    "weight": 1.2
+  },
   "average_rating": 4.8,
   "custom_slug": null,
   "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/..."

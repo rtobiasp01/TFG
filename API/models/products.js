@@ -10,10 +10,7 @@ class Product {
     stock_quantity = 0,
     manage_stock = false,
     type = "simple",
-    dim_l = 0,
-    dim_w = 0,
-    dim_h = 0,
-    weight = 0,
+    physical_attributes = null,
     average_rating = 0,
     custom_slug = null,
     image = null,
@@ -31,12 +28,15 @@ class Product {
     this.manage_stock = Boolean(manage_stock);
     this.type = type;
 
-    this.dimensions = {
-      l: Number(dim_l),
-      w: Number(dim_w),
-      h: Number(dim_h),
-      weight: Number(weight),
-    };
+    // Atributos físicos
+    if (physical_attributes) {
+      this.physical_attributes = {
+        length: Number(physical_attributes.length),
+        width: Number(physical_attributes.width),
+        height: Number(physical_attributes.height),
+        weight: Number(physical_attributes.weight),
+      };
+    }
 
     this.average_rating = Number(average_rating);
 
