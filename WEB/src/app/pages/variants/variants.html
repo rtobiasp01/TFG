@@ -1,0 +1,32 @@
+<h1>Variantes de productos</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Producto</th>
+      <th>SKU producto</th>
+      <th>SKU variante</th>
+      <th>Atributos</th>
+      <th>Stock</th>
+      <th>Precio adicional</th>
+      <th>Precio final</th>
+    </tr>
+  </thead>
+  <tbody>
+    @for (variant of variants(); track variant.variant_sku + '-' + variant.product_id) {
+      <tr>
+        <td>{{ variant.product_title }}</td>
+        <td>{{ variant.product_sku }}</td>
+        <td>{{ variant.variant_sku }}</td>
+        <td>{{ variant.attributes }}</td>
+        <td>{{ variant.stock }}</td>
+        <td>{{ variant.precio_adicional | currency: 'EUR' }}</td>
+        <td>{{ variant.precio_final | currency: 'EUR' }}</td>
+      </tr>
+    } @empty {
+      <tr>
+        <td colspan="7">No hay variantes disponibles.</td>
+      </tr>
+    }
+  </tbody>
+</table>
