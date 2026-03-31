@@ -263,6 +263,18 @@
           }
         </div>
       </div>
+
+      <div class="image-upload-container">
+        <h3>Galeria del producto</h3>
+        <label for="gallery" class="upload-btn">Subir imagenes</label>
+        <input type="file" (change)="onGalerySelected($event)" id="gallery" accept="image/*" multiple/>
+        <div class="gallery">
+          @for (img of galeryPaths(); track $index) {
+          <img [src]="img" alt="Galería producto">
+        }
+        </div>
+      </div>
+
     </div>
   </div>
 </form>

@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../interfaces/product';
 import { UploadService } from '../../services/upload-service';
 import { Variant } from '../../interfaces/variant';
+import { forEachChild } from 'typescript';
 
 const API_BASE_URL = 'http://localhost:3000';
 
@@ -24,9 +25,11 @@ export class ProductForm {
 
   readonly id = signal<string>(this.route.snapshot.paramMap.get('id') || '');
   readonly imagePath = signal<string>('');
+  readonly galeryPaths = signal<string[]>([]);
   readonly showLogisticsTab = signal<boolean>(true);
   readonly showVariantsTab = signal<boolean>(false);
   fileToUpload: File | null = null;
+  galeryToUpload: File[] | null = null;
 
   readonly productForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -47,6 +50,7 @@ export class ProductForm {
     }),
     variantes: this.fb.array([]),
     image: [''],
+    gallery: [[] as string[]],
   });
 
   get variantesFormArray(): FormArray<FormGroup> {
@@ -62,6 +66,7 @@ export class ProductForm {
       this.productService.getById(this.id()).subscribe({
         next: (product: Product) => {
           this.imagePath.set(product.image || '');
+          this.galeryPaths.set(Array.isArray(product.gallery) ? product.gallery : []);
           this.patchProductInForm(product);
           this.updateTabsByProductType(product.type);
           this.updateStockQuantityState(product.manage_stock ?? false);
@@ -86,7 +91,7 @@ export class ProductForm {
         next: (res: any) => {
           const imagePath = `${API_BASE_URL}/${res.fileDetails.path}`;
           this.productForm.patchValue({ image: imagePath });
-          this.enviarFormularioFinal();
+          this.subirGaleriaUnaPorUna();
         },
         error: (err) => {
           console.error('Error al subir imagen:', err);
@@ -96,7 +101,33 @@ export class ProductForm {
       return;
     }
 
-    this.enviarFormularioFinal();
+    this.subirGaleriaUnaPorUna();
+  }
+
+  private subirGaleriaUnaPorUna(index = 0, uploadedPaths: string[] = []): void {
+    if (!this.galeryToUpload || this.galeryToUpload.length === 0) {
+      this.enviarFormularioFinal();
+      return;
+    }
+
+    if (index >= this.galeryToUpload.length) {
+      this.productForm.patchValue({ gallery: uploadedPaths });
+      this.enviarFormularioFinal();
+      return;
+    }
+
+    const file = this.galeryToUpload[index];
+
+    this.uploadService.subirArchivo(file).subscribe({
+      next: (res: any) => {
+        const imagePath = `${API_BASE_URL}/${res.fileDetails.path}`;
+        this.subirGaleriaUnaPorUna(index + 1, [...uploadedPaths, imagePath]);
+      },
+      error: (err) => {
+        console.error('Error al subir imagen de galería:', err);
+        alert('Error al subir una imagen de la galería.');
+      },
+    });
   }
 
   private enviarFormularioFinal(): void {
@@ -133,6 +164,16 @@ export class ProductForm {
       this.imagePath.set(URL.createObjectURL(file));
     }
   }
+
+  onGalerySelected(event: Event) {
+  const input = event.target as HTMLInputElement;
+  if (input.files && input.files.length > 0) {
+    this.galeryToUpload = Array.from(input.files);
+    
+    const previews = this.galeryToUpload.map(file => URL.createObjectURL(file));
+    this.galeryPaths.set(previews); 
+  }
+}
 
   onProductTypeSelected(event: Event): void {
     const input = event.target as HTMLSelectElement;
@@ -215,9 +256,10 @@ export class ProductForm {
   }
 
   private patchProductInForm(product: Product): void {
-    const { variantes, physical_attributes, ...productWithoutVariants } = product;
+    const { variantes, physical_attributes, gallery, ...productWithoutVariants } = product;
     this.productForm.patchValue({
       ...productWithoutVariants,
+      gallery: Array.isArray(gallery) ? gallery : [],
       physical_attributes:
         physical_attributes ?? {
           length: 0,

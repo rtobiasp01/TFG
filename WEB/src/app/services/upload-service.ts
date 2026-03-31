@@ -10,9 +10,7 @@ export class UploadService {
 
   subirArchivo(archivo: File) {
     const formData = new FormData();
-
-    // IMPORTANTE: El primer argumento "archivo" debe coincidir
-    // exactamente con upload.single("archivo") en tu backend.
+    
     formData.append('archivo', archivo);
 
     return this.http.post(this.URL, formData);

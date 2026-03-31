@@ -17,4 +17,5 @@ export interface Product {
   physical_attributes?: PhysicalAttributes | null;
   variantes?: Variant[];
   image: string;
+  gallery?: string[];
 }
