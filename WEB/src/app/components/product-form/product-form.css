@@ -143,19 +143,63 @@
   grid-column: span 2;
 }
 
-/* --- IMAGEN --- */
+/* --- BLOQUES DE SUBIDA (IMAGEN Y GALERIA) --- */
+.image-upload-container {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 0.8rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.image-upload-container h3 {
+  margin: 0 0 0.75rem 0;
+  font-size: 1rem;
+  color: #2e2e2e;
+}
+
+.image-upload-container input[type='file'] {
+  display: none;
+}
+
+.upload-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0.85rem;
+  padding: 0.6rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid #70c489;
+  background: #eef9f2;
+  color: #2f8e4f;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.upload-btn:hover {
+  background: #70c489;
+  color: #fff;
+}
+
 .image-preview-area {
   width: 100%;
-  min-height: 180px;
-  border: 2px dashed #ccc;
-  border-radius: 10px;
+  min-height: 220px;
+  border: 2px dashed #d5e7db;
+  border-radius: 0.75rem;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: linear-gradient(180deg, #fcfffd 0%, #f3faf6 100%);
+  overflow: hidden;
 }
 
 .image-preview-area img {
-  border-radius: 3%;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 0.5rem;
 }
 
 @keyframes fadeIn {
@@ -333,14 +377,35 @@ input:checked + .slider:before {
 
 .gallery {
   display: grid;
-  grid-template-columns: repeat(4, 100px);
-  grid-auto-rows: 100px;
-  gap: 5px;
+  grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: 0.5rem;
 }
 
 .gallery img {
-  height: 100px;
-  width: 100px;
+  width: 100%;
+  aspect-ratio: 1 / 1;
   object-fit: cover;
-  border-radius: 5px;
+  border-radius: 0.55rem;
+  border: 1px solid #e2e2e2;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gallery img:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+@media (max-width: 768px) {
+  .image-preview-area {
+    min-height: 180px;
+  }
+
+  .image-preview-area img {
+    height: 180px;
+  }
+
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+  }
 }
