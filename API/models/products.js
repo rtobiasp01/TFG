@@ -29,29 +29,22 @@ class Product {
     this.manage_stock = Boolean(manage_stock);
     this.type = type;
 
-    // Atributos físicos
     this.physical_attributes = this.normalizePhysicalAttributes(physical_attributes);
 
-    // Variantes del producto
     this.variantes = Array.isArray(variantes)
       ? variantes.map((variant, index) => this.normalizeVariant(variant, index))
       : [];
 
     this.average_rating = Number(average_rating);
 
-    // Gestión de imágenes
     this.image = image;
     this.gallery = Array.isArray(gallery) ? gallery : [];
 
-    // Visibilidad
     this.visible = Boolean(visible);
 
     this.slug = custom_slug || this.generateSlug(this.title);
   }
 
-  /**
-   * Método para transformar el título en un slug limpio
-   */
   generateSlug(text) {
     if (!text) return "";
     return text
@@ -65,9 +58,6 @@ class Product {
       .replace(/-+/g, "-");
   }
 
-  /**
-   * Método de utilidad para añadir una foto a la galería
-   */
   addGalleryImage(url) {
     if (url && typeof url === "string") {
       this.gallery.push(url);
@@ -99,7 +89,6 @@ class Product {
       this.normalizePhysicalAttributes(physical_attributes) ||
       (this.physical_attributes ? { ...this.physical_attributes } : null);
 
-    // precio_adicional se suma al precio base del producto padre
     const parsedAdditionalPrice = Number(precio_adicional);
     const normalizedVariant = {
       sku: this.buildVariantSku(mergedDynamicAttributes, index),
@@ -113,7 +102,6 @@ class Product {
         : [],
     };
 
-    // Si la variante no define atributos físicos, hereda del producto padre
     if (resolvedPhysicalAttributes) {
       normalizedVariant.physical_attributes = resolvedPhysicalAttributes;
     }

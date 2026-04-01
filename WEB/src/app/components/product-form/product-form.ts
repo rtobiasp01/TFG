@@ -5,7 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../interfaces/product';
 import { UploadService } from '../../services/upload-service';
 import { Variant } from '../../interfaces/variant';
-import { forEachChild } from 'typescript';
 
 const API_BASE_URL = 'http://localhost:3000';
 

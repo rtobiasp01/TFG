@@ -24,6 +24,7 @@ export class SidebarComponent {
 
   menuItems: MenuItem[] = [
     { icon: '🏠', label: 'Inicio', route: '/home' },
+    { icon: '🖼️', label: 'Media', route: '/media' },
     {
       icon: '📊',
       label: 'Productos',

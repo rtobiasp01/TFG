@@ -3,6 +3,7 @@ import { Home } from './pages/home/home';
 import { ProductForm } from './components/product-form/product-form';
 import { Products } from './pages/products/products';
 import { Variants } from './pages/variants/variants';
+import { Media } from './pages/media/media';
 
 export const routes: Routes = [
   {
@@ -30,4 +31,8 @@ export const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full',
   },
+  {
+    path: 'media',
+    component: Media,
+  }
 ];

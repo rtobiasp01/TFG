@@ -1,0 +1,35 @@
+
+<section class="media-page">
+    <header class="media-header">
+        <h2>Galeria de media</h2>
+        <p>Total de archivos: {{ archivos().length }}</p>
+    </header>
+
+    @if (archivos().length === 0) {
+        <div class="empty-state">
+            <p>No hay imagenes subidas todavia.</p>
+        </div>
+    } @else {
+        <div class="media-grid">
+            @for (media of archivos(); track media) {
+                <article class="media-card">
+                    <img
+                        [src]="'http://localhost:3000/uploads/' + media"
+                        [alt]="media"
+                        loading="lazy"
+                    />
+
+                    <button
+                        type="button"
+                        class="delete-btn"
+                        (click)="eliminarArchivo(media)"
+                        aria-label="Eliminar imagen"
+                        title="Eliminar"
+                    >
+                        Eliminar
+                    </button>
+                </article>
+            }
+        </div>
+    }
+</section>
