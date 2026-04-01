@@ -194,12 +194,22 @@
                       </div>
 
                       <div class="form-group full-width">
-                        <label>Imágenes (URLs separadas por coma):</label>
-                        <textarea
-                          formControlName="imagenes_text"
-                          rows="2"
-                          placeholder="https://img1.jpg, https://img2.jpg"
-                        ></textarea>
+                        <label>Imágenes de la variante:</label>
+                        <label [for]="'gallery-variant-' + variantIndex" class="upload-btn variant-upload-btn">
+                          Subir imágenes
+                        </label>
+                        <input
+                          [id]="'gallery-variant-' + variantIndex"
+                          type="file"
+                          (change)="onVariantImagesSelected($event, variantIndex)"
+                          accept="image/*"
+                          multiple
+                        />
+                        <div class="gallery variant-gallery">
+                          @for (img of getVariantImagePreviews(variantIndex); track $index) {
+                            <img [src]="img" alt="Variante imagen" />
+                          }
+                        </div>
                       </div>
 
                       <div class="form-group checkbox-group">

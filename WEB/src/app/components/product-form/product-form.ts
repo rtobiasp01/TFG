@@ -33,8 +33,10 @@ export class ProductForm {
   readonly showVariantsTab = signal<boolean>(false);
   readonly categories = signal<Category[]>([]);
   readonly selectedCategories = signal<Set<string>>(new Set());
+  readonly variantImagePreviews = signal<Map<number, string[]>>(new Map());
   fileToUpload: File | null = null;
   galeryToUpload: File[] | null = null;
+  variantFilesToUpload: Map<number, File[]> = new Map();
 
   readonly productForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -137,13 +139,13 @@ export class ProductForm {
 
   private subirGaleriaUnaPorUna(index = 0, uploadedPaths: string[] = []): void {
     if (!this.galeryToUpload || this.galeryToUpload.length === 0) {
-      this.enviarFormularioFinal();
+      this.subirVariantesImagenes();
       return;
     }
 
     if (index >= this.galeryToUpload.length) {
       this.productForm.patchValue({ gallery: uploadedPaths });
-      this.enviarFormularioFinal();
+      this.subirVariantesImagenes();
       return;
     }
 
@@ -161,14 +163,75 @@ export class ProductForm {
     });
   }
 
-  private enviarFormularioFinal(): void {
+  private subirVariantesImagenes(variantIndex = 0, allVariantImages: Map<number, string[]> = new Map()): void {
+    const variantIndices = Array.from(this.variantFilesToUpload.keys());
+
+    if (variantIndices.length === 0) {
+      this.enviarFormularioFinal(allVariantImages);
+      return;
+    }
+
+    if (variantIndex >= variantIndices.length) {
+      this.enviarFormularioFinal(allVariantImages);
+      return;
+    }
+
+    const currentVariantIdx = variantIndices[variantIndex];
+    const files = this.variantFilesToUpload.get(currentVariantIdx) || [];
+
+    if (files.length === 0) {
+      this.subirVariantesImagenes(variantIndex + 1, allVariantImages);
+      return;
+    }
+
+    this.subirVariantImagenesRecursive(currentVariantIdx, 0, [], allVariantImages, variantIndex, variantIndices.length);
+  }
+
+  private subirVariantImagenesRecursive(
+    variantIdx: number,
+    fileIndex: number,
+    uploadedPaths: string[],
+    allVariantImages: Map<number, string[]>,
+    variantProgressIndex: number,
+    totalVariants: number,
+  ): void {
+    const files = this.variantFilesToUpload.get(variantIdx) || [];
+
+    if (fileIndex >= files.length) {
+      allVariantImages.set(variantIdx, uploadedPaths);
+      this.subirVariantesImagenes(variantProgressIndex + 1, allVariantImages);
+      return;
+    }
+
+    const file = files[fileIndex];
+
+    this.uploadService.subirArchivo(file).subscribe({
+      next: (res: any) => {
+        const imagePath = `${API_BASE_URL}/${res.fileDetails.path}`;
+        this.subirVariantImagenesRecursive(
+          variantIdx,
+          fileIndex + 1,
+          [...uploadedPaths, imagePath],
+          allVariantImages,
+          variantProgressIndex,
+          totalVariants,
+        );
+      },
+      error: (err) => {
+        console.error('Error al subir imagen de variante:', err);
+        alert('Error al subir una imagen de la variante.');
+      },
+    });
+  }
+
+  private enviarFormularioFinal(variantImagesMap: Map<number, string[]> = new Map()): void {
     const rawValue = this.productForm.getRawValue();
     const categorias = Array.from(this.selectedCategories());
 
     const payload: any = {
       ...rawValue,
       stock_quantity: rawValue.manage_stock ? Number(rawValue.stock_quantity) || 0 : 0,
-      variantes: this.buildVariantsPayload(rawValue.variantes ?? []),
+      variantes: this.buildVariantsPayload(rawValue.variantes ?? [], variantImagesMap),
       categoria: categorias,
     };
 
@@ -185,7 +248,11 @@ export class ProductForm {
       : this.productService.create(payload);
 
     operation$.subscribe({
-      next: () => this.router.navigate(['home']),
+      next: () => {
+        this.variantFilesToUpload.clear();
+        this.variantImagePreviews.set(new Map());
+        this.router.navigate(['home']);
+      },
       error: (err) => console.error('Error al guardar producto:', err),
     });
   }
@@ -208,6 +275,25 @@ export class ProductForm {
     this.galeryPaths.set(previews); 
   }
 }
+
+  onVariantImagesSelected(event: Event, variantIndex: number): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const files = Array.from(input.files);
+      this.variantFilesToUpload.set(variantIndex, files);
+
+      const previews = files.map((file) => URL.createObjectURL(file));
+      this.variantImagePreviews.update((map) => {
+        const newMap = new Map(map);
+        newMap.set(variantIndex, previews);
+        return newMap;
+      });
+    }
+  }
+
+  getVariantImagePreviews(variantIndex: number): string[] {
+    return this.variantImagePreviews().get(variantIndex) || [];
+  }
 
   onProductTypeSelected(event: Event): void {
     const input = event.target as HTMLSelectElement;
@@ -256,6 +342,16 @@ export class ProductForm {
     this.variantesFormArray.push(variantGroup);
 
     const variantIndex = this.variantesFormArray.length - 1;
+    const existingImages = Array.isArray(variant?.imagenes) ? variant.imagenes : [];
+
+    if (existingImages.length > 0) {
+      this.variantImagePreviews.update((map) => {
+        const newMap = new Map(map);
+        newMap.set(variantIndex, existingImages);
+        return newMap;
+      });
+    }
+
     const dynamicAttributes = this.extractDynamicAttributes(variant);
 
     if (dynamicAttributes.length === 0) {
@@ -270,6 +366,28 @@ export class ProductForm {
 
   removeVariant(index: number): void {
     this.variantesFormArray.removeAt(index);
+
+    this.variantImagePreviews.update((map) => {
+      const newMap = new Map<number, string[]>();
+      map.forEach((value, key) => {
+        if (key < index) {
+          newMap.set(key, value);
+        } else if (key > index) {
+          newMap.set(key - 1, value);
+        }
+      });
+      return newMap;
+    });
+
+    const newVariantFilesToUpload = new Map<number, File[]>();
+    this.variantFilesToUpload.forEach((value, key) => {
+      if (key < index) {
+        newVariantFilesToUpload.set(key, value);
+      } else if (key > index) {
+        newVariantFilesToUpload.set(key - 1, value);
+      }
+    });
+    this.variantFilesToUpload = newVariantFilesToUpload;
   }
 
   variantAttributesControls(variantIndex: number) {
@@ -304,22 +422,27 @@ export class ProductForm {
     });
 
     this.variantesFormArray.clear();
+    this.variantImagePreviews.set(new Map());
+    this.variantFilesToUpload.clear();
     if (Array.isArray(variantes)) {
       variantes.forEach((variant) => this.addVariant(variant));
     }
   }
 
-  private buildVariantsPayload(rawVariants: any[]): Variant[] {
+  private buildVariantsPayload(rawVariants: any[], variantImagesMap: Map<number, string[]> = new Map()): Variant[] {
     if (!Array.isArray(rawVariants)) {
       return [];
     }
 
-    return rawVariants.map((rawVariant) => {
+    return rawVariants.map((rawVariant, index) => {
+      const uploadedImages = variantImagesMap.get(index) || [];
+      const imagenes = uploadedImages.length > 0 ? uploadedImages : this.parseImages(rawVariant.imagenes_text);
+
       const variantPayload: Variant = {
         ...this.buildDynamicAttributes(rawVariant.attributes ?? []),
         stock: Number(rawVariant.stock) || 0,
         precio_adicional: Number(rawVariant.precio_adicional) || 0,
-        imagenes: this.parseImages(rawVariant.imagenes_text),
+        imagenes,
       };
 
       if (rawVariant.has_custom_physical_attributes) {
