@@ -22,13 +22,27 @@ async function createCategory(categoryData) {
 async function deleteCategory(id) {
   try {
     const db = await connectDB();
-    const collection = db.collection("categories");
+    const categoriesCollection = db.collection("categories");
+    const productsCollection = db.collection("products");
 
-    const result = await collection.deleteOne({ _id: new ObjectId(id) });
+    const category = await categoriesCollection.findOne({ _id: new ObjectId(id) });
+
+    if (!category) {
+      throw new Error("No se encontró la categoría para eliminar.");
+    }
+
+    const categoryName = category.name;
+
+    const result = await categoriesCollection.deleteOne({ _id: new ObjectId(id) });
 
     if (result.deletedCount === 0) {
       throw new Error("No se encontró la categoría para eliminar.");
     }
+
+    await productsCollection.updateMany(
+      { categoria: categoryName },
+      { $pull: { categoria: categoryName } },
+    );
 
     return { message: "Categoría eliminada correctamente", id };
   } catch (error) {
@@ -52,15 +66,32 @@ async function getCategoryById(id) {
 async function updateCategory(id, updateData) {
   try {
     const db = await connectDB();
-    const collection = db.collection("categories");
+    const categoriesCollection = db.collection("categories");
+    const productsCollection = db.collection("products");
 
-    const result = await collection.updateOne(
+    const existingCategory = await categoriesCollection.findOne({ _id: new ObjectId(id) });
+
+    if (!existingCategory) {
+      throw new Error("No se encontró la categoría para actualizar.");
+    }
+
+    const oldName = existingCategory.name;
+    const newName = updateData.name;
+
+    const result = await categoriesCollection.updateOne(
       { _id: new ObjectId(id) },
       { $set: updateData },
     );
 
     if (result.matchedCount === 0) {
       throw new Error("No se encontró la categoría para actualizar.");
+    }
+
+    if (oldName !== newName && newName) {
+      await productsCollection.updateMany(
+        { categoria: oldName },
+        { $set: { "categoria.$": newName } },
+      );
     }
 
     return { message: "Categoría actualizada correctamente", id, ...updateData };
