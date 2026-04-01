@@ -4,20 +4,24 @@ import { ProductService } from '../../services/product-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../interfaces/product';
 import { UploadService } from '../../services/upload-service';
+import { CategoryService } from '../../services/category-service';
 import { Variant } from '../../interfaces/variant';
+import { Category } from '../../interfaces/category';
+import { CommonModule } from '@angular/common';
 
 const API_BASE_URL = 'http://localhost:3000';
 
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, CommonModule],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
 })
 export class ProductForm {
   private readonly productService = inject(ProductService);
   private readonly uploadService = inject(UploadService);
+  private readonly categoryService = inject(CategoryService);
   private readonly route = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
@@ -27,6 +31,8 @@ export class ProductForm {
   readonly galeryPaths = signal<string[]>([]);
   readonly showLogisticsTab = signal<boolean>(true);
   readonly showVariantsTab = signal<boolean>(false);
+  readonly categories = signal<Category[]>([]);
+  readonly selectedCategories = signal<Set<string>>(new Set());
   fileToUpload: File | null = null;
   galeryToUpload: File[] | null = null;
 
@@ -61,11 +67,14 @@ export class ProductForm {
   }
 
   constructor() {
+    this.loadCategories();
+
     if (this.id()) {
       this.productService.getById(this.id()).subscribe({
         next: (product: Product) => {
           this.imagePath.set(product.image || '');
           this.galeryPaths.set(Array.isArray(product.gallery) ? product.gallery : []);
+          this.selectedCategories.set(new Set(product.categoria || []));
           this.patchProductInForm(product);
           this.updateTabsByProductType(product.type);
           this.updateStockQuantityState(product.manage_stock ?? false);
@@ -77,6 +86,29 @@ export class ProductForm {
 
     this.updateTabsByProductType(this.productForm.get('type')?.value ?? 'simple');
     this.updateStockQuantityState(false);
+  }
+
+  private loadCategories() {
+    this.categoryService.getAll().subscribe({
+      next: (data) => this.categories.set(data),
+      error: (err) => console.error('Error al cargar categorías:', err),
+    });
+  }
+
+  toggleCategory(categoryName: string) {
+    this.selectedCategories.update((prev) => {
+      const next = new Set(prev);
+      if (next.has(categoryName)) {
+        next.delete(categoryName);
+      } else {
+        next.add(categoryName);
+      }
+      return next;
+    });
+  }
+
+  isCategorySelected(categoryName: string): boolean {
+    return this.selectedCategories().has(categoryName);
   }
 
   onSubmit(): void {
@@ -131,10 +163,13 @@ export class ProductForm {
 
   private enviarFormularioFinal(): void {
     const rawValue = this.productForm.getRawValue();
+    const categorias = Array.from(this.selectedCategories());
+
     const payload: any = {
       ...rawValue,
       stock_quantity: rawValue.manage_stock ? Number(rawValue.stock_quantity) || 0 : 0,
       variantes: this.buildVariantsPayload(rawValue.variantes ?? []),
+      categoria: categorias,
     };
 
     if (rawValue.type !== 'simple') {
@@ -255,7 +290,7 @@ export class ProductForm {
   }
 
   private patchProductInForm(product: Product): void {
-    const { variantes, physical_attributes, gallery, ...productWithoutVariants } = product;
+    const { variantes, physical_attributes, gallery, categoria, ...productWithoutVariants } = product;
     this.productForm.patchValue({
       ...productWithoutVariants,
       gallery: Array.isArray(gallery) ? gallery : [],

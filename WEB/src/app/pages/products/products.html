@@ -6,6 +6,7 @@
       <th><input type="checkbox" id="chk_main" (change)="markAllAsChecked($event)"/></th>
       <th><a href="#">Name</a></th>
       <th><a href="#">SKU</a></th>
+      <th><a href="#">Categorias</a></th>
       <th><a href="#">Stock</a></th>
       <th><a href="#">Price</a></th>
       <th><a href="#">Actions</a></th>
@@ -22,6 +23,9 @@
         </td>
         <td>
           <p>{{ product.sku }}</p>
+        </td>
+        <td>
+          <p>{{ (product.categoria ?? []).join(', ') || 'Sin categoria' }}</p>
         </td>
         <td>
           <p>{{ product.stock_quantity }}</p>

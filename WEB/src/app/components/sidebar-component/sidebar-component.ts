@@ -31,6 +31,7 @@ export class SidebarComponent {
       children: [
         { icon: '📦', label: 'Inventario', route: '/products' },
         { icon: '🧩', label: 'Variantes', route: '/products/variants' },
+        { icon: '🏷️', label: 'Categorías', route: '/products/categories' },
       ],
     },
     { icon: '⚙️', label: 'Ajustes', route: '/settings' },

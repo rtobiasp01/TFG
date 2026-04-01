@@ -97,6 +97,7 @@ router.put("/:id", async (req, res) => {
       variantes:
         req.body.variantes !== undefined ? normalizedProduct.variantes : undefined,
       average_rating: req.body.average_rating,
+      categoria: req.body.categoria,
       custom_slug: req.body.custom_slug,
       image: req.body.image,
       gallery: req.body.gallery,

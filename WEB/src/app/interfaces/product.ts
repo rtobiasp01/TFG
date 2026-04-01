@@ -18,4 +18,5 @@ export interface Product {
   variantes?: Variant[];
   image: string;
   gallery?: string[];
+  categoria?: string[];
 }

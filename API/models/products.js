@@ -13,6 +13,7 @@ class Product {
     physical_attributes = null,
     variantes = [],
     average_rating = 0,
+    categoria = [],
     custom_slug = null,
     image = null,
     gallery = [],
@@ -36,6 +37,19 @@ class Product {
       : [];
 
     this.average_rating = Number(average_rating);
+
+    if (Array.isArray(categoria)) {
+      this.categoria = categoria
+        .map((item) => String(item).trim())
+        .filter((item) => item.length > 0);
+    } else if (typeof categoria === "string") {
+      this.categoria = categoria
+        .split(",")
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    } else {
+      this.categoria = [];
+    }
 
     this.image = image;
     this.gallery = Array.isArray(gallery) ? gallery : [];

@@ -1,0 +1,83 @@
+<div class="categories-page">
+  <header class="categories-header">
+    <h1>Gestión de Categorías</h1>
+    <button class="btn-primary" (click)="toggleForm()">
+      {{ showForm() ? 'Cancelar' : 'Crear Categoría' }}
+    </button>
+  </header>
+
+  @if (showForm()) {
+    <div class="form-card">
+      <h2>{{ editingId() ? 'Editar Categoría' : 'Nueva Categoría' }}</h2>
+      <div class="form-group">
+        <label for="name">Nombre:</label>
+        <input
+          type="text"
+          id="name"
+          [(ngModel)]="newCategory.name"
+          placeholder="Ej: Gaming, Electrónica, Ofertas"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="description">Descripción:</label>
+        <textarea
+          id="description"
+          [(ngModel)]="newCategory.description"
+          placeholder="Descripción de la categoría"
+          rows="3"
+        ></textarea>
+      </div>
+
+      <div class="form-group checkbox-group">
+        <input type="checkbox" id="visible" [(ngModel)]="newCategory.visible" />
+        <label for="visible">Visible</label>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn-primary" (click)="saveCategory()">
+          {{ editingId() ? 'Actualizar' : 'Crear' }}
+        </button>
+        <button class="btn-secondary" (click)="resetForm()">Cancelar</button>
+      </div>
+    </div>
+  }
+
+  <div class="categories-list">
+    @if (categories().length === 0) {
+      <div class="empty-state">
+        <p>No hay categorías creadas. Crea una nueva para empezar.</p>
+      </div>
+    } @else {
+      <table>
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (category of categories(); track category._id) {
+            <tr>
+              <td>
+                <strong>{{ category.name }}</strong>
+              </td>
+              <td>{{ category.description || 'Sin descripción' }}</td>
+              <td>
+                <span class="badge" [class.visible]="category.visible">
+                  {{ category.visible ? 'Visible' : 'Oculta' }}
+                </span>
+              </td>
+              <td>
+                <button class="btn-edit" (click)="editCategory(category)">Editar</button>
+                <button class="btn-delete" (click)="deleteCategory(category._id)">Eliminar</button>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    }
+  </div>
+</div>

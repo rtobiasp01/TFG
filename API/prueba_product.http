@@ -32,6 +32,7 @@ Content-Type: application/json
     "weight": 1.2
   },
   "average_rating": 4.8,
+  "categoria": ["Perifericos", "Gaming"],
   "custom_slug": null,
   "image": ""
 }
@@ -58,6 +59,7 @@ Content-Type: application/json
     "weight": 20
   },
   "average_rating": 5.0,
+  "categoria": ["Mobiliario", "Oficina"],
   "custom_slug": "oferta-silla-gamer-exclusiva"
 }
 
@@ -84,6 +86,7 @@ Content-Type: application/json
     "weight": 1.2
   },
   "average_rating": 4.8,
+  "categoria": ["Perifericos", "Gaming"],
   "custom_slug": null,
   "image": "https://imgs.search.brave.com/Mx77m-xYFwHViScH6OsDrMDnDAaCPKLCtxUMbs8AG8k/..."
 }
@@ -102,6 +105,7 @@ Content-Type: application/json
   "stock_quantity": 0,
   "manage_stock": false,
   "type": "variable",
+  "categoria": ["Ropa", "Unisex"],
   "physical_attributes": {
     "length": 30,
     "width": 20,
