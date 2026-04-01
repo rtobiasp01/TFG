@@ -195,19 +195,40 @@
 
                       <div class="form-group full-width">
                         <label>Imágenes de la variante:</label>
-                        <label [for]="'gallery-variant-' + variantIndex" class="upload-btn variant-upload-btn">
-                          Subir imágenes
-                        </label>
+                        <div class="media-actions">
+                          <label [for]="'gallery-variant-' + variantIndex" class="upload-btn variant-upload-btn">
+                            Subir imágenes
+                          </label>
+                          <button
+                            type="button"
+                            class="btn-secondary btn-small"
+                            (click)="openImagePickerModal('variant', variantIndex)"
+                          >
+                            Seleccionar desde API
+                          </button>
+                        </div>
                         <input
                           [id]="'gallery-variant-' + variantIndex"
+                          class="variant-file-input"
                           type="file"
                           (change)="onVariantImagesSelected($event, variantIndex)"
                           accept="image/*"
                           multiple
                         />
                         <div class="gallery variant-gallery">
-                          @for (img of getVariantImagePreviews(variantIndex); track $index) {
-                            <img [src]="img" alt="Variante imagen" />
+                          @for (img of getVariantImagePreviews(variantIndex); track $index; let imageIndex = $index) {
+                            <div class="gallery-item">
+                              <img [src]="img" alt="Variante imagen" />
+                              <button
+                                type="button"
+                                class="gallery-remove-btn"
+                                (click)="removeVariantImageAt(variantIndex, imageIndex)"
+                                aria-label="Quitar imagen de variante"
+                                title="Quitar imagen"
+                              >
+                                x
+                              </button>
+                            </div>
                           }
                         </div>
                       </div>
@@ -265,7 +286,12 @@
 
       <div class="image-upload-container">
         <h3>Imagen del producto</h3>
-        <label for="image" class="upload-btn">Subir imagen</label>
+        <div class="media-actions">
+          <label for="image" class="upload-btn">Subir imagen</label>
+          <button type="button" class="btn-secondary btn-small" (click)="openImagePickerModal('main')">
+            Seleccionar desde API
+          </button>
+        </div>
         <input type="file" (change)="onFileSelected($event)" id="image" accept="image/*" />
         <div class="image-preview-area">
           @if (imagePath()) {
@@ -276,14 +302,54 @@
 
       <div class="image-upload-container">
         <h3>Galeria del producto</h3>
-        <label for="gallery" class="upload-btn">Subir imagenes</label>
+        <div class="media-actions">
+          <label for="gallery" class="upload-btn">Subir imagenes</label>
+          <button type="button" class="btn-secondary btn-small" (click)="openImagePickerModal('gallery')">
+            Seleccionar desde API
+          </button>
+        </div>
         <input type="file" (change)="onGalerySelected($event)" id="gallery" accept="image/*" multiple/>
         <div class="gallery">
-          @for (img of galeryPaths(); track $index) {
-          <img [src]="img" alt="Galería producto">
-        }
+          @for (img of galeryPaths(); track $index; let imageIndex = $index) {
+            <div class="gallery-item">
+              <img [src]="img" alt="Galería producto" />
+              <button
+                type="button"
+                class="gallery-remove-btn"
+                (click)="removeGalleryImageAt(imageIndex)"
+                aria-label="Quitar imagen"
+                title="Quitar imagen"
+              >
+                x
+              </button>
+            </div>
+          }
         </div>
       </div>
+
+      @if (showImagePickerModal()) {
+        <div class="image-picker-modal-backdrop" (click)="closeImagePickerModal()">
+          <div class="image-picker-modal" (click)="$event.stopPropagation()">
+            <div class="image-picker-modal-header">
+              <h4>{{ getImagePickerTitle() }}</h4>
+              <button type="button" class="btn-danger btn-small" (click)="closeImagePickerModal()">Cerrar</button>
+            </div>
+
+            <div class="api-picker-grid modal-grid">
+              @for (file of uploadedFiles(); track file) {
+                <button
+                  type="button"
+                  class="api-picker-item"
+                  [class.selected]="isModalImageSelected(file)"
+                  (click)="onModalImageClick(file)"
+                >
+                  <img [src]="getUploadedImageUrl(file)" [alt]="file" />
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
 
       <div class="image-upload-container">
         <h3>Categorias</h3>

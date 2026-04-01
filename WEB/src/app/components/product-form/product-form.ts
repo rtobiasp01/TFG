@@ -10,6 +10,7 @@ import { Category } from '../../interfaces/category';
 import { CommonModule } from '@angular/common';
 
 const API_BASE_URL = 'http://localhost:3000';
+type ImagePickerTarget = 'main' | 'gallery' | 'variant';
 
 @Component({
   selector: 'app-product-form',
@@ -34,6 +35,10 @@ export class ProductForm {
   readonly categories = signal<Category[]>([]);
   readonly selectedCategories = signal<Set<string>>(new Set());
   readonly variantImagePreviews = signal<Map<number, string[]>>(new Map());
+  readonly uploadedFiles = signal<string[]>([]);
+  readonly showImagePickerModal = signal<boolean>(false);
+  readonly imagePickerTarget = signal<ImagePickerTarget>('main');
+  readonly activeVariantIndex = signal<number | null>(null);
   fileToUpload: File | null = null;
   galeryToUpload: File[] | null = null;
   variantFilesToUpload: Map<number, File[]> = new Map();
@@ -70,6 +75,7 @@ export class ProductForm {
 
   constructor() {
     this.loadCategories();
+    this.loadUploadedFiles();
 
     if (this.id()) {
       this.productService.getById(this.id()).subscribe({
@@ -94,6 +100,13 @@ export class ProductForm {
     this.categoryService.getAll().subscribe({
       next: (data) => this.categories.set(data),
       error: (err) => console.error('Error al cargar categorías:', err),
+    });
+  }
+
+  private loadUploadedFiles() {
+    this.uploadService.obtenerArchivos().subscribe({
+      next: (response) => this.uploadedFiles.set(response.files || []),
+      error: (err) => console.error('Error al cargar archivos subidos:', err),
     });
   }
 
@@ -138,13 +151,16 @@ export class ProductForm {
   }
 
   private subirGaleriaUnaPorUna(index = 0, uploadedPaths: string[] = []): void {
+    const selectedGalleryUrls = this.galeryPaths().filter((path) => !path.startsWith('blob:'));
+
     if (!this.galeryToUpload || this.galeryToUpload.length === 0) {
+      this.productForm.patchValue({ gallery: selectedGalleryUrls });
       this.subirVariantesImagenes();
       return;
     }
 
     if (index >= this.galeryToUpload.length) {
-      this.productForm.patchValue({ gallery: uploadedPaths });
+      this.productForm.patchValue({ gallery: [...selectedGalleryUrls, ...uploadedPaths] });
       this.subirVariantesImagenes();
       return;
     }
@@ -227,9 +243,13 @@ export class ProductForm {
   private enviarFormularioFinal(variantImagesMap: Map<number, string[]> = new Map()): void {
     const rawValue = this.productForm.getRawValue();
     const categorias = Array.from(this.selectedCategories());
+    const safeGallery = Array.isArray(rawValue.gallery)
+      ? rawValue.gallery.filter((url: string) => typeof url === 'string' && !url.startsWith('blob:'))
+      : [];
 
     const payload: any = {
       ...rawValue,
+      gallery: safeGallery,
       stock_quantity: rawValue.manage_stock ? Number(rawValue.stock_quantity) || 0 : 0,
       variantes: this.buildVariantsPayload(rawValue.variantes ?? [], variantImagesMap),
       categoria: categorias,
@@ -263,36 +283,203 @@ export class ProductForm {
       const file = input.files[0];
       this.fileToUpload = file;
       this.imagePath.set(URL.createObjectURL(file));
+      this.closeImagePickerModal();
     }
   }
 
   onGalerySelected(event: Event) {
-  const input = event.target as HTMLInputElement;
-  if (input.files && input.files.length > 0) {
-    this.galeryToUpload = Array.from(input.files);
-    
-    const previews = this.galeryToUpload.map(file => URL.createObjectURL(file));
-    this.galeryPaths.set(previews); 
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      const newFiles = Array.from(input.files);
+      const currentFiles = this.galeryToUpload ?? [];
+      this.galeryToUpload = [...currentFiles, ...newFiles];
+
+      const previews = newFiles.map((file) => URL.createObjectURL(file));
+      this.galeryPaths.update((current) => [...current, ...previews]);
+      this.closeImagePickerModal();
+    }
   }
-}
 
   onVariantImagesSelected(event: Event, variantIndex: number): void {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files.length > 0) {
-      const files = Array.from(input.files);
-      this.variantFilesToUpload.set(variantIndex, files);
+      const newFiles = Array.from(input.files);
+      const currentFiles = this.variantFilesToUpload.get(variantIndex) || [];
+      this.variantFilesToUpload.set(variantIndex, [...currentFiles, ...newFiles]);
 
-      const previews = files.map((file) => URL.createObjectURL(file));
+      const previews = newFiles.map((file) => URL.createObjectURL(file));
       this.variantImagePreviews.update((map) => {
         const newMap = new Map(map);
-        newMap.set(variantIndex, previews);
+        const currentPreviews = newMap.get(variantIndex) || [];
+        newMap.set(variantIndex, [...currentPreviews, ...previews]);
         return newMap;
       });
+
+      const existingUrls = this.getVariantImagePreviews(variantIndex).filter((url) => !url.startsWith('blob:'));
+      this.updateVariantFormImagesText(variantIndex, existingUrls);
+      this.closeImagePickerModal();
     }
   }
 
   getVariantImagePreviews(variantIndex: number): string[] {
     return this.variantImagePreviews().get(variantIndex) || [];
+  }
+
+  getUploadedImageUrl(filename: string): string {
+    return `${API_BASE_URL}/uploads/${encodeURIComponent(filename)}`;
+  }
+
+  openImagePickerModal(target: ImagePickerTarget, variantIndex: number | null = null): void {
+    this.imagePickerTarget.set(target);
+    this.activeVariantIndex.set(target === 'variant' ? variantIndex : null);
+    this.showImagePickerModal.set(true);
+  }
+
+  closeImagePickerModal(): void {
+    this.showImagePickerModal.set(false);
+    this.activeVariantIndex.set(null);
+  }
+
+  getImagePickerTitle(): string {
+    const target = this.imagePickerTarget();
+    if (target === 'main') return 'Seleccionar imagen principal';
+    if (target === 'gallery') return 'Seleccionar imágenes de la galería';
+    return `Seleccionar imágenes de la variante #${(this.activeVariantIndex() ?? 0) + 1}`;
+  }
+
+  onModalImageClick(filename: string): void {
+    const target = this.imagePickerTarget();
+    if (target === 'main') {
+      this.selectMainImageFromApi(filename);
+      return;
+    }
+
+    if (target === 'gallery') {
+      this.toggleGalleryImageFromApi(filename);
+      return;
+    }
+
+    const variantIndex = this.activeVariantIndex();
+    if (variantIndex === null) return;
+    this.toggleVariantImageFromApi(variantIndex, filename);
+  }
+
+  selectMainImageFromApi(filename: string): void {
+    const imageUrl = this.getUploadedImageUrl(filename);
+    this.fileToUpload = null;
+    this.imagePath.set(imageUrl);
+    this.productForm.patchValue({ image: imageUrl });
+    this.closeImagePickerModal();
+  }
+
+  isMainImageSelectedFromApi(filename: string): boolean {
+    return this.imagePath() === this.getUploadedImageUrl(filename);
+  }
+
+  toggleGalleryImageFromApi(filename: string): void {
+    const imageUrl = this.getUploadedImageUrl(filename);
+    const next = new Set(this.galeryPaths());
+
+    if (next.has(imageUrl)) {
+      next.delete(imageUrl);
+    } else {
+      next.add(imageUrl);
+    }
+
+    const nextArray = Array.from(next);
+    this.galeryToUpload = null;
+    this.galeryPaths.set(nextArray);
+    this.productForm.patchValue({ gallery: nextArray.filter((url) => !url.startsWith('blob:')) });
+  }
+
+  removeGalleryImageAt(index: number): void {
+    const next = this.galeryPaths().filter((_, i) => i !== index);
+    this.galeryPaths.set(next);
+    this.productForm.patchValue({ gallery: next.filter((url) => !url.startsWith('blob:')) });
+  }
+
+  isGalleryImageSelectedFromApi(filename: string): boolean {
+    const imageUrl = this.getUploadedImageUrl(filename);
+    return this.galeryPaths().includes(imageUrl);
+  }
+
+  toggleVariantImageFromApi(variantIndex: number, filename: string): void {
+    const imageUrl = this.getUploadedImageUrl(filename);
+
+    this.variantImagePreviews.update((map) => {
+      const next = new Map(map);
+      const current = next.get(variantIndex) || [];
+      const currentSet = new Set(current);
+
+      if (currentSet.has(imageUrl)) {
+        currentSet.delete(imageUrl);
+      } else {
+        currentSet.add(imageUrl);
+      }
+
+      const nextValues = Array.from(currentSet);
+      next.set(variantIndex, nextValues);
+      this.updateVariantFormImagesText(
+        variantIndex,
+        nextValues.filter((url) => !url.startsWith('blob:')),
+      );
+      return next;
+    });
+  }
+
+  isVariantImageSelectedFromApi(variantIndex: number, filename: string): boolean {
+    const imageUrl = this.getUploadedImageUrl(filename);
+    return (this.variantImagePreviews().get(variantIndex) || []).includes(imageUrl);
+  }
+
+  removeVariantImageAt(variantIndex: number, imageIndex: number): void {
+    const currentPreviews = this.getVariantImagePreviews(variantIndex);
+    if (imageIndex < 0 || imageIndex >= currentPreviews.length) return;
+
+    const updatedPreviews = currentPreviews.filter((_, idx) => idx !== imageIndex);
+
+    this.variantImagePreviews.update((map) => {
+      const next = new Map(map);
+      if (updatedPreviews.length > 0) {
+        next.set(variantIndex, updatedPreviews);
+      } else {
+        next.delete(variantIndex);
+      }
+      return next;
+    });
+
+    const files = this.variantFilesToUpload.get(variantIndex) || [];
+    if (files.length > 0) {
+      const updatedFiles = files.filter((_, idx) => idx !== imageIndex);
+      if (updatedFiles.length > 0) {
+        this.variantFilesToUpload.set(variantIndex, updatedFiles);
+      } else {
+        this.variantFilesToUpload.delete(variantIndex);
+      }
+    }
+
+    this.updateVariantFormImagesText(variantIndex, updatedPreviews.filter((url) => !url.startsWith('blob:')));
+  }
+
+  isModalImageSelected(filename: string): boolean {
+    const target = this.imagePickerTarget();
+    if (target === 'main') {
+      return this.isMainImageSelectedFromApi(filename);
+    }
+
+    if (target === 'gallery') {
+      return this.isGalleryImageSelectedFromApi(filename);
+    }
+
+    const variantIndex = this.activeVariantIndex();
+    if (variantIndex === null) return false;
+    return this.isVariantImageSelectedFromApi(variantIndex, filename);
+  }
+
+  private updateVariantFormImagesText(variantIndex: number, urls: string[]): void {
+    const variantGroup = this.variantesFormArray.at(variantIndex);
+    if (!variantGroup) return;
+    variantGroup.patchValue({ imagenes_text: urls.join(', ') });
   }
 
   onProductTypeSelected(event: Event): void {
@@ -436,7 +623,8 @@ export class ProductForm {
 
     return rawVariants.map((rawVariant, index) => {
       const uploadedImages = variantImagesMap.get(index) || [];
-      const imagenes = uploadedImages.length > 0 ? uploadedImages : this.parseImages(rawVariant.imagenes_text);
+      const existingImages = this.parseImages(rawVariant.imagenes_text).filter((url) => !url.startsWith('blob:'));
+      const imagenes = Array.from(new Set([...existingImages, ...uploadedImages]));
 
       const variantPayload: Variant = {
         ...this.buildDynamicAttributes(rawVariant.attributes ?? []),
