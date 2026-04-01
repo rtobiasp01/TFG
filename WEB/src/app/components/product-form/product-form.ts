@@ -271,7 +271,11 @@ export class ProductForm {
       next: () => {
         this.variantFilesToUpload.clear();
         this.variantImagePreviews.set(new Map());
-        this.router.navigate(['home']);
+        if (this.id()) {
+          window.location.reload();
+        } else {
+          this.router.navigate(['home']);
+        }
       },
       error: (err) => console.error('Error al guardar producto:', err),
     });
