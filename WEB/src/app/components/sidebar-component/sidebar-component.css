@@ -10,12 +10,14 @@
   --width-expanded: 268px;
   --width-collapsed: 72px;
   --transition-speed: 0.24s;
+  display: block;
+  height: 100vh;
 }
 
 .sidebar-container {
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  height: 100%;
   width: var(--width-expanded);
   background: linear-gradient(180deg, #17314a 0%, var(--sidebar-bg) 56%);
   color: var(--sidebar-text);
@@ -85,6 +87,7 @@
   padding: 0.5rem 0;
   margin: 0;
   flex-grow: 1;
+  overflow-y: auto;
 }
 
 .nav-list li {
