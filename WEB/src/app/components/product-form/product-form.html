@@ -324,32 +324,34 @@
         </div>
       </div>
 
-      <div class="image-upload-container">
-        <h3>Galeria del producto</h3>
-        <div class="media-actions">
-          <label for="gallery" class="upload-btn">Subir imagenes</label>
-          <button type="button" class="btn-secondary btn-small" (click)="openImagePickerModal('gallery')">
-            Seleccionar desde API
-          </button>
+      @if (!showVariantsTab()) {
+        <div class="image-upload-container">
+          <h3>Galeria del producto</h3>
+          <div class="media-actions">
+            <label for="gallery" class="upload-btn">Subir imagenes</label>
+            <button type="button" class="btn-secondary btn-small" (click)="openImagePickerModal('gallery')">
+              Seleccionar desde API
+            </button>
+          </div>
+          <input type="file" (change)="onGalerySelected($event)" id="gallery" accept="image/*" multiple/>
+          <div class="gallery">
+            @for (img of galeryPaths(); track $index; let imageIndex = $index) {
+              <div class="gallery-item">
+                <img [src]="img" alt="Galería producto" />
+                <button
+                  type="button"
+                  class="gallery-remove-btn"
+                  (click)="removeGalleryImageAt(imageIndex)"
+                  aria-label="Quitar imagen"
+                  title="Quitar imagen"
+                >
+                  x
+                </button>
+              </div>
+            }
+          </div>
         </div>
-        <input type="file" (change)="onGalerySelected($event)" id="gallery" accept="image/*" multiple/>
-        <div class="gallery">
-          @for (img of galeryPaths(); track $index; let imageIndex = $index) {
-            <div class="gallery-item">
-              <img [src]="img" alt="Galería producto" />
-              <button
-                type="button"
-                class="gallery-remove-btn"
-                (click)="removeGalleryImageAt(imageIndex)"
-                aria-label="Quitar imagen"
-                title="Quitar imagen"
-              >
-                x
-              </button>
-            </div>
-          }
-        </div>
-      </div>
+      }
 
       @if (showImagePickerModal()) {
         <div class="image-picker-modal-backdrop" (click)="closeImagePickerModal()">
