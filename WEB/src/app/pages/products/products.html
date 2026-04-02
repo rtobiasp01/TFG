@@ -1,5 +1,29 @@
 <h1>Lista de productos</h1>
-<button [routerLink]="['/product-form']">Agregar producto</button>
+<div class="products-toolbar">
+  <button class="btn-add" [routerLink]="['/product-form']">Agregar producto</button>
+
+  <div class="inventory-tools">
+    <span class="inventory-label">Inventario</span>
+    <input
+      #importProductsInput
+      type="file"
+      accept=".json,application/json"
+      class="hidden-file-input"
+      (change)="onImportProductsJson($event)"
+    />
+    <button
+      type="button"
+      class="btn-secondary"
+      [disabled]="importingProducts()"
+      (click)="triggerImport(importProductsInput)"
+    >
+      {{ importingProducts() ? 'Importando...' : 'Importar JSON (todos)' }}
+    </button>
+    <button type="button" class="btn-secondary" (click)="exportAllProductsToJson()">
+      Exportar JSON (todos)
+    </button>
+  </div>
+</div>
 <table>
   <thead>
     <tr>
