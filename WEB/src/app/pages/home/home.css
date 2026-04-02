@@ -1,0 +1,4 @@
+/* Reserved for home page specific widgets */
+:host {
+	display: block;
+}

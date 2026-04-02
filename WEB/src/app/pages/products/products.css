@@ -1,140 +1,122 @@
-/* --- Contenedor y Título --- */
 h1 {
-  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  color: #2d3436;
-  margin-bottom: 24px;
-  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
-/* --- Estilos de la Tabla --- */
+button[routerLink] {
+  margin-bottom: 1rem;
+  padding: 0.62rem 1rem;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #2388d1 0%, #0f6cbd 100%);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: 0 8px 20px rgba(15, 108, 189, 0.24);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+button[routerLink]:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(15, 108, 189, 0.28);
+}
+
 table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
-  background-color: #ffffff;
-  box-shadow:
-    0 10px 15px -3px rgba(0, 0, 0, 0.1),
-    0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border-radius: 12px;
+  margin-top: 0.4rem;
+  border-radius: 14px;
   overflow: hidden;
-  margin-top: 10px;
+  background: #fff;
+  border: 1px solid #dfe6f1;
+  box-shadow: 0 10px 24px rgba(10, 26, 48, 0.08);
 }
 
-/* --- Encabezados (thead) --- */
 thead {
-  background-color: #f8fafc;
+  background: #f5f8fc;
 }
 
 th {
-  color: #4a5568;
-  font-weight: 700;
-  text-transform: uppercase;
-  font-size: 0.85rem;
-  letter-spacing: 0.05em;
+  padding: 0.95rem 1rem;
   text-align: left;
-  padding: 16px;
-  border-bottom: 2px solid #edf2f7;
+  font-size: 0.74rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: #5b6b80;
+  border-bottom: 1px solid #e4ebf4;
 }
 
 th a {
-  text-decoration: none;
-  color: inherit;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: color 0.2s;
+  gap: 0.35rem;
+  color: inherit;
 }
 
 th a:hover {
-  color: #3182ce;
+  color: #0f6cbd;
 }
 
-/* --- Celdas (tbody) --- */
 td {
-  padding: 14px 16px;
+  padding: 0.88rem 1rem;
+  border-bottom: 1px solid #edf2f8;
+  font-size: 0.94rem;
+  color: #314156;
   vertical-align: middle;
-  border-bottom: 1px solid #edf2f7;
-  color: #4a5568;
-  font-size: 0.95rem;
-  padding: 16px;
 }
 
-/* Quitar el borde inferior a la última fila */
-tr:last-child td {
-  border-bottom: none;
+tbody tr:last-child td {
+  border-bottom: 0;
 }
 
-tr:hover {
-  background-color: #f7fafc;
-  transition: background-color 0.2s ease;
+tbody tr:hover {
+  background: #f9fbff;
 }
 
-/* --- Elementos de Contenido --- */
-img {
-  width: 45px;
-  height: 45px;
-  object-fit: cover;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  display: block;
-}
-
-p {
-  margin: 0;
+td p {
   font-weight: 500;
 }
 
-/* --- Checkbox --- */
 input[type='checkbox'] {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   cursor: pointer;
-  accent-color: #3182ce;
+  accent-color: #0f6cbd;
 }
 
-/* --- Enlaces de Acción --- */
 td a {
-  text-decoration: none;
-  font-size: 0.85rem;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.81rem;
   font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 6px;
-  transition: all 0.2s;
-  display: inline-block;
+  padding: 0.34rem 0.62rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
-/* Botón Editar */
-td a[routerLink],
 td a:first-of-type {
-  color: #3182ce;
-  background-color: #ebf8ff;
-  margin-right: 8px;
+  margin-right: 0.35rem;
+  color: #0f6cbd;
+  background: #e9f3fb;
 }
 
-td a[routerLink]:hover,
 td a:first-of-type:hover {
-  background-color: #3182ce;
-  color: white;
+  color: #fff;
+  background: #0f6cbd;
 }
 
-/* Botón Eliminar */
-.btn-delete,
 td a:last-of-type {
-  color: #e53e3e;
-  background-color: #fff5f5;
+  color: #c9372c;
+  background: #fdebea;
 }
 
-.btn-delete:hover,
 td a:last-of-type:hover {
-  background-color: #e53e3e;
-  color: white;
+  color: #fff;
+  background: #c9372c;
 }
 
-/* --- Estado Vacío --- */
-.empty-message {
-  text-align: center;
-  padding: 40px !important;
-  color: #a0aec0;
-  font-style: italic;
-  background-color: #fdfdfd;
+@media (max-width: 900px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
 }

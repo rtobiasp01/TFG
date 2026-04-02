@@ -1,47 +1,55 @@
 .media-page {
-	padding: 1.25rem;
+	padding: 0.2rem;
 }
 
 .media-header {
 	display: flex;
 	justify-content: space-between;
-	align-items: baseline;
-	margin-bottom: 1rem;
+	align-items: end;
+	margin-bottom: 1.2rem;
 	gap: 1rem;
 }
 
 .media-header h2 {
 	margin: 0;
-	font-size: 1.5rem;
+	font-size: 1.55rem;
 }
 
 .media-header p {
 	margin: 0;
-	color: #5c5c5c;
+	color: #5b6b80;
+	font-size: 0.94rem;
 }
 
 .empty-state {
-	border: 1px dashed #c7c7c7;
-	border-radius: 12px;
-	padding: 1.5rem;
+	border: 1px dashed #c8d6e8;
+	border-radius: 14px;
+	padding: 2rem;
 	text-align: center;
-	color: #666;
-	background: #fafafa;
+	color: #5f7088;
+	background: #f8fbff;
 }
 
 .media-grid {
 	display: grid;
-	grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-	gap: 1rem;
+	grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+	gap: 1.1rem;
 }
 
 .media-card {
 	position: relative;
 	overflow: hidden;
-	border-radius: 12px;
-	border: 1px solid #ececec;
+	border-radius: 14px;
+	border: 1px solid #dce4ef;
 	background: #fff;
 	min-height: 170px;
+	box-shadow: 0 10px 24px rgba(15, 32, 58, 0.08);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.media-card:hover {
+	transform: translateY(-3px);
+	box-shadow: 0 16px 26px rgba(15, 32, 58, 0.14);
 }
 
 .media-card img {
@@ -57,14 +65,22 @@
 	right: 0.6rem;
 	border: 0;
 	border-radius: 999px;
-	padding: 0.45rem 0.8rem;
-	font-size: 0.82rem;
+	padding: 0.4rem 0.76rem;
+	font-size: 0.76rem;
 	font-weight: 600;
 	color: #fff;
-	background: rgba(189, 34, 34, 0.92);
+	background: rgba(185, 33, 29, 0.92);
 	cursor: pointer;
+	border: 1px solid rgba(255, 255, 255, 0.24);
 }
 
 .delete-btn:hover {
-	background: rgb(161, 24, 24);
+	background: rgb(150, 27, 24);
+}
+
+@media (max-width: 700px) {
+	.media-header {
+		flex-direction: column;
+		align-items: flex-start;
+	}
 }

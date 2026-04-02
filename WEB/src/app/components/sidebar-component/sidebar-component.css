@@ -1,12 +1,12 @@
 :host {
-  --sidebar-bg: #1f2a37;
-  --sidebar-surface: #2a3746;
-  --sidebar-border: #324456;
-  --sidebar-text: #dce7f2;
-  --sidebar-text-muted: #9bb2c7;
-  --sidebar-hover: #32485f;
-  --sidebar-active: #0d77b5;
-  --sidebar-active-border: #56b4eb;
+  --sidebar-bg: #112235;
+  --sidebar-surface: #17324b;
+  --sidebar-border: #28435d;
+  --sidebar-text: #dce9f7;
+  --sidebar-text-muted: #93abc4;
+  --sidebar-hover: #244863;
+  --sidebar-active: #0f6cbd;
+  --sidebar-active-border: #64b5f6;
   --width-expanded: 268px;
   --width-collapsed: 72px;
   --transition-speed: 0.24s;
@@ -17,12 +17,12 @@
   flex-direction: column;
   height: 100vh;
   width: var(--width-expanded);
-  background: linear-gradient(180deg, #243242 0%, var(--sidebar-bg) 52%);
+  background: linear-gradient(180deg, #17314a 0%, var(--sidebar-bg) 56%);
   color: var(--sidebar-text);
   transition: width var(--transition-speed) ease;
   overflow-x: hidden;
   border-right: 1px solid var(--sidebar-border);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 4px 0 18px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), 10px 0 26px rgba(8, 22, 39, 0.28);
 }
 
 .sidebar-container.collapsed {
@@ -46,13 +46,13 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0 0.9rem;
-  min-height: 58px;
-  background-color: rgba(0, 0, 0, 0.18);
+  min-height: 62px;
+  background-color: rgba(0, 0, 0, 0.16);
   border-bottom: 1px solid var(--sidebar-border);
 }
 
 .logo-text {
-  font-size: 0.9rem;
+  font-size: 0.86rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-weight: 700;
@@ -95,13 +95,13 @@
   display: flex;
   align-items: center;
   gap: 0.65rem;
-  min-height: 42px;
+  min-height: 44px;
   padding: 0.55rem 1rem;
   color: var(--sidebar-text);
   text-decoration: none;
   font-size: 0.9rem;
   font-weight: 500;
-  border-left: 3px solid transparent;
+  border-left: 2px solid transparent;
   transition: background-color var(--transition-speed), border-color var(--transition-speed), color var(--transition-speed);
   cursor: pointer;
   white-space: nowrap;
@@ -114,7 +114,7 @@
 }
 
 .nav-item.active {
-  background-color: var(--sidebar-active);
+  background: linear-gradient(90deg, rgba(15, 108, 189, 0.2) 0%, var(--sidebar-active) 80%);
   border-left-color: var(--sidebar-active-border);
   color: #fff;
 }

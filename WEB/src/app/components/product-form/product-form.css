@@ -634,3 +634,102 @@ input:checked + .slider:before {
     grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   }
 }
+
+/* Visual polish layer */
+.info-form {
+  gap: 1.4rem;
+}
+
+.info-izquierda,
+.info-derecha {
+  background: #ffffff;
+  border: 1px solid #dde4ef;
+  border-radius: 16px;
+  box-shadow: 0 12px 26px rgba(15, 32, 58, 0.08);
+}
+
+.info-izquierda {
+  padding: 1.4rem;
+}
+
+.info-derecha {
+  background: #f8fbff;
+}
+
+.form-product-title input {
+  border-bottom-color: #d7e0ec;
+}
+
+.radio-inputs {
+  background: #edf2f8;
+  border-radius: 12px;
+  padding: 0.3rem;
+}
+
+.radio-inputs .name {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.radio input:checked + .name {
+  color: #0f6cbd;
+  box-shadow: 0 4px 14px rgba(15, 108, 189, 0.14);
+}
+
+.content input:not([type='checkbox']),
+.content textarea,
+.content select {
+  border: 1px solid #d7e0ec;
+  border-radius: 10px;
+  background: #fcfdff;
+}
+
+.content input:focus,
+.content textarea:focus,
+.content select:focus {
+  border-color: #0f6cbd;
+  box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.15);
+}
+
+.btn-primary {
+  background: linear-gradient(180deg, #2388d1 0%, #0f6cbd 100%);
+  box-shadow: 0 10px 20px rgba(15, 108, 189, 0.2);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(180deg, #1f7fc4 0%, #0d5c9f 100%);
+}
+
+.btn-secondary {
+  background: #e9f3fb;
+  color: #0f6cbd;
+}
+
+.btn-secondary:hover {
+  background: #dcebf8;
+}
+
+.btn-danger {
+  background: #fdebea;
+  color: #c9372c;
+}
+
+.btn-danger:hover {
+  background: #f9d8d5;
+}
+
+.variant-card {
+  border: 1px solid #dce5f0;
+  border-radius: 12px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.variant-card-header h4 {
+  color: #23344a;
+}
+
+.categories-checkboxes {
+  background: #fcfdff;
+  border: 1px solid #dde4ef;
+  border-radius: 12px;
+}

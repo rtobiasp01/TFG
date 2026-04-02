@@ -1,18 +1,28 @@
-/* =========================================
-   1. CONFIGURACIÓN GLOBAL (BOX SIZING)
-   ========================================= */
-/* Esto es CRUCIAL: hace que el padding y el border no aumenten
-   el tamaño ancho de los elementos. Facilita mucho el diseño. */
+:root {
+  --bg: #f3f6fb;
+  --surface: #ffffff;
+  --surface-muted: #f8fafc;
+  --text: #182230;
+  --text-muted: #5b6b80;
+  --line: #dde4ef;
+  --brand: #0f6cbd;
+  --brand-strong: #0b5aa0;
+  --danger: #c9372c;
+  --danger-soft: #fdebea;
+  --success: #1f845a;
+  --shadow-sm: 0 2px 8px rgba(16, 24, 40, 0.06);
+  --shadow-md: 0 10px 30px rgba(16, 24, 40, 0.08);
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* =========================================
-   2. RESET DE MÁRGENES Y BASE
-   ========================================= */
-/* Quitamos márgenes por defecto para tener control total */
 body,
 h1,
 h2,
@@ -29,31 +39,30 @@ ol {
   padding: 0;
 }
 
-/* Configuración base del cuerpo */
+html,
 body {
-  min-height: 100vh; /* Asegura que el body ocupe al menos toda la pantalla */
-  text-rendering: optimizeSpeed; /* Mejora la renderización */
-  line-height: 1.5; /* Altura de línea legible por defecto */
-  font-family: 'Be Vietnam Pro', sans-serif; /* Tu fuente preferida */
-  color: #333; /* Color de texto base (gris oscuro suave, mejor que negro puro) */
-  background-color: #fff;
-  -webkit-font-smoothing: antialiased; /* Suavizado de fuentes en Mac/iOS */
+  min-height: 100%;
 }
 
-/* =========================================
-   3. IMÁGENES Y MEDIA
-   ========================================= */
-/* Hacemos que las imágenes sean responsivas por defecto */
+body {
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  line-height: 1.55;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  color: var(--text);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(15, 108, 189, 0.08), transparent 36%),
+    radial-gradient(circle at 100% 100%, rgba(30, 132, 90, 0.08), transparent 34%),
+    var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
 img,
 picture {
   max-width: 100%;
-  display: block; /* Elimina el espacio blanco extraño debajo de las imágenes */
+  display: block;
 }
 
-/* =========================================
-   4. FORMULARIOS (INPUTS, BOTONES)
-   ========================================= */
-/* Por defecto, los inputs no heredan la fuente. Esto lo corrige. */
 input,
 button,
 textarea,
@@ -61,52 +70,56 @@ select {
   font: inherit;
 }
 
-/* =========================================
-   5. LISTAS
-   ========================================= */
-/* Quitamos los puntos de las listas, a menos que tengan una clase específica */
 ul,
 ol {
   list-style: none;
 }
 
-/* =========================================
-   6. TIPOGRAFÍA (SOLUCIÓN A TU PROBLEMA)
-   ========================================= */
-/* Definimos tamaños base para los encabezados para que no se vean planos */
 h1,
 h2,
 h3,
 h4 {
   font-weight: 700;
-  line-height: 1.1;
-  margin-bottom: 0.5em; /* Espacio debajo de los títulos */
+  line-height: 1.2;
+  margin-bottom: 0.55em;
+  color: var(--text);
 }
 
 h1 {
-  font-size: 2.5rem;
-}
-h2 {
-  font-size: 2rem;
-}
-h3 {
-  font-size: 1.75rem;
-}
-h4 {
-  font-size: 1.5rem;
+  font-size: clamp(1.55rem, 1.1rem + 1.3vw, 2.15rem);
 }
 
-/* Enlaces sin subrayado por defecto, pero con cursor de mano */
+h2 {
+  font-size: clamp(1.3rem, 1rem + 0.9vw, 1.75rem);
+}
+
+h3 {
+  font-size: clamp(1.12rem, 0.95rem + 0.6vw, 1.35rem);
+}
+
+h4 {
+  font-size: 1.06rem;
+}
+
 a {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
 }
 
-/* =========================================
-   7. ACCESIBILIDAD
-   ========================================= */
-/* Reduce animaciones para gente que lo prefiere en su sistema operativo */
+button {
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
+input:focus,
+textarea:focus,
+select:focus,
+button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 45%, white);
+  outline-offset: 1px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   html:focus-within {
     scroll-behavior: auto;
