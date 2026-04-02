@@ -5,7 +5,7 @@ export interface Variant {
   stock: number;
   precio_adicional: number;
   imagenes: string[];
-  attributes?: Record<string, string | number>;
+  attributes?: Record<string, string | number | (string | number)[]>;
   physical_attributes?: PhysicalAttributes | Record<string, string | number>;
-  [key: string]: string | number | string[] | PhysicalAttributes | Record<string, string | number> | undefined;
+  [key: string]: string | number | string[] | (string | number)[] | PhysicalAttributes | Record<string, string | number | (string | number)[]> | undefined;
 }

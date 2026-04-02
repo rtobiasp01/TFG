@@ -255,7 +255,7 @@ export class ProductForm {
       categoria: categorias,
     };
 
-    if (rawValue.type !== 'simple') {
+    if (rawValue.type === 'virtual') {
       payload.physical_attributes = null;
     }
 
@@ -492,7 +492,7 @@ export class ProductForm {
   }
 
   private updateTabsByProductType(type: string): void {
-    this.showLogisticsTab.set(type === 'simple');
+    this.showLogisticsTab.set(type !== 'virtual');
     this.showVariantsTab.set(type === 'variable');
 
     if (type === 'variable' && this.variantesFormArray.length === 0) {
@@ -550,8 +550,8 @@ export class ProductForm {
       return;
     }
 
-    dynamicAttributes.forEach(({ key, value }) => {
-      this.addVariantAttribute(variantIndex, key, String(value));
+    dynamicAttributes.forEach(({ key, values }) => {
+      this.addVariantAttribute(variantIndex, key, values as string[]);
     });
   }
 
@@ -585,11 +585,21 @@ export class ProductForm {
     return this.getVariantAttributesFormArray(variantIndex).controls;
   }
 
-  addVariantAttribute(variantIndex: number, key = '', value = ''): void {
+  addVariantAttribute(variantIndex: number, key = '', values: string[] = []): void {
+
+    const valuesFormArray = this.fb.array(
+      values.map((val) => this.fb.control(val || '', Validators.required))
+    );
+
+    // Si no hay valores, agregar al menos uno vacío
+    if (valuesFormArray.length === 0) {
+      valuesFormArray.push(this.fb.control('', Validators.required));
+    }
+
     this.getVariantAttributesFormArray(variantIndex).push(
       this.fb.group({
         key: [key, Validators.required],
-        value: [value, Validators.required],
+        values: valuesFormArray,
       }),
     );
   }
@@ -598,6 +608,30 @@ export class ProductForm {
     this.getVariantAttributesFormArray(variantIndex).removeAt(attributeIndex);
   }
 
+  getAttributeValuesControls(variantIndex: number, attributeIndex: number) {
+    const attribute = this.getVariantAttributesFormArray(variantIndex).at(attributeIndex);
+    if (!attribute) return [];
+    const valuesArray = attribute.get('values') as FormArray;
+    return valuesArray?.controls || [];
+  }
+
+  addValueToAttribute(variantIndex: number, attributeIndex: number): void {
+    const attribute = this.getVariantAttributesFormArray(variantIndex).at(attributeIndex);
+    if (!attribute) return;
+    const valuesArray = attribute.get('values') as FormArray;
+    if (valuesArray) {
+      valuesArray.push(this.fb.control('', Validators.required));
+    }
+  }
+
+  removeValueFromAttribute(variantIndex: number, attributeIndex: number, valueIndex: number): void {
+    const attribute = this.getVariantAttributesFormArray(variantIndex).at(attributeIndex);
+    if (!attribute) return;
+    const valuesArray = attribute.get('values') as FormArray;
+    if (valuesArray && valuesArray.length > 1) {
+      valuesArray.removeAt(valueIndex);
+    }
+  }
   private patchProductInForm(product: Product): void {
     const { variantes, physical_attributes, gallery, categoria, ...productWithoutVariants } = product;
     this.productForm.patchValue({
@@ -654,7 +688,7 @@ export class ProductForm {
     return this.variantesFormArray.at(variantIndex).get('attributes') as FormArray<FormGroup>;
   }
 
-  private extractDynamicAttributes(variant?: Variant): Array<{ key: string; value: string | number }> {
+  private extractDynamicAttributes(variant?: Variant): Array<{ key: string; values: (string | number)[] }> {
     if (!variant) {
       return [];
     }
@@ -666,22 +700,63 @@ export class ProductForm {
       'imagenes',
       'physical_attributes',
       'attributes',
+      '_id',
     ]);
 
-    const dynamicAttributes: Array<{ key: string; value: string | number }> = [];
+    const dynamicAttributes: Array<{ key: string; values: (string | number)[] }> = [];
+    const seenKeys = new Set<string>();
 
+    // Primero, procesar propiedades dinámicas del objeto variante
     Object.entries(variant).forEach(([key, value]) => {
-      if (reservedKeys.has(key) || value === null || value === undefined || typeof value === 'object') {
+      if (reservedKeys.has(key) || value === null || value === undefined) {
         return;
       }
 
-      dynamicAttributes.push({ key, value: value as string | number });
+      // Si es un tipo de objeto (pero no array), saltarse (ej: physical_attributes)
+      if (typeof value === 'object' && !Array.isArray(value)) {
+        return;
+      }
+
+      // Si es un array, agregarlo como tal
+      if (Array.isArray(value)) {
+        const cleanValues = value
+          .map((v) => String(v).trim())
+          .filter((v) => v.length > 0)
+          .map((v) => this.parseDynamicAttributeValue(v));
+        if (cleanValues.length > 0) {
+          dynamicAttributes.push({ key, values: cleanValues });
+        }
+        seenKeys.add(key);
+      } else {
+        // Si es un valor simple (string, number), agregarlo como array de un elemento
+        const cleanValue = String(value).trim();
+        if (cleanValue.length > 0) {
+          dynamicAttributes.push({ key, values: [this.parseDynamicAttributeValue(cleanValue)] });
+        }
+        seenKeys.add(key);
+      }
     });
 
-    if (variant.attributes && typeof variant.attributes === 'object') {
+    // Luego, procesar el objeto attributes si existe (para redundancia)
+    if (variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)) {
       Object.entries(variant.attributes).forEach(([key, value]) => {
-        if (key && value !== null && value !== undefined) {
-          dynamicAttributes.push({ key, value });
+        if (key && value !== null && value !== undefined && !seenKeys.has(key)) {
+          if (Array.isArray(value)) {
+            const cleanValues = value
+              .map((v) => String(v).trim())
+              .filter((v) => v.length > 0)
+              .map((v) => this.parseDynamicAttributeValue(v));
+            if (cleanValues.length > 0) {
+              dynamicAttributes.push({ key, values: cleanValues });
+            }
+            seenKeys.add(key);
+          } else {
+            const cleanValue = String(value).trim();
+            if (cleanValue.length > 0) {
+              dynamicAttributes.push({ key, values: [this.parseDynamicAttributeValue(cleanValue)] });
+            }
+            seenKeys.add(key);
+          }
         }
       });
     }
@@ -689,22 +764,41 @@ export class ProductForm {
     return dynamicAttributes;
   }
 
-  private buildDynamicAttributes(rawAttributes: any[]): Record<string, string | number> {
+  private buildDynamicAttributes(rawAttributes: any[]): Record<string, string | number | (string | number)[]> {
     if (!Array.isArray(rawAttributes)) {
       return {};
     }
 
     return rawAttributes.reduce((acc, attribute) => {
       const rawKey = String(attribute?.key ?? '').trim();
-      const rawValue = String(attribute?.value ?? '').trim();
+      const rawValues = attribute?.values;
 
-      if (!rawKey || !rawValue) {
+      if (!rawKey) {
         return acc;
       }
 
-      acc[rawKey] = this.parseDynamicAttributeValue(rawValue);
+      // Procesar valores (pueden ser array de FormControls o array de strings)
+      let valueArray: (string | number)[] = [];
+
+      if (Array.isArray(rawValues)) {
+        valueArray = rawValues
+          .map((val) => {
+            // Si es un FormControl, obtener su valor; si no, usar directamente
+            const value = val?.value !== undefined ? val.value : val;
+            return String(value).trim();
+          })
+          .filter((val) => val.length > 0)
+          .map((val) => this.parseDynamicAttributeValue(val));
+      }
+
+      if (valueArray.length === 0) {
+        return acc;
+      }
+
+      // Si solo hay un valor, guardar como string/número simple. Si hay múltiples, guardar como array
+      acc[rawKey] = valueArray.length === 1 ? valueArray[0] : valueArray;
       return acc;
-    }, {} as Record<string, string | number>);
+    }, {} as Record<string, string | number | (string | number)[]>);
   }
 
   private parseDynamicAttributeValue(value: string): string | number {

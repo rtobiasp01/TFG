@@ -134,13 +134,32 @@ class Product {
       .replace(/^-+|-+$/g, "");
 
     const attributeParts = Object.values(dynamicAttributes)
-      .map((value) =>
-        (value || "")
-          .toString()
-          .toUpperCase()
-          .replace(/[^A-Z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, ""),
-      )
+      .map((value) => {
+        let stringValue = "";
+        
+        if (Array.isArray(value)) {
+          // Si el valor es un array, convertir a string separado por guiones
+          stringValue = value
+            .map((item) => 
+              (item || "")
+                .toString()
+                .toUpperCase()
+                .replace(/[^A-Z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "")
+            )
+            .filter(Boolean)
+            .join("-");
+        } else {
+          // Si es un valor simple
+          stringValue = (value || "")
+            .toString()
+            .toUpperCase()
+            .replace(/[^A-Z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+        }
+        
+        return stringValue;
+      })
       .filter(Boolean);
 
     if (attributeParts.length === 0) {

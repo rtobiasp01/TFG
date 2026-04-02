@@ -161,12 +161,36 @@
 
                     <div class="form-grid">
                       <div class="form-group full-width">
-                        <label>Atributos de la variante (clave / valor):</label>
+                        <label>Atributos de la variante (clave / valores):</label>
                         <div formArrayName="attributes" class="variant-attributes-container">
                           @for (attribute of variantAttributesControls(variantIndex); track $index; let attrIndex = $index) {
                             <div class="variant-attribute-row" [formGroupName]="attrIndex">
                               <input type="text" formControlName="key" placeholder="Ej: color" />
-                              <input type="text" formControlName="value" placeholder="Ej: blanco" />
+                              <div class="variant-values-container">
+                                <div class="variant-values-list" [formArrayName]="'values'">
+                                  @for (value of getAttributeValuesControls(variantIndex, attrIndex); track $index; let valueIndex = $index) {
+                                    <div class="variant-value-row">
+                                      <input type="text" [formControlName]="valueIndex" placeholder="Ej: blanco" />
+                                      @if (getAttributeValuesControls(variantIndex, attrIndex).length > 1) {
+                                        <button
+                                          type="button"
+                                          class="btn-danger btn-small"
+                                          (click)="removeValueFromAttribute(variantIndex, attrIndex, valueIndex)"
+                                        >
+                                          Quitar valor
+                                        </button>
+                                      }
+                                    </div>
+                                  }
+                                </div>
+                                <button
+                                  type="button"
+                                  class="btn-secondary btn-small"
+                                  (click)="addValueToAttribute(variantIndex, attrIndex)"
+                                >
+                                  Añadir valor
+                                </button>
+                              </div>
                               <button
                                 type="button"
                                 class="btn-danger btn-small"
