@@ -13,16 +13,14 @@
         <div class="media-grid">
             @for (media of archivos(); track media) {
                 <article class="media-card">
-                    <img
-                        [src]="'http://localhost:3000/uploads/' + media"
-                        [alt]="media"
-                        loading="lazy"
-                    />
+                    <button type="button" class="media-preview" (click)="openImageModal(media)">
+                        <img [src]="getImageUrl(media)" [alt]="media" loading="lazy" />
+                    </button>
 
                     <button
                         type="button"
                         class="delete-btn"
-                        (click)="eliminarArchivo(media)"
+                        (click)="$event.stopPropagation(); eliminarArchivo(media)"
                         aria-label="Eliminar imagen"
                         title="Eliminar"
                     >
@@ -33,3 +31,19 @@
         </div>
     }
 </section>
+
+@if (showImageModal()) {
+    <div class="image-modal-backdrop" (click)="closeImageModal()">
+        <div class="image-modal" (click)="$event.stopPropagation()">
+            <button
+                type="button"
+                class="modal-close"
+                (click)="closeImageModal()"
+                aria-label="Cerrar imagen"
+            >
+                ×
+            </button>
+            <img [src]="selectedImage()" alt="Vista ampliada de la imagen" />
+        </div>
+    </div>
+}

@@ -8,6 +8,7 @@ import { CategoryService } from '../../../services/category-service';
 import { Variant } from '../../../interfaces/variant';
 import { Category } from '../../../interfaces/category';
 import { CommonModule } from '@angular/common';
+import { QuillModule } from 'ngx-quill';
 
 const API_BASE_URL = 'http://localhost:3000';
 type ImagePickerTarget = 'main' | 'gallery' | 'variant';
@@ -15,7 +16,7 @@ type ImagePickerTarget = 'main' | 'gallery' | 'variant';
 @Component({
   selector: 'app-product-form',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, QuillModule],
   templateUrl: './product-form.html',
   styleUrl: './product-form.css',
 })
@@ -39,6 +40,21 @@ export class ProductForm {
   readonly showImagePickerModal = signal<boolean>(false);
   readonly imagePickerTarget = signal<ImagePickerTarget>('main');
   readonly activeVariantIndex = signal<number | null>(null);
+  readonly descriptionModules = {
+    toolbar: '#product-description-toolbar',
+  };
+  readonly descriptionFormats = [
+    'bold',
+    'italic',
+    'underline',
+    'strike',
+    'list',
+    'bullet',
+    'header',
+    'blockquote',
+    'link',
+    'size',
+  ];
   fileToUpload: File | null = null;
   galeryToUpload: File[] | null = null;
   variantFilesToUpload: Map<number, File[]> = new Map();
@@ -243,12 +259,14 @@ export class ProductForm {
   private enviarFormularioFinal(variantImagesMap: Map<number, string[]> = new Map()): void {
     const rawValue = this.productForm.getRawValue();
     const categorias = Array.from(this.selectedCategories());
+    const sanitizedDescription = this.sanitizeRichText(rawValue.description || '');
     const safeGallery = Array.isArray(rawValue.gallery)
       ? rawValue.gallery.filter((url: string) => typeof url === 'string' && !url.startsWith('blob:'))
       : [];
 
     const payload: any = {
       ...rawValue,
+      description: sanitizedDescription,
       gallery: safeGallery,
       stock_quantity: rawValue.manage_stock ? Number(rawValue.stock_quantity) || 0 : 0,
       variantes: this.buildVariantsPayload(rawValue.variantes ?? [], variantImagesMap),
@@ -279,6 +297,57 @@ export class ProductForm {
       },
       error: (err) => console.error('Error al guardar producto:', err),
     });
+  }
+
+  private sanitizeRichText(rawHtml: string): string {
+    if (!rawHtml || typeof rawHtml !== 'string') {
+      return '';
+    }
+
+    if (typeof document === 'undefined') {
+      return rawHtml;
+    }
+
+    const container = document.createElement('div');
+    container.innerHTML = rawHtml;
+
+    container.querySelectorAll('*').forEach((node) => {
+      node.removeAttribute('style');
+
+      const classAttr = node.getAttribute('class');
+      if (!classAttr) {
+        return;
+      }
+
+      const safeClasses = classAttr
+        .split(/\s+/)
+        .filter((className) => className === 'ql-size-small' || className === 'ql-size-large' || className === 'ql-size-huge');
+
+      if (safeClasses.length > 0) {
+        node.setAttribute('class', safeClasses.join(' '));
+      } else {
+        node.removeAttribute('class');
+      }
+    });
+
+    container.querySelectorAll('span').forEach((span) => {
+      const parent = span.parentNode;
+      if (!parent) return;
+      while (span.firstChild) {
+        parent.insertBefore(span.firstChild, span);
+      }
+      parent.removeChild(span);
+    });
+
+    container.querySelectorAll('p').forEach((p) => {
+      const text = (p.textContent || '').replace(/\u00A0/g, ' ').trim();
+      const hasMedia = p.querySelector('img, video, iframe, br');
+      if (!text && !hasMedia) {
+        p.remove();
+      }
+    });
+
+    return container.innerHTML.replace(/&nbsp;/g, ' ').trim();
   }
 
   onFileSelected(event: Event): void {

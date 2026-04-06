@@ -50,6 +50,18 @@ async function getProductById(id) {
   }
 }
 
+async function getProductBySku(sku) {
+  try {
+    const db = await connectDB();
+    const collection = db.collection("products");
+
+    return await collection.findOne({ sku });
+  } catch (error) {
+    console.error("Error al obtener el producto por SKU:", error);
+    throw error;
+  }
+}
+
 async function updateProduct(id, updateData) {
   try {
     const db = await connectDB();
@@ -77,5 +89,6 @@ module.exports = {
   createProduct,
   deleteProduct,
   getProductById,
+  getProductBySku,
   updateProduct,
 };

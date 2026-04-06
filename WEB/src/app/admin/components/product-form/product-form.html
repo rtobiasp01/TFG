@@ -26,12 +26,55 @@
             <div class="form-grid">
               <div class="form-group full-width">
                 <label for="description">Descripción:</label>
-                <textarea
-                  id="description"
-                  formControlName="description"
-                  rows="4"
-                  placeholder="Descripción completa del producto"
-                ></textarea>
+                <div class="rich-text-editor product-description-editor">
+                  <div
+                    id="product-description-toolbar"
+                    class="quill-toolbar"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="$event.stopPropagation()"
+                  >
+                    <span class="ql-formats">
+                      <button type="button" class="ql-bold" title="Negrita"></button>
+                      <button type="button" class="ql-italic" title="Cursiva"></button>
+                      <button type="button" class="ql-underline" title="Subrayado"></button>
+                      <button type="button" class="ql-strike" title="Tachado"></button>
+                    </span>
+
+                    <span class="ql-formats">
+                      <select class="ql-size" title="Tamaño de texto">
+                        <option value="small"></option>
+                        <option selected></option>
+                        <option value="large"></option>
+                        <option value="huge"></option>
+                      </select>
+                    </span>
+
+                    <span class="ql-formats">
+                      <button type="button" class="ql-header" value="1" title="Título H1"></button>
+                      <button type="button" class="ql-header" value="2" title="Título H2"></button>
+                      <button type="button" class="ql-header" value="3" title="Título H3"></button>
+                      <button type="button" class="ql-list" value="ordered" title="Lista numerada"></button>
+                      <button type="button" class="ql-list" value="bullet" title="Lista con viñetas"></button>
+                      <button type="button" class="ql-blockquote" title="Cita"></button>
+                    </span>
+
+                    <span class="ql-formats">
+                      <button type="button" class="ql-link" title="Insertar enlace"></button>
+                      <button type="button" class="ql-clean" title="Limpiar formato"></button>
+                    </span>
+                  </div>
+
+                  <quill-editor
+                    id="description"
+                    formControlName="description"
+                    [modules]="descriptionModules"
+                    [formats]="descriptionFormats"
+                    theme="snow"
+                    placeholder="Descripción completa del producto"
+                    (mousedown)="$event.stopPropagation()"
+                    (click)="$event.stopPropagation()"
+                  ></quill-editor>
+                </div>
               </div>
 
               <div class="form-group full-width">

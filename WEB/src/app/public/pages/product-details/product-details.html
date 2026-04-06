@@ -1,1 +1,121 @@
-<p>product-details works!</p>
+@if (isLoading()) {
+	<section class="detail-shell">
+		<p class="state-message">Cargando producto...</p>
+	</section>
+} @else if (errorMessage()) {
+	<section class="detail-shell">
+		<p class="state-message">{{ errorMessage() }}</p>
+		<a routerLink="/inicio" class="back-link">Volver al catálogo</a>
+	</section>
+} @else if (product(); as currentProduct) {
+	<section class="detail-shell">
+		<header class="detail-topbar">
+			<a routerLink="/inicio" class="back-link">Volver al catálogo</a>
+			<p class="sku-ref">SKU base: {{ currentProduct.sku }}</p>
+		</header>
+
+		<div class="detail-grid">
+			<div class="gallery-panel">
+				<div class="main-image-frame">
+					<img [src]="mainImage()" [alt]="currentProduct.title" />
+				</div>
+
+				@if (activeGallery().length > 0) {
+					<div class="thumb-grid">
+						@for (image of activeGallery(); track image) {
+							<button
+								type="button"
+								class="thumb-btn"
+								[class.active]="isActiveImage(image)"
+								(click)="selectGalleryImage(image)"
+							>
+								<img [src]="image" [alt]="currentProduct.title" />
+							</button>
+						}
+					</div>
+				}
+			</div>
+
+			<div class="info-panel">
+				<p class="eyebrow">Ficha de producto</p>
+				<h1>{{ currentProduct.title }}</h1>
+
+				<div class="price-row">
+					<p class="price">{{ formatPrice(displayPrice()) }}</p>
+					@if (selectedVariant(); as activeVariant) {
+						<p class="variant-extra">Ajuste variante: {{ formatPrice(activeVariant.precio_adicional) }}</p>
+					}
+				</div>
+
+				<div class="stock-chip" [class.out]="displayStock() <= 0">
+					<span>{{ displayStockLabel() }}</span>
+					<span>Unidades: {{ displayStock() }}</span>
+				</div>
+
+				@if (currentProduct.short_description) {
+					<p class="short-description">{{ currentProduct.short_description }}</p>
+				}
+
+				@if (variants().length > 0) {
+					<section class="variant-section">
+						<h2>Variantes</h2>
+						<div class="variant-list">
+							@for (variant of variants(); track variant.sku || $index; let idx = $index) {
+								<button
+									type="button"
+									class="variant-btn"
+									[class.active]="isActiveVariant(idx)"
+									(click)="selectVariant(idx)"
+								>
+									<span class="variant-name">{{ getVariantLabel(variant, idx) }}</span>
+									@if (variant.sku) {
+										<span class="variant-sku">{{ variant.sku }}</span>
+									}
+								</button>
+							}
+						</div>
+
+						@if (selectedVariant(); as variantData) {
+							<div class="variant-data">
+								<p class="variant-data-title">Datos de la variante seleccionada</p>
+								<ul class="variant-attr-list">
+									@for (attr of getVariantAttributes(variantData); track attr.key) {
+										<li>
+											<strong>{{ normalizeLabel(attr.key) }}:</strong>
+											<span>{{ formatVariantValue(attr.value) }}</span>
+										</li>
+									}
+									<li>
+										<strong>SKU:</strong>
+										<span>{{ variantData.sku || '-' }}</span>
+									</li>
+									<li>
+										<strong>Stock:</strong>
+										<span>{{ variantData.stock }}</span>
+									</li>
+								</ul>
+							</div>
+						}
+					</section>
+				}
+
+				@if (hasPhysicalAttributes()) {
+					<section class="specs-section">
+						<h2>Atributos físicos</h2>
+						<div class="specs-grid">
+							<p><strong>Largo:</strong> {{ displayPhysicalAttributes()?.length }} cm</p>
+							<p><strong>Ancho:</strong> {{ displayPhysicalAttributes()?.width }} cm</p>
+							<p><strong>Alto:</strong> {{ displayPhysicalAttributes()?.height }} cm</p>
+							<p><strong>Peso:</strong> {{ displayPhysicalAttributes()?.weight }} kg</p>
+						</div>
+					</section>
+				}
+			</div>
+		</div>
+
+		<section class="description-panel">
+			<h2>Descripción completa</h2>
+			<div class="description rich-content" [innerHTML]="renderedDescription()"></div>
+		</section>
+	</section>
+}

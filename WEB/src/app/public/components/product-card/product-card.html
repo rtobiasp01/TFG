@@ -1,4 +1,8 @@
-<article class="product-card" [routerLink]="['/productos' ,productoActual.sku]">
+<article
+  class="product-card"
+  [routerLink]="['/productos', productoActual.sku]"
+  [state]="{ product: productoActual }"
+>
     <div class="product-img">
         <img src="{{ productoActual.image }}" alt="{{ productoActual.sku }}">
     </div>

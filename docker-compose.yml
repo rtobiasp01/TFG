@@ -40,6 +40,13 @@ services:
     container_name: tfg-web
     ports:
       - "4200:4200"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      CHOKIDAR_INTERVAL: 1000
+    volumes:
+      - ./WEB:/app
+      - /app/node_modules
+    command: npx ng serve --host 0.0.0.0 --port 4200 --poll 2000
     depends_on:
       - tfg-api
     networks:

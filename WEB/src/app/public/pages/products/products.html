@@ -1,7 +1,9 @@
 @if (productList().length > 0) {
-    @for (product of productList(); track product._id) {
-        <app-product-card [productoActual]="product" [routerLink]=""></app-product-card>
-    }
+    <section class="products">
+        @for (product of productList(); track product._id) {
+            <app-product-card [productoActual]="product" [routerLink]=""></app-product-card>
+        }
+    </section>
 } @else {
     <p>No hay productos</p>
 }

@@ -1,4 +1,8 @@
+@import 'quill/dist/quill.snow.css';
+
 :root {
+  --font-body: 'Manrope', 'Segoe UI', sans-serif;
+  --font-heading: 'Manrope', 'Segoe UI', sans-serif;
   --bg: #f3f6fb;
   --surface: #ffffff;
   --surface-muted: #f8fafc;
@@ -47,14 +51,56 @@ body {
 body {
   min-height: 100vh;
   text-rendering: optimizeLegibility;
-  line-height: 1.55;
-  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  line-height: 1.6;
+  font-family: var(--font-body);
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
   color: var(--text);
   background:
     radial-gradient(circle at 0% 0%, rgba(15, 108, 189, 0.08), transparent 36%),
     radial-gradient(circle at 100% 100%, rgba(30, 132, 90, 0.08), transparent 34%),
     var(--bg);
   -webkit-font-smoothing: antialiased;
+}
+
+.product-description-editor .ql-toolbar.ql-snow {
+  position: relative;
+  z-index: 5;
+  border-color: var(--line);
+  border-top-left-radius: 12px;
+  border-top-right-radius: 12px;
+  background: var(--surface-muted);
+}
+
+.product-description-editor .ql-container.ql-snow {
+  position: relative;
+  z-index: 1;
+  border-color: var(--line);
+  border-bottom-left-radius: 12px;
+  border-bottom-right-radius: 12px;
+  background: var(--surface);
+}
+
+.product-description-editor .ql-picker {
+  z-index: 6;
+}
+
+.product-description-editor .ql-picker-options {
+  z-index: 20;
+}
+
+.product-description-editor .ql-editor {
+  min-height: 220px;
+  font-family: var(--font-body);
+  font-size: 0.98rem;
+  line-height: 1.65;
+}
+
+.product-description-editor:focus-within .ql-toolbar.ql-snow,
+.product-description-editor:focus-within .ql-container.ql-snow {
+  border-color: color-mix(in srgb, var(--brand) 45%, white);
+  box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.08);
 }
 
 img,
@@ -75,12 +121,27 @@ ol {
   list-style: none;
 }
 
+.rich-content ul,
+.rich-content ol {
+  padding-left: 1.25rem;
+}
+
+.rich-content ul {
+  list-style: disc;
+}
+
+.rich-content ol {
+  list-style: decimal;
+}
+
 h1,
 h2,
 h3,
 h4 {
-  font-weight: 700;
-  line-height: 1.2;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.03em;
   margin-bottom: 0.55em;
   color: var(--text);
 }
@@ -98,7 +159,28 @@ h3 {
 }
 
 h4 {
-  font-size: 1.06rem;
+  font-size: 1.04rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+p,
+li,
+label,
+input,
+textarea,
+select,
+button {
+  font-family: var(--font-body);
+}
+
+strong {
+  font-weight: 700;
+}
+
+small,
+.text-muted {
+  color: var(--text-muted);
 }
 
 a {

@@ -11,15 +11,36 @@ export class Media {
   private uploadService: UploadService = inject(UploadService);
 
   readonly archivos = signal<string[]>([]);
+  readonly selectedImage = signal<string>('');
+  readonly showImageModal = signal<boolean>(false);
+
+  readonly uploadBaseUrl = 'http://localhost:3000/uploads/';
 
   constructor() {
     this.cargarArchivos();
+  }
+
+  getImageUrl(filename: string): string {
+    return `${this.uploadBaseUrl}${encodeURIComponent(filename)}`;
+  }
+
+  openImageModal(filename: string): void {
+    this.selectedImage.set(this.getImageUrl(filename));
+    this.showImageModal.set(true);
+  }
+
+  closeImageModal(): void {
+    this.showImageModal.set(false);
   }
 
   eliminarArchivo(filename: string) {
     this.uploadService.eliminarArchivo(filename).subscribe({
       next: () => {
         this.archivos.update((items) => items.filter((item) => item !== filename));
+        if (this.selectedImage().endsWith(encodeURIComponent(filename))) {
+          this.closeImageModal();
+          this.selectedImage.set('');
+        }
       },
       error: (error) => {
         console.error('Error al eliminar archivo:', error);

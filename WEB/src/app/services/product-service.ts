@@ -19,6 +19,10 @@ export class ProductService {
     return this.http.get<Product>(`${this.API_URL}/${id}`);
   }
 
+  getBySku(sku: string) {
+    return this.http.get<Product>(`${this.API_URL}/sku/${encodeURIComponent(sku)}`);
+  }
+
   create(product: any) {
     return this.http.post<Product>(this.API_URL, product);
   }

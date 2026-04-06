@@ -26,6 +26,21 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+router.get("/sku/:sku", async (req, res) => {
+  try {
+    const { sku } = req.params;
+    const product = await productService.getProductBySku(sku);
+
+    if (!product) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener producto" });
+  }
+});
+
 router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
