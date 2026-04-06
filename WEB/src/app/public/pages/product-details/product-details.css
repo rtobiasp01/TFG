@@ -159,89 +159,70 @@
 	color: var(--text-muted);
 }
 
-.variant-section,
-.specs-section {
+.variant-section {
 	border-top: 1px solid var(--line);
 	padding-top: 1rem;
 	margin-top: 1rem;
 }
 
+.variant-pickers {
+	display: grid;
+	gap: 0.75rem;
+	margin-bottom: 1rem;
+}
+
+.picker-group {
+	display: grid;
+	gap: 0.35rem;
+}
+
+.picker-label {
+	font-size: 0.8rem;
+	font-weight: 700;
+	color: var(--text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.picker-options {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.45rem;
+}
+
+.picker-option {
+	padding: 0.42rem 0.68rem;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: var(--surface-muted);
+	font-size: 0.86rem;
+	font-weight: 600;
+	color: var(--text);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.picker-option:hover:not(:disabled) {
+	border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+	transform: translateY(-1px);
+}
+
+.picker-option.active {
+	background: color-mix(in srgb, var(--brand) 12%, white);
+	border-color: var(--brand);
+	color: var(--brand-strong);
+}
+
+.picker-option:disabled {
+	opacity: 0.42;
+	cursor: not-allowed;
+	text-decoration: line-through;
+}
+
 .variant-section h2,
-.specs-section h2,
 .description-panel h2 {
 	font-size: 1.05rem;
 	margin-bottom: 0.7rem;
-}
-
-.variant-list {
-	display: grid;
-	gap: 0.55rem;
-}
-
-.variant-btn {
-	border: 1px solid var(--line);
-	background: var(--surface-muted);
-	padding: 0.6rem 0.7rem;
-	border-radius: 10px;
-	text-align: left;
-	cursor: pointer;
-	display: flex;
-	flex-direction: column;
-	gap: 0.2rem;
-	transition: border-color 0.2s ease, background 0.2s ease;
-}
-
-.variant-btn:hover {
-	border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
-}
-
-.variant-btn.active {
-	border-color: var(--brand);
-	background: color-mix(in srgb, var(--brand) 10%, white);
-}
-
-.variant-name {
-	font-weight: 700;
-	color: var(--text);
-}
-
-.variant-sku {
-	font-size: 0.8rem;
-	color: var(--text-muted);
-	word-break: break-all;
-}
-
-.variant-data {
-	margin-top: 0.7rem;
-	padding: 0.8rem;
-	border: 1px solid var(--line);
-	border-radius: 12px;
-	background: linear-gradient(180deg, #f9fbff 0%, #f4f7fb 100%);
-}
-
-.variant-data-title {
-	font-weight: 700;
-	font-size: 0.92rem;
-	margin-bottom: 0.45rem;
-}
-
-.variant-attr-list {
-	display: grid;
-	gap: 0.33rem;
-	font-size: 0.92rem;
-}
-
-.variant-attr-list li {
-	display: flex;
-	gap: 0.4rem;
-	align-items: baseline;
-}
-
-.specs-grid {
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 0.5rem 0.8rem;
-	font-size: 0.92rem;
 }
 
 .description-panel {
@@ -307,9 +288,5 @@
 
 	.main-image-frame img {
 		aspect-ratio: 4 / 4.6;
-	}
-
-	.specs-grid {
-		grid-template-columns: 1fr;
 	}
 }

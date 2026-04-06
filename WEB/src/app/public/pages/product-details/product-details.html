@@ -58,56 +58,27 @@
 
 				@if (variants().length > 0) {
 					<section class="variant-section">
-						<h2>Variantes</h2>
-						<div class="variant-list">
-							@for (variant of variants(); track variant.sku || $index; let idx = $index) {
-								<button
-									type="button"
-									class="variant-btn"
-									[class.active]="isActiveVariant(idx)"
-									(click)="selectVariant(idx)"
-								>
-									<span class="variant-name">{{ getVariantLabel(variant, idx) }}</span>
-									@if (variant.sku) {
-										<span class="variant-sku">{{ variant.sku }}</span>
-									}
-								</button>
-							}
-						</div>
-
-						@if (selectedVariant(); as variantData) {
-							<div class="variant-data">
-								<p class="variant-data-title">Datos de la variante seleccionada</p>
-								<ul class="variant-attr-list">
-									@for (attr of getVariantAttributes(variantData); track attr.key) {
-										<li>
-											<strong>{{ normalizeLabel(attr.key) }}:</strong>
-											<span>{{ formatVariantValue(attr.value) }}</span>
-										</li>
-									}
-									<li>
-										<strong>SKU:</strong>
-										<span>{{ variantData.sku || '-' }}</span>
-									</li>
-									<li>
-										<strong>Stock:</strong>
-										<span>{{ variantData.stock }}</span>
-									</li>
-								</ul>
+						@if (variantOptionGroups().length > 0) {
+							<div class="variant-pickers">
+								@for (group of variantOptionGroups(); track group.key) {
+									<div class="picker-group">
+										<p class="picker-label">{{ group.label }}</p>
+										<div class="picker-options">
+											@for (option of getVisibleAttributeOptions(group.key); track option) {
+												<button
+													type="button"
+													class="picker-option"
+													[class.active]="isAttributeSelected(group.key, option)"
+													(click)="selectAttributeOption(group.key, option)"
+												>
+													{{ option }}
+												</button>
+											}
+										</div>
+									</div>
+								}
 							</div>
 						}
-					</section>
-				}
-
-				@if (hasPhysicalAttributes()) {
-					<section class="specs-section">
-						<h2>Atributos físicos</h2>
-						<div class="specs-grid">
-							<p><strong>Largo:</strong> {{ displayPhysicalAttributes()?.length }} cm</p>
-							<p><strong>Ancho:</strong> {{ displayPhysicalAttributes()?.width }} cm</p>
-							<p><strong>Alto:</strong> {{ displayPhysicalAttributes()?.height }} cm</p>
-							<p><strong>Peso:</strong> {{ displayPhysicalAttributes()?.weight }} kg</p>
-						</div>
 					</section>
 				}
 			</div>

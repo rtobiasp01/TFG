@@ -6,6 +6,12 @@ import { Product } from '../../../interfaces/product';
 import { Variant } from '../../../interfaces/variant';
 import { ProductService } from '../../../services/product-service';
 
+type VariantOptionGroup = {
+  key: string;
+  label: string;
+  options: string[];
+};
+
 @Component({
   selector: 'app-product-details',
   standalone: true,
@@ -31,6 +37,7 @@ export class ProductDetails {
   readonly errorMessage = signal<string>('');
   readonly selectedVariantIndex = signal<number>(0);
   readonly selectedImage = signal<string>('');
+  readonly selectedAttributeValues = signal<Record<string, string>>({});
 
   readonly variants = computed(() => this.product()?.variantes ?? []);
   readonly selectedVariant = computed<Variant | null>(() => {
@@ -41,6 +48,38 @@ export class ProductDetails {
 
     const variantIndex = this.selectedVariantIndex();
     return allVariants[variantIndex] ?? allVariants[0];
+  });
+
+  readonly variantOptionGroups = computed<VariantOptionGroup[]>(() => {
+    const allVariants = this.variants();
+    if (allVariants.length === 0) {
+      return [];
+    }
+
+    const optionsByKey = new Map<string, Set<string>>();
+
+    allVariants.forEach((variant) => {
+      const attrs = this.getVariantAttributes(variant);
+      attrs.forEach(({ key, value }) => {
+        const values = this.toComparableValues(value);
+        if (values.length === 0) {
+          return;
+        }
+
+        if (!optionsByKey.has(key)) {
+          optionsByKey.set(key, new Set<string>());
+        }
+
+        const target = optionsByKey.get(key);
+        values.forEach((option) => target?.add(option));
+      });
+    });
+
+    return Array.from(optionsByKey.entries()).map(([key, values]) => ({
+      key,
+      label: this.normalizeLabel(key),
+      options: Array.from(values),
+    }));
   });
 
   readonly activeGallery = computed<string[]>(() => {
@@ -156,8 +195,40 @@ export class ProductDetails {
     }
 
     this.selectedVariantIndex.set(index);
+    this.selectedAttributeValues.set(this.buildSelectionFromVariant(allVariants[index]));
     const nextImage = allVariants[index]?.imagenes?.[0] || this.product()?.image || '';
     this.selectedImage.set(nextImage);
+  }
+
+  selectAttributeOption(attributeKey: string, option: string): void {
+    this.selectedAttributeValues.update((current) => ({
+      ...current,
+      [attributeKey]: option,
+    }));
+
+    this.selectVariantByAttributes();
+  }
+
+  isAttributeSelected(attributeKey: string, option: string): boolean {
+    return this.selectedAttributeValues()[attributeKey] === option;
+  }
+
+  getVisibleAttributeOptions(attributeKey: string): string[] {
+    const group = this.variantOptionGroups().find((item) => item.key === attributeKey);
+    if (!group) {
+      return [];
+    }
+
+    const selectionWithoutCurrentKey = this.selectionWithoutKey(this.selectedAttributeValues(), attributeKey);
+
+    return group.options.filter((option) => {
+      const probeSelection = {
+        ...selectionWithoutCurrentKey,
+        [attributeKey]: option,
+      };
+
+      return this.variants().some((variant) => this.variantMatchesSelection(variant, probeSelection));
+    });
   }
 
   selectGalleryImage(imageUrl: string): void {
@@ -235,7 +306,10 @@ export class ProductDetails {
     this.product.set(product);
     this.selectedVariantIndex.set(0);
 
-    const variantFirstImage = product.variantes?.[0]?.imagenes?.[0];
+    const firstVariant = product.variantes?.[0];
+    this.selectedAttributeValues.set(firstVariant ? this.buildSelectionFromVariant(firstVariant) : {});
+
+    const variantFirstImage = firstVariant?.imagenes?.[0];
     const productFirstImage = product.image || product.gallery?.[0] || '';
     this.selectedImage.set(variantFirstImage || productFirstImage);
   }
@@ -248,6 +322,79 @@ export class ProductDetails {
     return Object.entries(source)
       .filter(([key, value]) => !this.variantReservedKeys.has(key) && value !== null && value !== undefined)
       .map(([key, value]) => ({ key, value }));
+  }
+
+  private selectVariantByAttributes(): void {
+    const selection = this.selectedAttributeValues();
+    const allVariants = this.variants();
+    if (allVariants.length === 0) {
+      return;
+    }
+
+    const nextIndex = allVariants.findIndex((variant) => this.variantMatchesSelection(variant, selection));
+    if (nextIndex < 0) {
+      return;
+    }
+
+    this.selectedVariantIndex.set(nextIndex);
+    const nextImage = allVariants[nextIndex]?.imagenes?.[0] || this.product()?.image || '';
+    this.selectedImage.set(nextImage);
+  }
+
+  private buildSelectionFromVariant(variant: Variant): Record<string, string> {
+    const selection: Record<string, string> = {};
+    this.getVariantAttributes(variant).forEach(({ key, value }) => {
+      const values = this.toComparableValues(value);
+      if (values.length > 0) {
+        selection[key] = values[0];
+      }
+    });
+    return selection;
+  }
+
+  private variantMatchesSelection(variant: Variant, selection: Record<string, string>): boolean {
+    const attrs = this.getVariantAttributes(variant);
+    const byKey = new Map<string, string[]>();
+
+    attrs.forEach(({ key, value }) => {
+      byKey.set(key, this.toComparableValues(value));
+    });
+
+    return Object.entries(selection).every(([key, expected]) => {
+      const candidateValues = byKey.get(key);
+      if (!candidateValues || candidateValues.length === 0) {
+        return false;
+      }
+
+      return candidateValues.includes(expected);
+    });
+  }
+
+  private selectionWithoutKey(selection: Record<string, string>, keyToExclude: string): Record<string, string> {
+    const next: Record<string, string> = {};
+
+    Object.entries(selection).forEach(([key, value]) => {
+      if (key !== keyToExclude) {
+        next[key] = value;
+      }
+    });
+
+    return next;
+  }
+
+  private toComparableValues(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => String(item).trim())
+        .filter((item) => item.length > 0);
+    }
+
+    if (value === null || value === undefined) {
+      return [];
+    }
+
+    const single = String(value).trim();
+    return single ? [single] : [];
   }
 
   private isPhysicalAttributes(value: unknown): value is PhysicalAttributes {
