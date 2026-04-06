@@ -23,24 +23,25 @@ export class SidebarComponent {
   openMenus = signal<Set<string>>(new Set());
 
   menuItems: MenuItem[] = [
-    { icon: '🏠', label: 'Inicio', route: '/home' },
-    { icon: '🖼️', label: 'Media', route: '/media' },
+    { icon: '🏠', label: 'Home', route: '/admin/home' },
+    { icon: '🏠', label: 'Inicio publica', route: '/inicio' },
+    { icon: '🖼️', label: 'Media', route: '/admin/media' },
     {
       icon: '📊',
       label: 'Productos',
       children: [
-        { icon: '📦', label: 'Inventario', route: '/products' },
-        { icon: '🧩', label: 'Variantes', route: '/products/variants' },
-        { icon: '🏷️', label: 'Categorías', route: '/products/categories' },
+        { icon: '📦', label: 'Inventario', route: '/admin/products' },
+        { icon: '🧩', label: 'Variantes', route: '/admin/products/variants' },
+        { icon: '🏷️', label: 'Categorías', route: '/admin/products/categories' },
       ],
     },
-    { icon: '⚙️', label: 'Ajustes', route: '/settings' },
+    { icon: '⚙️', label: 'Ajustes', route: '/admin/settings' },
     {
       icon: '👤',
       label: 'Perfil',
       children: [
-        { icon: '📝', label: 'Mis datos', route: '/profile/edit' },
-        { icon: '🔒', label: 'Seguridad', route: '/profile/security' },
+        { icon: '📝', label: 'Mis datos', route: '/admin/profile/edit' },
+        { icon: '🔒', label: 'Seguridad', route: '/admin/profile/security' },
       ],
     },
   ];

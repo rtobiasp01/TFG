@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { ProductService } from '../../services/product-service';
-import { Product } from '../../interfaces/product';
-import { Variant } from '../../interfaces/variant';
+import { ProductService } from '../../../services/product-service';
+import { Product } from '../../../interfaces/product';
+import { Variant } from '../../../interfaces/variant';
 
 interface VariantRow {
   product_id: string;

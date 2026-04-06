@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { UploadService } from '../../services/upload-service';
+import { UploadService } from '../../../services/upload-service';
 
 @Component({
   selector: 'app-media',

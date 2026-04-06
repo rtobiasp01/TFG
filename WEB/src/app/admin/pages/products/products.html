@@ -1,6 +1,6 @@
 <h1>Lista de productos</h1>
 <div class="products-toolbar">
-  <button class="btn-add" [routerLink]="['/product-form']">Agregar producto</button>
+  <button class="btn-add" [routerLink]="['/admin/product-form']">Agregar producto</button>
 
   <div class="inventory-tools">
     <span class="inventory-label">Inventario</span>
@@ -58,7 +58,7 @@
           <p>{{ product.price | currency: 'EUR' }}</p>
         </td>
         <td>
-          <a [routerLink]="['/product-form', product._id]">Editar</a>
+          <a [routerLink]="['/admin/product-form', product._id]">Editar</a>
           <a (click)="deleteProduct(product._id)">Eliminar</a>
         </td>
       </tr>

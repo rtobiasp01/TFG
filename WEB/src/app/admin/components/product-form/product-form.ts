@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { ProductService } from '../../services/product-service';
+import { ProductService } from '../../../services/product-service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Product } from '../../interfaces/product';
-import { UploadService } from '../../services/upload-service';
-import { CategoryService } from '../../services/category-service';
-import { Variant } from '../../interfaces/variant';
-import { Category } from '../../interfaces/category';
+import { Product } from '../../../interfaces/product';
+import { UploadService } from '../../../services/upload-service';
+import { CategoryService } from '../../../services/category-service';
+import { Variant } from '../../../interfaces/variant';
+import { Category } from '../../../interfaces/category';
 import { CommonModule } from '@angular/common';
 
 const API_BASE_URL = 'http://localhost:3000';
@@ -274,7 +274,7 @@ export class ProductForm {
         if (this.id()) {
           window.location.reload();
         } else {
-          this.router.navigate(['home']);
+          this.router.navigate(['admin/home']);
         }
       },
       error: (err) => console.error('Error al guardar producto:', err),

@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { ProductService } from '../../services/product-service';
+import { ProductService } from '../../../services/product-service';
 import { RouterLink } from '@angular/router';
-import { Product } from '../../interfaces/product';
+import { Product } from '../../../interfaces/product';
 import { CurrencyPipe } from '@angular/common';
 import { forkJoin } from 'rxjs';
 

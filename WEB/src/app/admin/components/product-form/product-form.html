@@ -381,7 +381,7 @@
         <h3>Categorias</h3>
         <div class="categories-checkboxes">
           @if (categories().length === 0) {
-            <p class="no-categories">No hay categorías disponibles. <a href="/products/categories">Crear una categoría</a></p>
+            <p class="no-categories">No hay categorías disponibles. <a href="/admin/products/categories">Crear una categoría</a></p>
           } @else {
             <div class="checkbox-group">
               @for (category of categories(); track category._id) {

@@ -1,41 +1,48 @@
 import { Routes } from '@angular/router';
-import { Home } from './pages/home/home';
-import { ProductForm } from './components/product-form/product-form';
-import { Products } from './pages/products/products';
-import { Variants } from './pages/variants/variants';
-import { Media } from './pages/media/media';import { Categories } from './pages/categories/categories';
+import { Home } from './admin/pages/home/home';
+import { ProductForm } from './admin/components/product-form/product-form';
+import { Products } from './admin/pages/products/products';
+import { Products as ProductsPublic } from './public/pages/products/products';
+import { Variants } from './admin/pages/variants/variants';
+import { Media } from './admin/pages/media/media';
+import { Categories } from './admin/pages/categories/categories';
+
 export const routes: Routes = [
   {
-    path: 'home',
+    path: 'admin/home',
     component: Home,
   },
   {
-    path: 'products',
+    path: 'admin/products',
     component: Products,
   },
   {
-    path: 'products/variants',
+    path: 'admin/products/variants',
     component: Variants,
   },
   {
-    path: 'products/categories',
+    path: 'admin/products/categories',
     component: Categories,
   },
   {
-    path: 'product-form/:id',
+    path: 'admin/product-form/:id',
     component: ProductForm,
   },
   {
-    path: 'product-form',
+    path: 'admin/product-form',
     component: ProductForm,
   },
   {
     path: '',
-    redirectTo: 'home',
+    redirectTo: 'admin/home',
     pathMatch: 'full',
   },
   {
-    path: 'media',
+    path: 'admin/media',
     component: Media,
+  },
+  {
+    path: 'inicio',
+    component: ProductsPublic,
   }
 ];

@@ -1,8 +1,8 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { CategoryService } from '../../services/category-service';
-import { Category } from '../../interfaces/category';
+import { CategoryService } from '../../../services/category-service';
+import { Category } from '../../../interfaces/category';
 
 @Component({
   selector: 'app-categories',
