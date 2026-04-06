@@ -8,6 +8,7 @@ import { Products as ProductsPublic } from './public/pages/products/products';
 import { Variants } from './admin/pages/variants/variants';
 import { Media } from './admin/pages/media/media';
 import { Categories } from './admin/pages/categories/categories';
+import { ProductDetails } from './public/pages/product-details/product-details';
 
 export const routes: Routes = [
   {
@@ -56,6 +57,10 @@ export const routes: Routes = [
       {
         path: 'inicio',
         component: ProductsPublic,
+      },
+      {
+        path: 'productos/:sku',
+        component: ProductDetails
       },
       {
         path: '',

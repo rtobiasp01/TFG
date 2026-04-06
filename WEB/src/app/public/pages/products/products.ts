@@ -2,10 +2,11 @@ import { Component, inject, signal } from '@angular/core';
 import { ProductService } from '../../../services/product-service';
 import { Product } from '../../../interfaces/product';
 import { ProductCard } from '../../components/product-card/product-card';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-products',
-  imports: [ProductCard],
+  imports: [ProductCard, RouterLink],
   templateUrl: './products.html',
   styleUrl: './products.css',
 })
