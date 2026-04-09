@@ -10,7 +10,7 @@ interface VariantRow {
   product_sku: string;
   variant_sku: string;
   attributes: string;
-  stock: number;
+  stock_quantity: number;
   precio_adicional: number;
   precio_final: number;
 }
@@ -55,7 +55,7 @@ export class Variants {
           product_sku: product.sku,
           variant_sku: variant.sku || 'AUTO',
           attributes: this.formatVariantAttributes(variant),
-          stock: Number(variant.stock) || 0,
+          stock_quantity: Number(variant.stock_quantity ?? (variant as any).stock) || 0,
           precio_adicional: additionalPrice,
           precio_final: basePrice + additionalPrice,
         };
@@ -66,6 +66,7 @@ export class Variants {
   private formatVariantAttributes(variant: Variant): string {
     const reservedKeys = new Set([
       'sku',
+      'stock_quantity',
       'stock',
       'precio_adicional',
       'imagenes',

@@ -31,6 +31,28 @@ export class ProductService {
     return this.http.put<Product>(`${this.API_URL}/${id}`, product);
   }
 
+  validateVariantStock(payload: {
+    product_id?: string;
+    product_sku?: string;
+    variant_sku?: string;
+    color?: string;
+    talla?: string | number;
+    quantity?: number;
+  }) {
+    return this.http.post<any>(`${this.API_URL}/validate-stock`, payload);
+  }
+
+  decrementVariantStock(payload: {
+    product_id?: string;
+    product_sku?: string;
+    variant_sku?: string;
+    color?: string;
+    talla?: string | number;
+    quantity?: number;
+  }) {
+    return this.http.post<any>(`${this.API_URL}/decrement-stock`, payload);
+  }
+
   delete(id: string) {
     return this.http.delete<Product>(`${this.API_URL}/${id}`);
   }

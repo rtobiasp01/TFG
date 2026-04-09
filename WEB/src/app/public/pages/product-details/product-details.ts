@@ -25,6 +25,7 @@ export class ProductDetails {
   private readonly variantReservedKeys = new Set([
     '_id',
     'sku',
+    'stock_quantity',
     'stock',
     'precio_adicional',
     'imagenes',
@@ -36,11 +37,29 @@ export class ProductDetails {
   readonly isLoading = signal<boolean>(true);
   readonly errorMessage = signal<string>('');
   readonly selectedVariantIndex = signal<number>(0);
+  readonly selectedColor = signal<string>('');
+  readonly selectedSize = signal<string>('');
   readonly selectedImage = signal<string>('');
   readonly selectedAttributeValues = signal<Record<string, string>>({});
 
   readonly variants = computed(() => this.product()?.variantes ?? []);
   readonly selectedVariant = computed<Variant | null>(() => {
+    const color = this.selectedColor().toLowerCase();
+    const size = this.selectedSize().toLowerCase();
+    if (color || size) {
+      const bySelection = this.variants().find((variant) => {
+        const variantColor = this.readVariantField(variant, 'color');
+        const variantSize = this.readVariantField(variant, 'talla');
+        const colorMatches = !color || variantColor.toLowerCase() === color;
+        const sizeMatches = !size || variantSize.toLowerCase() === size;
+        return colorMatches && sizeMatches;
+      });
+
+      if (bySelection) {
+        return bySelection;
+      }
+    }
+
     const allVariants = this.variants();
     if (allVariants.length === 0) {
       return null;
@@ -48,6 +67,27 @@ export class ProductDetails {
 
     const variantIndex = this.selectedVariantIndex();
     return allVariants[variantIndex] ?? allVariants[0];
+  });
+
+  readonly availableColors = computed<string[]>(() => {
+    const colors = this.variants()
+      .map((variant) => this.readVariantField(variant, 'color'))
+      .filter((value) => value.length > 0);
+    return Array.from(new Set(colors));
+  });
+
+  readonly availableSizes = computed<string[]>(() => {
+    const selectedColor = this.selectedColor().toLowerCase();
+    const candidates = this.variants().filter((variant) => {
+      if (!selectedColor) return true;
+      return this.readVariantField(variant, 'color').toLowerCase() === selectedColor;
+    });
+
+    const sizes = candidates
+      .map((variant) => this.readVariantField(variant, 'talla'))
+      .filter((value) => value.length > 0);
+
+    return Array.from(new Set(sizes));
   });
 
   readonly variantOptionGroups = computed<VariantOptionGroup[]>(() => {
@@ -121,7 +161,7 @@ export class ProductDetails {
   readonly displayStock = computed<number>(() => {
     const selectedVariant = this.selectedVariant();
     if (selectedVariant) {
-      return Number(selectedVariant.stock ?? 0);
+      return Number(selectedVariant.stock_quantity ?? (selectedVariant as any).stock ?? 0);
     }
     return Number(this.product()?.stock_quantity ?? 0);
   });
@@ -195,9 +235,33 @@ export class ProductDetails {
     }
 
     this.selectedVariantIndex.set(index);
+    this.selectedColor.set(this.readVariantField(allVariants[index], 'color'));
+    this.selectedSize.set(this.readVariantField(allVariants[index], 'talla'));
     this.selectedAttributeValues.set(this.buildSelectionFromVariant(allVariants[index]));
     const nextImage = allVariants[index]?.imagenes?.[0] || this.product()?.image || '';
     this.selectedImage.set(nextImage);
+  }
+
+  selectColor(color: string): void {
+    this.selectedColor.set(color);
+    const sizesForColor = this.availableSizes();
+    if (sizesForColor.length > 0 && !sizesForColor.includes(this.selectedSize())) {
+      this.selectedSize.set(sizesForColor[0]);
+    }
+    this.syncSelectedVariantWithColorAndSize();
+  }
+
+  selectSize(size: string): void {
+    this.selectedSize.set(size);
+    this.syncSelectedVariantWithColorAndSize();
+  }
+
+  isColorSelected(color: string): boolean {
+    return this.selectedColor().toLowerCase() === color.toLowerCase();
+  }
+
+  isSizeSelected(size: string): boolean {
+    return this.selectedSize().toLowerCase() === size.toLowerCase();
   }
 
   selectAttributeOption(attributeKey: string, option: string): void {
@@ -307,11 +371,60 @@ export class ProductDetails {
     this.selectedVariantIndex.set(0);
 
     const firstVariant = product.variantes?.[0];
+    this.selectedColor.set(this.readVariantField(firstVariant, 'color'));
+    this.selectedSize.set(this.readVariantField(firstVariant, 'talla'));
     this.selectedAttributeValues.set(firstVariant ? this.buildSelectionFromVariant(firstVariant) : {});
 
     const variantFirstImage = firstVariant?.imagenes?.[0];
     const productFirstImage = product.image || product.gallery?.[0] || '';
     this.selectedImage.set(variantFirstImage || productFirstImage);
+  }
+
+  private readVariantField(variant: Variant | undefined | null, key: string): string {
+    if (!variant) {
+      return '';
+    }
+
+    const fromAttributes = variant.attributes && typeof variant.attributes === 'object'
+      ? (variant.attributes as Record<string, unknown>)[key]
+      : undefined;
+
+    const fallbackValue = (variant as any)[key];
+    const resolved = fromAttributes ?? fallbackValue;
+
+    if (resolved === undefined || resolved === null) {
+      return '';
+    }
+
+    return String(resolved);
+  }
+
+  private syncSelectedVariantWithColorAndSize(): void {
+    const selectedColor = this.selectedColor().toLowerCase();
+    const selectedSize = this.selectedSize().toLowerCase();
+    const allVariants = this.variants();
+
+    if (allVariants.length === 0) {
+      return;
+    }
+
+    const nextIndex = allVariants.findIndex((variant) => {
+      const variantColor = this.readVariantField(variant, 'color').toLowerCase();
+      const variantSize = this.readVariantField(variant, 'talla').toLowerCase();
+      const colorMatches = !selectedColor || variantColor === selectedColor;
+      const sizeMatches = !selectedSize || variantSize === selectedSize;
+      return colorMatches && sizeMatches;
+    });
+
+    if (nextIndex < 0) {
+      return;
+    }
+
+    const nextVariant = allVariants[nextIndex];
+    this.selectedVariantIndex.set(nextIndex);
+    this.selectedAttributeValues.set(this.buildSelectionFromVariant(nextVariant));
+    const nextImage = nextVariant?.imagenes?.[0] || this.product()?.image || '';
+    this.selectedImage.set(nextImage);
   }
 
   private uniqueImages(images: string[]): string[] {

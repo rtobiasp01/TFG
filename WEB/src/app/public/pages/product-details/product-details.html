@@ -11,7 +11,6 @@
 	<section class="detail-shell">
 		<header class="detail-topbar">
 			<a routerLink="/inicio" class="back-link">Volver al catálogo</a>
-			<p class="sku-ref">SKU base: {{ currentProduct.sku }}</p>
 		</header>
 
 		<div class="detail-grid">
@@ -37,7 +36,6 @@
 			</div>
 
 			<div class="info-panel">
-				<p class="eyebrow">Ficha de producto</p>
 				<h1>{{ currentProduct.title }}</h1>
 
 				<div class="price-row">
@@ -49,7 +47,6 @@
 
 				<div class="stock-chip" [class.out]="displayStock() <= 0">
 					<span>{{ displayStockLabel() }}</span>
-					<span>Unidades: {{ displayStock() }}</span>
 				</div>
 
 				@if (currentProduct.short_description) {
@@ -58,9 +55,48 @@
 
 				@if (variants().length > 0) {
 					<section class="variant-section">
+						@if (availableColors().length > 0) {
+							<div class="variant-pickers">
+								<div class="picker-group">
+									<p class="picker-label">Color</p>
+									<div class="picker-options">
+										@for (color of availableColors(); track color) {
+											<button
+												type="button"
+												class="picker-option"
+												[class.active]="isColorSelected(color)"
+												(click)="selectColor(color)"
+											>
+												{{ color }}
+											</button>
+										}
+									</div>
+								</div>
+
+								@if (availableSizes().length > 0) {
+									<div class="picker-group">
+										<p class="picker-label">Talla</p>
+										<div class="picker-options">
+											@for (size of availableSizes(); track size) {
+												<button
+													type="button"
+													class="picker-option"
+													[class.active]="isSizeSelected(size)"
+													(click)="selectSize(size)"
+												>
+													{{ size }}
+												</button>
+											}
+										</div>
+									</div>
+								}
+							</div>
+						}
+
 						@if (variantOptionGroups().length > 0) {
 							<div class="variant-pickers">
 								@for (group of variantOptionGroups(); track group.key) {
+									@if (group.key !== 'color' && group.key !== 'talla') {
 									<div class="picker-group">
 										<p class="picker-label">{{ group.label }}</p>
 										<div class="picker-options">
@@ -76,6 +112,7 @@
 											}
 										</div>
 									</div>
+									}
 								}
 							</div>
 						}

@@ -2,7 +2,7 @@ import { PhysicalAttributes } from './physical_attributes';
 
 export interface Variant {
   sku?: string;
-  stock: number;
+  stock_quantity: number;
   precio_adicional: number;
   imagenes: string[];
   attributes?: Record<string, string | number | (string | number)[]>;

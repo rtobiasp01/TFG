@@ -33,7 +33,7 @@ class Product {
     this.physical_attributes = this.normalizePhysicalAttributes(physical_attributes);
 
     this.variantes = Array.isArray(variantes)
-      ? variantes.map((variant, index) => this.normalizeVariant(variant, index))
+      ? this.normalizeVariants(variantes)
       : [];
 
     this.average_rating = Number(average_rating);
@@ -78,11 +78,25 @@ class Product {
     }
   }
 
-  normalizeVariant(variant, index) {
+  normalizeVariants(variantes) {
+    return variantes.flatMap((variant, variantIndex) => {
+      const expandedVariants = this.expandVariantCombinations(variant);
+      return expandedVariants.map((combinationVariant, combinationIndex) =>
+        this.normalizeVariant(
+          combinationVariant,
+          variantIndex,
+          combinationIndex,
+        ),
+      );
+    });
+  }
+
+  normalizeVariant(variant, variantIndex, combinationIndex = 0) {
     const {
       sku: _ignoredSku,
       imagenes = [],
-      stock = 0,
+      stock_quantity,
+      stock: legacyStock = 0,
       precio_adicional = 0,
       physical_attributes,
       attributes = {},
@@ -104,10 +118,16 @@ class Product {
       (this.physical_attributes ? { ...this.physical_attributes } : null);
 
     const parsedAdditionalPrice = Number(precio_adicional);
+    const resolvedStock =
+      stock_quantity !== undefined ? stock_quantity : legacyStock;
     const normalizedVariant = {
-      sku: this.buildVariantSku(mergedDynamicAttributes, index),
+      sku: this.buildVariantSku(
+        mergedDynamicAttributes,
+        variantIndex,
+        combinationIndex,
+      ),
       ...mergedDynamicAttributes,
-      stock: Number.parseInt(stock, 10) || 0,
+      stock_quantity: Number.parseInt(resolvedStock, 10) || 0,
       precio_adicional: Number.isFinite(parsedAdditionalPrice)
         ? parsedAdditionalPrice
         : 0,
@@ -123,7 +143,93 @@ class Product {
     return normalizedVariant;
   }
 
-  buildVariantSku(dynamicAttributes, index) {
+  expandVariantCombinations(variant) {
+    if (!variant || typeof variant !== "object") {
+      return [];
+    }
+
+    const source = { ...variant };
+    const explicitAttributes =
+      source.attributes &&
+      typeof source.attributes === "object" &&
+      !Array.isArray(source.attributes)
+        ? { ...source.attributes }
+        : {};
+
+    const reservedKeys = new Set([
+      "sku",
+      "stock",
+      "stock_quantity",
+      "precio_adicional",
+      "imagenes",
+      "physical_attributes",
+      "attributes",
+      "_id",
+    ]);
+
+    Object.keys(source).forEach((key) => {
+      if (reservedKeys.has(key)) {
+        return;
+      }
+
+      if (explicitAttributes[key] !== undefined) {
+        return;
+      }
+
+      explicitAttributes[key] = source[key];
+    });
+
+    const attributeEntries = Object.entries(explicitAttributes)
+      .filter(([, value]) => value !== undefined && value !== null)
+      .map(([key, value]) => {
+        const values = Array.isArray(value)
+          ? value.filter((item) => item !== undefined && item !== null)
+          : [value];
+
+        return {
+          key,
+          values: values.length > 0 ? values : [""],
+        };
+      });
+
+    if (attributeEntries.length === 0) {
+      return [source];
+    }
+
+    const combinations = [];
+
+    const combine = (position, currentAttributes) => {
+      if (position >= attributeEntries.length) {
+        const variantClone = { ...source };
+
+        delete variantClone.attributes;
+        Object.keys(explicitAttributes).forEach((key) => {
+          delete variantClone[key];
+        });
+
+        combinations.push({
+          ...variantClone,
+          attributes: { ...currentAttributes },
+        });
+        return;
+      }
+
+      const entry = attributeEntries[position];
+
+      entry.values.forEach((value) => {
+        combine(position + 1, {
+          ...currentAttributes,
+          [entry.key]: value,
+        });
+      });
+    };
+
+    combine(0, {});
+
+    return combinations;
+  }
+
+  buildVariantSku(dynamicAttributes, variantIndex, combinationIndex = 0) {
     const baseSku =
       this.sku || this.slug || this.generateSlug(this.title) || "PROD";
 
@@ -163,7 +269,7 @@ class Product {
       .filter(Boolean);
 
     if (attributeParts.length === 0) {
-      attributeParts.push(`VAR${index + 1}`);
+      attributeParts.push(`VAR${variantIndex + 1}-${combinationIndex + 1}`);
     }
 
     return [normalizedBaseSku, ...attributeParts].join("-");

@@ -40,6 +40,7 @@ export class ProductForm {
   readonly showImagePickerModal = signal<boolean>(false);
   readonly imagePickerTarget = signal<ImagePickerTarget>('main');
   readonly activeVariantIndex = signal<number | null>(null);
+  readonly collapsedVariantIndexes = signal<Set<number>>(new Set());
   readonly descriptionModules = {
     toolbar: '#product-description-toolbar',
   };
@@ -565,7 +566,7 @@ export class ProductForm {
     this.showVariantsTab.set(type === 'variable');
 
     if (type === 'variable' && this.variantesFormArray.length === 0) {
-      this.addVariant();
+      this.addVariant(undefined, { insertAtTop: true, collapsed: true });
     }
   }
 
@@ -584,9 +585,14 @@ export class ProductForm {
     }
   }
 
-  addVariant(variant?: Variant): void {
+  addVariant(
+    variant?: Variant,
+    options: { insertAtTop?: boolean; collapsed?: boolean } = {},
+  ): void {
+    const { insertAtTop = false, collapsed = true } = options;
+    const variantStock = variant?.stock_quantity ?? Number((variant as any)?.stock ?? 0);
     const variantGroup = this.fb.group({
-      stock: [variant?.stock ?? 0, [Validators.min(0)]],
+      stock_quantity: [variantStock, [Validators.min(0)]],
       precio_adicional: [variant?.precio_adicional ?? 0, [Validators.min(0)]],
       imagenes_text: [Array.isArray(variant?.imagenes) ? variant.imagenes.join(', ') : ''],
       attributes: this.fb.array([]),
@@ -599,9 +605,23 @@ export class ProductForm {
       }),
     });
 
-    this.variantesFormArray.push(variantGroup);
+    if (insertAtTop) {
+      this.shiftVariantIndexedStateForInsertAtTop();
+      this.variantesFormArray.insert(0, variantGroup);
+    } else {
+      this.variantesFormArray.push(variantGroup);
+    }
 
-    const variantIndex = this.variantesFormArray.length - 1;
+    const variantIndex = insertAtTop ? 0 : this.variantesFormArray.length - 1;
+    this.collapsedVariantIndexes.update((set) => {
+      const next = new Set(set);
+      if (collapsed) {
+        next.add(variantIndex);
+      } else {
+        next.delete(variantIndex);
+      }
+      return next;
+    });
     const existingImages = Array.isArray(variant?.imagenes) ? variant.imagenes : [];
 
     if (existingImages.length > 0) {
@@ -627,6 +647,18 @@ export class ProductForm {
   removeVariant(index: number): void {
     this.variantesFormArray.removeAt(index);
 
+    this.collapsedVariantIndexes.update((set) => {
+      const next = new Set<number>();
+      set.forEach((key) => {
+        if (key < index) {
+          next.add(key);
+        } else if (key > index) {
+          next.add(key - 1);
+        }
+      });
+      return next;
+    });
+
     this.variantImagePreviews.update((map) => {
       const newMap = new Map<number, string[]>();
       map.forEach((value, key) => {
@@ -648,6 +680,100 @@ export class ProductForm {
       }
     });
     this.variantFilesToUpload = newVariantFilesToUpload;
+  }
+
+  duplicateVariant(index: number): void {
+    const sourceGroup = this.variantesFormArray.at(index);
+    if (!sourceGroup) {
+      return;
+    }
+
+    const rawVariant = sourceGroup.getRawValue();
+    const dynamicAttributes = this.buildDynamicAttributes(rawVariant.attributes ?? []);
+    const existingImages = [...(this.variantImagePreviews().get(index) || [])];
+
+    const duplicateVariant: Variant = {
+      ...dynamicAttributes,
+      stock_quantity: Number(rawVariant.stock_quantity) || 0,
+      precio_adicional: Number(rawVariant.precio_adicional) || 0,
+      imagenes: existingImages,
+    };
+
+    if (rawVariant.has_custom_physical_attributes) {
+      duplicateVariant.physical_attributes = {
+        length: Number(rawVariant.physical_attributes?.length) || 0,
+        width: Number(rawVariant.physical_attributes?.width) || 0,
+        height: Number(rawVariant.physical_attributes?.height) || 0,
+        weight: Number(rawVariant.physical_attributes?.weight) || 0,
+      };
+    }
+
+    const filesToUpload = this.variantFilesToUpload.get(index) || [];
+    this.addVariant(duplicateVariant, { insertAtTop: true, collapsed: true });
+
+    const newIndex = 0;
+
+    if (existingImages.length > 0) {
+      this.variantImagePreviews.update((map) => {
+        const next = new Map(map);
+        next.set(newIndex, [...existingImages]);
+        return next;
+      });
+      this.updateVariantFormImagesText(newIndex, existingImages.filter((url) => !url.startsWith('blob:')));
+    }
+
+    if (filesToUpload.length > 0) {
+      this.variantFilesToUpload.set(newIndex, [...filesToUpload]);
+    }
+  }
+
+  toggleVariantCollapse(index: number): void {
+    this.collapsedVariantIndexes.update((set) => {
+      const next = new Set(set);
+      if (next.has(index)) {
+        next.delete(index);
+      } else {
+        next.add(index);
+      }
+      return next;
+    });
+  }
+
+  isVariantCollapsed(index: number): boolean {
+    return this.collapsedVariantIndexes().has(index);
+  }
+
+  getVariantDisplayName(index: number): string {
+    const variantGroup = this.variantesFormArray.at(index);
+    if (!variantGroup) {
+      return `Variante ${index + 1}`;
+    }
+
+    const rawVariant = variantGroup.getRawValue();
+    const dynamicAttributes = this.buildDynamicAttributes(rawVariant.attributes ?? []);
+    const entries = Object.entries(dynamicAttributes);
+
+    if (entries.length === 0) {
+      return `Variante ${index + 1}`;
+    }
+
+    const preferredKeys = ['color', 'talla', 'size'];
+    const parts: string[] = [];
+
+    preferredKeys.forEach((key) => {
+      const value = dynamicAttributes[key as keyof typeof dynamicAttributes];
+      if (value !== undefined) {
+        parts.push(`${this.normalizeAttributeLabel(key)}: ${this.formatAttributeValue(value)}`);
+      }
+    });
+
+    if (parts.length === 0) {
+      entries.slice(0, 2).forEach(([key, value]) => {
+        parts.push(`${this.normalizeAttributeLabel(key)}: ${this.formatAttributeValue(value)}`);
+      });
+    }
+
+    return parts.join(' · ');
   }
 
   variantAttributesControls(variantIndex: number) {
@@ -719,8 +845,34 @@ export class ProductForm {
     this.variantImagePreviews.set(new Map());
     this.variantFilesToUpload.clear();
     if (Array.isArray(variantes)) {
-      variantes.forEach((variant) => this.addVariant(variant));
+      variantes.forEach((variant) =>
+        this.addVariant(variant, { insertAtTop: false, collapsed: true }),
+      );
     }
+
+    this.collapsedVariantIndexes.set(
+      new Set(Array.from({ length: this.variantesFormArray.length }, (_, i) => i)),
+    );
+  }
+
+  private shiftVariantIndexedStateForInsertAtTop(): void {
+    this.collapsedVariantIndexes.update((set) => {
+      const next = new Set<number>();
+      set.forEach((key) => next.add(key + 1));
+      return next;
+    });
+
+    this.variantImagePreviews.update((map) => {
+      const next = new Map<number, string[]>();
+      map.forEach((value, key) => next.set(key + 1, value));
+      return next;
+    });
+
+    const shiftedFiles = new Map<number, File[]>();
+    this.variantFilesToUpload.forEach((value, key) => {
+      shiftedFiles.set(key + 1, value);
+    });
+    this.variantFilesToUpload = shiftedFiles;
   }
 
   private buildVariantsPayload(rawVariants: any[], variantImagesMap: Map<number, string[]> = new Map()): Variant[] {
@@ -728,28 +880,35 @@ export class ProductForm {
       return [];
     }
 
-    return rawVariants.map((rawVariant, index) => {
+    return rawVariants.flatMap((rawVariant, index) => {
       const uploadedImages = variantImagesMap.get(index) || [];
       const existingImages = this.parseImages(rawVariant.imagenes_text).filter((url) => !url.startsWith('blob:'));
       const imagenes = Array.from(new Set([...existingImages, ...uploadedImages]));
 
-      const variantPayload: Variant = {
-        ...this.buildDynamicAttributes(rawVariant.attributes ?? []),
-        stock: Number(rawVariant.stock) || 0,
-        precio_adicional: Number(rawVariant.precio_adicional) || 0,
-        imagenes,
-      };
+      const dynamicAttributes = this.buildDynamicAttributes(rawVariant.attributes ?? []);
+      const expandedAttributes = this.expandAttributeCombinations(dynamicAttributes);
+      const normalizedStock = Number(rawVariant.stock_quantity) || 0;
+      const normalizedAdditionalPrice = Number(rawVariant.precio_adicional) || 0;
 
-      if (rawVariant.has_custom_physical_attributes) {
-        variantPayload.physical_attributes = {
-          length: Number(rawVariant.physical_attributes?.length) || 0,
-          width: Number(rawVariant.physical_attributes?.width) || 0,
-          height: Number(rawVariant.physical_attributes?.height) || 0,
-          weight: Number(rawVariant.physical_attributes?.weight) || 0,
+      return expandedAttributes.map((attributeSet) => {
+        const variantPayload: Variant = {
+          ...attributeSet,
+          stock_quantity: normalizedStock,
+          precio_adicional: normalizedAdditionalPrice,
+          imagenes,
         };
-      }
 
-      return variantPayload;
+        if (rawVariant.has_custom_physical_attributes) {
+          variantPayload.physical_attributes = {
+            length: Number(rawVariant.physical_attributes?.length) || 0,
+            width: Number(rawVariant.physical_attributes?.width) || 0,
+            height: Number(rawVariant.physical_attributes?.height) || 0,
+            weight: Number(rawVariant.physical_attributes?.weight) || 0,
+          };
+        }
+
+        return variantPayload;
+      });
     });
   }
 
@@ -764,6 +923,7 @@ export class ProductForm {
 
     const reservedKeys = new Set([
       'sku',
+      'stock_quantity',
       'stock',
       'precio_adicional',
       'imagenes',
@@ -875,11 +1035,61 @@ export class ProductForm {
     return Number.isFinite(parsedValue) && value !== '' ? parsedValue : value;
   }
 
+  private normalizeAttributeLabel(rawLabel: string): string {
+    return rawLabel
+      .replace(/_/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
+
+  private formatAttributeValue(value: unknown): string {
+    if (Array.isArray(value)) {
+      return value.map((item) => String(item)).join('/');
+    }
+
+    return String(value ?? '');
+  }
+
   private parseImages(rawImages: string): string[] {
     return rawImages
       .split(',')
       .map((value) => value.trim())
       .filter((value) => value.length > 0);
+  }
+
+  private expandAttributeCombinations(
+    attributes: Record<string, string | number | (string | number)[]>,
+  ): Array<Record<string, string | number>> {
+    const entries = Object.entries(attributes);
+
+    if (entries.length === 0) {
+      return [{}];
+    }
+
+    const normalizedEntries = entries.map(([key, value]) => ({
+      key,
+      values: Array.isArray(value) ? value : [value],
+    }));
+
+    const combinations: Array<Record<string, string | number>> = [];
+
+    const combine = (position: number, current: Record<string, string | number>) => {
+      if (position >= normalizedEntries.length) {
+        combinations.push({ ...current });
+        return;
+      }
+
+      const entry = normalizedEntries[position];
+      entry.values.forEach((value) => {
+        combine(position + 1, {
+          ...current,
+          [entry.key]: value,
+        });
+      });
+    };
+
+    combine(0, {});
+
+    return combinations;
   }
 
   private getPhysicalAttributeValue(

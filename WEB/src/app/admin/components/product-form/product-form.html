@@ -191,17 +191,30 @@
             <span class="name">Variantes</span>
             <div class="content">
               <div class="variants-header">
-                <button type="button" class="btn-secondary" (click)="addVariant()">Añadir variante</button>
+                <button
+                  type="button"
+                  class="btn-secondary"
+                  (click)="addVariant(undefined, { insertAtTop: true, collapsed: true })"
+                >
+                  Añadir variante
+                </button>
               </div>
 
               <div formArrayName="variantes" class="variants-container">
                 @for (variant of variantesControls(); track $index; let variantIndex = $index) {
                   <div class="variant-card" [formGroupName]="variantIndex">
                     <div class="variant-card-header">
-                      <h4>Variante #{{ variantIndex + 1 }}</h4>
-                      <button type="button" class="btn-danger" (click)="removeVariant(variantIndex)">Eliminar</button>
+                      <h4>{{ getVariantDisplayName(variantIndex) }}</h4>
+                      <div class="variant-card-actions">
+                        <button type="button" class="btn-secondary btn-small" (click)="toggleVariantCollapse(variantIndex)">
+                          {{ isVariantCollapsed(variantIndex) ? 'Expandir' : 'Contraer' }}
+                        </button>
+                        <button type="button" class="btn-secondary btn-small" (click)="duplicateVariant(variantIndex)">Duplicar</button>
+                        <button type="button" class="btn-danger btn-small" (click)="removeVariant(variantIndex)">Eliminar</button>
+                      </div>
                     </div>
 
+                    @if (!isVariantCollapsed(variantIndex)) {
                     <div class="form-grid">
                       <div class="form-group full-width">
                         <label>Atributos de la variante (clave / valores):</label>
@@ -252,7 +265,7 @@
 
                       <div class="form-group">
                         <label>Stock:</label>
-                        <input type="number" formControlName="stock" min="0" />
+                        <input type="number" formControlName="stock_quantity" min="0" />
                       </div>
 
                       <div class="form-group">
@@ -328,6 +341,7 @@
                           <input type="number" formControlName="weight" step="0.01" min="0" />
                         </div>
                       </div>
+                    }
                     }
                   </div>
                 }

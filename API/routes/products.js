@@ -51,6 +51,56 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+router.post("/validate-stock", async (req, res) => {
+  try {
+    const result = await productService.validateVariantStock({
+      productId: req.body.product_id,
+      productSku: req.body.product_sku,
+      variantSku: req.body.variant_sku,
+      color: req.body.color,
+      talla: req.body.talla,
+      quantity: req.body.quantity,
+    });
+
+    if (!result.ok) {
+      return res.status(409).json(result);
+    }
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al validar stock",
+      error: error.message,
+    });
+  }
+});
+
+router.post("/decrement-stock", async (req, res) => {
+  try {
+    const result = await productService.decrementVariantStock({
+      productId: req.body.product_id,
+      productSku: req.body.product_sku,
+      variantSku: req.body.variant_sku,
+      color: req.body.color,
+      talla: req.body.talla,
+      quantity: req.body.quantity,
+    });
+
+    if (!result.ok) {
+      return res.status(409).json(result);
+    }
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al descontar stock",
+      error: error.message,
+    });
+  }
+});
+
 // POST para crear un producto
 router.post("/", async function (req, res, next) {
   try {
