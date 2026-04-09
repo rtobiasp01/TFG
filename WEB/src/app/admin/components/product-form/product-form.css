@@ -112,6 +112,32 @@
   grid-column: span 2;
 }
 
+/* Quill editor: mantener ancho completo y altura estable, incluso sin contenido */
+.product-description-editor {
+  width: 100%;
+}
+
+.product-description-editor .quill-toolbar {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.product-description-editor quill-editor {
+  display: block;
+  width: 100%;
+}
+
+.product-description-editor ::ng-deep .ql-container {
+  width: 100%;
+  min-height: 220px;
+  box-sizing: border-box;
+}
+
+.product-description-editor ::ng-deep .ql-editor {
+  min-height: 180px;
+  width: 100%;
+}
+
 .form-group label {
   font-size: 0.85rem;
   font-weight: 600;

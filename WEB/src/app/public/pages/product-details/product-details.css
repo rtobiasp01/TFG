@@ -1,7 +1,7 @@
 .detail-shell {
 	width: min(1240px, calc(100% - 2rem));
 	margin: 0 auto;
-	padding: 1.6rem 0 2.6rem;
+	padding: 0.9rem 0 2.6rem;
 }
 
 .detail-topbar {
@@ -38,6 +38,10 @@
 	align-items: start;
 }
 
+.detail-grid > * {
+	min-width: 0;
+}
+
 .gallery-panel,
 .info-panel {
 	background: var(--surface);
@@ -62,7 +66,8 @@
 	width: 100%;
 	aspect-ratio: 4 / 5;
 	display: block;
-	object-fit: cover;
+	object-fit: contain;
+	object-position: center;
 }
 
 .thumb-grid {
@@ -90,7 +95,6 @@
 }
 
 .thumb-btn:hover {
-	transform: translateY(-2px);
 	border-color: color-mix(in srgb, var(--brand) 35%, var(--line));
 }
 
@@ -171,6 +175,12 @@
 	margin-bottom: 1rem;
 }
 
+.variant-list-picker {
+	margin-bottom: 0.85rem;
+	padding-bottom: 0.85rem;
+	border-bottom: 1px dashed var(--line);
+}
+
 .picker-group {
 	display: grid;
 	gap: 0.35rem;
@@ -213,10 +223,21 @@
 	color: var(--brand-strong);
 }
 
+.variant-option {
+	max-width: 100%;
+	text-align: left;
+}
+
 .picker-option:disabled {
 	opacity: 0.42;
 	cursor: not-allowed;
 	text-decoration: line-through;
+}
+
+.variant-empty {
+	margin: 0;
+	font-size: 0.92rem;
+	color: var(--text-muted);
 }
 
 .variant-section h2,
@@ -232,6 +253,41 @@
 	border-radius: var(--radius-lg);
 	box-shadow: var(--shadow-sm);
 	padding: 1.35rem;
+}
+
+/* Desktop first view: que toda la seccion principal entre en pantalla */
+@media (min-width: 901px) {
+	.detail-grid {
+		height: calc(100dvh - 84px);
+		max-height: calc(100dvh - 84px);
+	}
+
+	.gallery-panel {
+		height: 100%;
+		overflow: hidden;
+		display: grid;
+		grid-template-rows: minmax(0, 1fr) auto;
+	}
+
+	.main-image-frame {
+		height: 100%;
+	}
+
+	.main-image-frame img {
+		height: 100%;
+		aspect-ratio: auto;
+	}
+
+	.thumb-grid {
+		max-height: 132px;
+		overflow: auto;
+		padding-right: 0.2rem;
+	}
+
+	.info-panel {
+		height: 100%;
+		overflow: auto;
+	}
 }
 
 .description {

@@ -21,7 +21,7 @@
 
 				@if (activeGallery().length > 0) {
 					<div class="thumb-grid">
-						@for (image of activeGallery(); track image) {
+						@for (image of activeGallery(); track $index) {
 							<button
 								type="button"
 								class="thumb-btn"
@@ -60,7 +60,7 @@
 								<div class="picker-group">
 									<p class="picker-label">Color</p>
 									<div class="picker-options">
-										@for (color of availableColors(); track color) {
+										@for (color of availableColors(); track $index) {
 											<button
 												type="button"
 												class="picker-option"
@@ -77,7 +77,7 @@
 									<div class="picker-group">
 										<p class="picker-label">Talla</p>
 										<div class="picker-options">
-											@for (size of availableSizes(); track size) {
+											@for (size of availableSizes(); track $index) {
 												<button
 													type="button"
 													class="picker-option"
@@ -100,7 +100,7 @@
 									<div class="picker-group">
 										<p class="picker-label">{{ group.label }}</p>
 										<div class="picker-options">
-											@for (option of getVisibleAttributeOptions(group.key); track option) {
+											@for (option of getVisibleAttributeOptions(group.key); track $index) {
 												<button
 													type="button"
 													class="picker-option"
@@ -122,7 +122,6 @@
 		</div>
 
 		<section class="description-panel">
-			<h2>Descripción completa</h2>
 			<div class="description rich-content" [innerHTML]="renderedDescription()"></div>
 		</section>
 	</section>
