@@ -15,9 +15,6 @@
 # Environment files
 # .env
 
-# API uploads
-/API/uploads/
-
 # Angular CLI and build artefacts
 /.angular-cli.json
 /.ng/
