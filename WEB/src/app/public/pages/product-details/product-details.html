@@ -17,21 +17,25 @@
       <p>{{ product()?.price }}</p>
       <div class="variant-selector">
         @for (group of variantesProducto(); track group.key; let groupIndex = $index) {
-          <div class="variant-group-row">
-            <p>{{ group.key }}</p>
-            <div class="variant-options">
-              @for (value of getAvailableValues(group.key, groupIndex); track optionTrack(value)) {
-                <button
-                  type="button"
-                  class="variant-key"
-                  [class.active]="isSelectedOption(group.key, value)"
-                  (click)="selectVariantOption(group.key, value)"
-                >
-                  {{ value }}
-                </button>
-              }
-            </div>
-          </div>
+          @if (getAvailableValues(group.key, groupIndex); as availableValues) {
+            @if (availableValues.length > 0) {
+              <div class="variant-group-row">
+                <p>{{ group.key }}</p>
+                <div class="variant-options">
+                  @for (value of availableValues; track optionTrack(value)) {
+                    <button
+                      type="button"
+                      class="variant-key"
+                      [class.active]="isSelectedOption(group.key, value)"
+                      (click)="selectVariantOption(group.key, value)"
+                    >
+                      {{ value }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+          }
         }
       </div>
       <button class="btn-cart">Añadir carrito</button>
