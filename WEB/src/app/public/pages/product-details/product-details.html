@@ -2,11 +2,11 @@
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
-        <img src="{{ variant()?.imagenes?.[0] }}" alt="" />
+        <img src="{{ imagenPrincipal() }}" alt="" />
       </div>
       <div class="gallery">
-        @for (img of variant()?.imagenes; track $index) {
-          <img src="{{ img }}" alt="" />
+        @for (img of galeriaActual(); track $index) {
+          <img src="{{ img }}" alt="" (click)="changeImage(img)" />
         }
       </div>
     </div>
@@ -15,7 +15,15 @@
       <p>{{ product()?.short_description }}</p>
       <p>Stock:</p>
       <p>{{ product()?.price }}</p>
-      <div class="variant-selector"></div>
+      <div class="variant-list">
+        @for (variant of variantesProducto(); track $index) {
+          <div class="variant-item">
+            @for (item of variant | keyvalue; track item.key) {
+              <p>{{ item.key }}: {{ item.value }}</p>
+            }
+          </div>
+        }
+      </div>
       <button class="btn-cart">Añadir carrito</button>
       <div class="product-description"></div>
     </div>
