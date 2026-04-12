@@ -1,128 +1,24 @@
-@if (isLoading()) {
-	<section class="detail-shell">
-		<p class="state-message">Cargando producto...</p>
-	</section>
-} @else if (errorMessage()) {
-	<section class="detail-shell">
-		<p class="state-message">{{ errorMessage() }}</p>
-		<a routerLink="/inicio" class="back-link">Volver al catálogo</a>
-	</section>
-} @else if (product(); as currentProduct) {
-	<section class="detail-shell">
-		<header class="detail-topbar">
-			<a routerLink="/inicio" class="back-link">Volver al catálogo</a>
-		</header>
-
-		<div class="detail-grid">
-			<div class="gallery-panel">
-				<div class="main-image-frame">
-					<img [src]="mainImage()" [alt]="currentProduct.title" />
-				</div>
-
-				@if (activeGallery().length > 0) {
-					<div class="thumb-grid">
-						@for (image of activeGallery(); track $index) {
-							<button
-								type="button"
-								class="thumb-btn"
-								[class.active]="isActiveImage(image)"
-								(click)="selectGalleryImage(image)"
-							>
-								<img [src]="image" [alt]="currentProduct.title" />
-							</button>
-						}
-					</div>
-				}
-			</div>
-
-			<div class="info-panel">
-				<h1>{{ currentProduct.title }}</h1>
-
-				<div class="price-row">
-					<p class="price">{{ formatPrice(displayPrice()) }}</p>
-					@if (selectedVariant(); as activeVariant) {
-						<p class="variant-extra">Ajuste variante: {{ formatPrice(activeVariant.precio_adicional) }}</p>
-					}
-				</div>
-
-				<div class="stock-chip" [class.out]="displayStock() <= 0">
-					<span>{{ displayStockLabel() }}</span>
-				</div>
-
-				@if (currentProduct.short_description) {
-					<p class="short-description">{{ currentProduct.short_description }}</p>
-				}
-
-				@if (variants().length > 0) {
-					<section class="variant-section">
-						@if (availableColors().length > 0) {
-							<div class="variant-pickers">
-								<div class="picker-group">
-									<p class="picker-label">Color</p>
-									<div class="picker-options">
-										@for (color of availableColors(); track $index) {
-											<button
-												type="button"
-												class="picker-option"
-												[class.active]="isColorSelected(color)"
-												(click)="selectColor(color)"
-											>
-												{{ color }}
-											</button>
-										}
-									</div>
-								</div>
-
-								@if (availableSizes().length > 0) {
-									<div class="picker-group">
-										<p class="picker-label">Talla</p>
-										<div class="picker-options">
-											@for (size of availableSizes(); track $index) {
-												<button
-													type="button"
-													class="picker-option"
-													[class.active]="isSizeSelected(size)"
-													(click)="selectSize(size)"
-												>
-													{{ size }}
-												</button>
-											}
-										</div>
-									</div>
-								}
-							</div>
-						}
-
-						@if (variantOptionGroups().length > 0) {
-							<div class="variant-pickers">
-								@for (group of variantOptionGroups(); track group.key) {
-									@if (group.key !== 'color' && group.key !== 'talla') {
-									<div class="picker-group">
-										<p class="picker-label">{{ group.label }}</p>
-										<div class="picker-options">
-											@for (option of getVisibleAttributeOptions(group.key); track $index) {
-												<button
-													type="button"
-													class="picker-option"
-													[class.active]="isAttributeSelected(group.key, option)"
-													(click)="selectAttributeOption(group.key, option)"
-												>
-													{{ option }}
-												</button>
-											}
-										</div>
-									</div>
-									}
-								}
-							</div>
-						}
-					</section>
-				}
-			</div>
-		</div>
-
-		<section class="description-panel">
-			<div class="description rich-content" [innerHTML]="renderedDescription()"></div>
-		</section>
-	</section>
-}
+<div class="main-content">
+  <div class="product-info">
+    <div class="product-images">
+      <div class="img-principal">
+        <img src="{{ variant()?.imagenes?.[0] }}" alt="" />
+      </div>
+      <div class="gallery">
+        @for (img of variant()?.imagenes; track $index) {
+          <img src="{{ img }}" alt="" />
+        }
+      </div>
+    </div>
+    <div class="product-variables">
+      <p>{{ product()?.title }}</p>
+      <p>{{ product()?.short_description }}</p>
+      <p>Stock:</p>
+      <p>{{ product()?.price }}</p>
+      <div class="variant-selector"></div>
+      <button class="btn-cart">Añadir carrito</button>
+      <div class="product-description"></div>
+    </div>
+  </div>
+  <div class="other-content"></div>
+</div>
