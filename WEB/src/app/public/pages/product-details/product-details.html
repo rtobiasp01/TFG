@@ -15,11 +15,24 @@
       <p>{{ product()?.short_description }}</p>
       <p>Stock:</p>
       <p>{{ product()?.price }}</p>
-      <div class="variant-tree">
-        <ng-container
-          [ngTemplateOutlet]="variantGroupTemplate"
-          [ngTemplateOutletContext]="{ $implicit: variantesProducto() }"
-        ></ng-container>
+      <div class="variant-selector">
+        @for (group of variantesProducto(); track group.key; let groupIndex = $index) {
+          <div class="variant-group-row">
+            <p>{{ group.key }}</p>
+            <div class="variant-options">
+              @for (value of getAvailableValues(group.key, groupIndex); track optionTrack(value)) {
+                <button
+                  type="button"
+                  class="variant-key"
+                  [class.active]="isSelectedOption(group.key, value)"
+                  (click)="selectVariantOption(group.key, value)"
+                >
+                  {{ value }}
+                </button>
+              }
+            </div>
+          </div>
+        }
       </div>
       <button class="btn-cart">Añadir carrito</button>
       <div class="product-description"></div>
@@ -27,20 +40,3 @@
   </div>
   <div class="other-content"></div>
 </div>
-
-<ng-template #variantGroupTemplate let-groups>
-  @for (group of groups; track groupTrack(group)) {
-    <div class="variant-group">
-      <p>{{ group.key }}: {{ group.value }}</p>
-
-      @if (group.children.length > 0) {
-        <div class="variant-children">
-          <ng-container
-            [ngTemplateOutlet]="variantGroupTemplate"
-            [ngTemplateOutletContext]="{ $implicit: group.children }"
-          ></ng-container>
-        </div>
-      }
-    </div>
-  }
-</ng-template>

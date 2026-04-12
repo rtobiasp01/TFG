@@ -7,10 +7,9 @@ import { Variant } from '../../../interfaces/variant';
 
 type VariantValue = string | number;
 
-interface VariantGroup {
+interface VariantOptionGroup {
   key: string;
-  value: VariantValue;
-  children: VariantGroup[];
+  values: VariantValue[];
 }
 
 @Component({
@@ -29,7 +28,8 @@ export class ProductDetails {
 
   readonly imagenPrincipal = signal<string | undefined>('');
   readonly galeriaActual = signal<string[]>([]);
-  readonly variantesProducto = signal<VariantGroup[]>([]);
+  readonly variantesProducto = signal<VariantOptionGroup[]>([]);
+  readonly selectedAttributes = signal<Record<string, VariantValue>>({});
 
   constructor() {
     this.setProductoActual();
@@ -46,27 +46,15 @@ export class ProductDetails {
     this.productService.getBySku(sku).subscribe({
       next: (product) => {
         this.product.set(product);
-        this.selectedVariant.set(product?.variantes?.[0]);
+        const allVariants = product?.variantes ?? [];
+        const initialVariant = allVariants[0];
+
+        this.selectedVariant.set(initialVariant);
         this.variantesProducto.set(this.setProductAttributes());
-
-        const productImage = this.product()?.image ?? '';
-        const variantImages = this.selectedVariant()?.imagenes ?? [];
-        const filterValidImages = (image: string | undefined): image is string => Boolean(image);
-        const uniqueImages = (images: string[]) => Array.from(new Set(images));
-
-        if (this.variantesProducto().length > 0 && variantImages.length > 0) {
-          this.imagenPrincipal.set(productImage);
-          this.galeriaActual.set(
-            uniqueImages([productImage, ...variantImages].filter(filterValidImages)),
-          );
-        } else {
-          this.imagenPrincipal.set(productImage);
-          this.galeriaActual.set(
-            uniqueImages(
-              [productImage, ...(this.product()?.gallery ?? [])].filter(filterValidImages),
-            ),
-          );
-        }
+        this.selectedAttributes.set(
+          initialVariant ? this.extractVariantAttributes(initialVariant) : {},
+        );
+        this.updateGallery(initialVariant);
       },
       error: () => {
         this.product.set(null);
@@ -80,78 +68,156 @@ export class ProductDetails {
     this.imagenPrincipal.set(imagen);
   }
 
-  groupTrack(group: VariantGroup): string {
-    return `${group.key}:${group.value}`;
+  optionTrack(value: VariantValue): string {
+    return String(value);
   }
 
-  // Devuelve todas las variantes del producto actual
-  private setProductAttributes(): VariantGroup[] {
-    const variantes = this.product()?.variantes ?? [];
-    const cleanedVariants = variantes.map((variant) => this.cleanVariant(variant));
-
-    return this.buildVariantGroups(cleanedVariants);
+  isSelectedOption(key: string, value: VariantValue): boolean {
+    return this.selectedAttributes()[key] === value;
   }
 
-  private cleanVariant(variant: Variant): Record<string, unknown> {
-    const { imagenes, physical_attributes, precio_adicional, sku, stock_quantity, ...resto } =
-      variant;
+  selectVariantOption(key: string, value: VariantValue): void {
+    const groupIndex = this.variantesProducto().findIndex((group) => group.key === key);
+    const nextSelectedAttributes = { ...this.selectedAttributes(), [key]: value };
 
-    return resto;
+    if (groupIndex >= 0) {
+      const lowerKeys = this.variantesProducto()
+        .slice(groupIndex + 1)
+        .map((group) => group.key);
+
+      lowerKeys.forEach((lowerKey) => {
+        delete nextSelectedAttributes[lowerKey];
+      });
+    }
+
+    this.selectedAttributes.set(nextSelectedAttributes);
+
+    this.updateSelectedVariantFromAttributes();
+    console.log('selectedVariant:', this.selectedVariant());
   }
 
-  private buildVariantGroups(variants: Array<Record<string, unknown>>): VariantGroup[] {
-    const groups = new Map<
-      string,
-      {
-        key: string;
-        value: VariantValue;
-        variants: Array<Record<string, unknown>>;
-      }
-    >();
+  getAvailableValues(groupKey: string, groupIndex: number): VariantValue[] {
+    const variants = this.product()?.variantes ?? [];
+    const selectedAttributes = this.selectedAttributes();
+    const previousGroupKeys = this.variantesProducto()
+      .slice(0, groupIndex)
+      .map((group) => group.key);
 
-    variants.forEach((variant) => {
-      const entries = Object.entries(variant).filter(
-        ([, value]) => value !== undefined && value !== null,
-      );
+    const filteredVariants = variants.filter((variant) => {
+      const variantAttributes = this.extractVariantAttributes(variant);
 
-      if (entries.length === 0) {
-        return;
-      }
-
-      const [groupKey, rawGroupValue] = entries[0];
-      const groupValues = Array.isArray(rawGroupValue) ? rawGroupValue : [rawGroupValue];
-      const childVariant = Object.fromEntries(entries.slice(1));
-
-      groupValues.forEach((rawValue) => {
-        if (rawValue === undefined || rawValue === null) {
-          return;
-        }
-
-        const value = this.normalizeVariantValue(rawValue);
-        const mapKey = `${groupKey}:${String(value)}`;
-        const currentGroup = groups.get(mapKey) ?? {
-          key: groupKey,
-          value,
-          variants: [],
-        };
-
-        currentGroup.variants.push(childVariant);
-        groups.set(mapKey, currentGroup);
+      return previousGroupKeys.every((key) => {
+        const selectedValue = selectedAttributes[key];
+        return selectedValue === undefined || variantAttributes[key] === selectedValue;
       });
     });
 
-    return Array.from(groups.values()).map((group) => ({
-      key: group.key,
-      value: group.value,
-      children: this.buildVariantGroups(group.variants),
+    return Array.from(
+      new Set(
+        filteredVariants
+          .map((variant) => this.extractVariantAttributes(variant)[groupKey])
+          .filter((value): value is VariantValue => value !== undefined),
+      ),
+    );
+  }
+
+  // Devuelve opciones por atributo para construir botones de combinacion
+  private setProductAttributes(): VariantOptionGroup[] {
+    const variantes = this.product()?.variantes ?? [];
+    const optionsMap = new Map<string, Set<VariantValue>>();
+
+    variantes.forEach((variant) => {
+      const attributes = this.extractVariantAttributes(variant);
+
+      Object.entries(attributes).forEach(([key, value]) => {
+        const currentValues = optionsMap.get(key) ?? new Set<VariantValue>();
+        currentValues.add(value);
+        optionsMap.set(key, currentValues);
+      });
+    });
+
+    return Array.from(optionsMap.entries()).map(([key, values]) => ({
+      key,
+      values: Array.from(values),
     }));
   }
 
-  private normalizeVariantValue(value: unknown): VariantValue {
-    if (typeof value === 'string' || typeof value === 'number') {
-      return value;
+  private extractVariantAttributes(variant: Variant): Record<string, VariantValue> {
+    const {
+      imagenes,
+      physical_attributes,
+      precio_adicional,
+      sku,
+      stock_quantity,
+      attributes,
+      ...resto
+    } = variant;
+    const mergedAttributes: Record<string, unknown> = {
+      ...resto,
+      ...(attributes && typeof attributes === 'object' && !Array.isArray(attributes)
+        ? attributes
+        : {}),
+    };
+    const normalizedAttributes: Record<string, VariantValue> = {};
+
+    Object.entries(mergedAttributes).forEach(([key, value]) => {
+      if (typeof value === 'string' || typeof value === 'number') {
+        normalizedAttributes[key] = value;
+        return;
+      }
+
+      if (Array.isArray(value)) {
+        const firstPrimitiveValue = value.find(
+          (item) => typeof item === 'string' || typeof item === 'number',
+        );
+
+        if (typeof firstPrimitiveValue === 'string' || typeof firstPrimitiveValue === 'number') {
+          normalizedAttributes[key] = firstPrimitiveValue;
+        }
+      }
+    });
+
+    return normalizedAttributes;
+  }
+
+  private updateSelectedVariantFromAttributes(): void {
+    const selectedAttributes = this.selectedAttributes();
+    const variants = this.product()?.variantes ?? [];
+
+    const matchedVariant = variants.find((variant) => {
+      const variantAttributes = this.extractVariantAttributes(variant);
+
+      return Object.entries(selectedAttributes).every(
+        ([key, value]) => variantAttributes[key] === value,
+      );
+    });
+
+    if (!matchedVariant) {
+      return;
     }
 
-    return String(value);
+    this.selectedVariant.set(matchedVariant);
+    this.updateGallery(matchedVariant);
+  }
+
+  private updateGallery(variant: Variant | undefined): void {
+    const productImage = this.product()?.image ?? '';
+    const productGallery = this.product()?.gallery ?? [];
+    const variantImages = variant?.imagenes ?? [];
+    const filterValidImages = (image: string | undefined): image is string => Boolean(image);
+    const uniqueImages = (images: string[]) => Array.from(new Set(images));
+
+    this.imagenPrincipal.set(productImage);
+
+    if (variantImages.length > 0) {
+      this.galeriaActual.set(
+        uniqueImages([productImage, ...variantImages].filter(filterValidImages)),
+      );
+      return;
+    }
+
+    this.galeriaActual.set(
+      uniqueImages([productImage, ...productGallery].filter(filterValidImages)),
+    );
   }
 }
