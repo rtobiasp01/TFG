@@ -5,6 +5,14 @@ import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
 import { Variant } from '../../../interfaces/variant';
 
+type VariantValue = string | number;
+
+interface VariantGroup {
+  key: string;
+  value: VariantValue;
+  children: VariantGroup[];
+}
+
 @Component({
   selector: 'app-product-details',
   standalone: true,
@@ -21,7 +29,7 @@ export class ProductDetails {
 
   readonly imagenPrincipal = signal<string | undefined>('');
   readonly galeriaActual = signal<string[]>([]);
-  readonly variantesProducto = signal<Array<Record<string, unknown>>>([]);
+  readonly variantesProducto = signal<VariantGroup[]>([]);
 
   constructor() {
     this.setProductoActual();
@@ -41,12 +49,23 @@ export class ProductDetails {
         this.selectedVariant.set(product?.variantes?.[0]);
         this.variantesProducto.set(this.setProductAttributes());
 
-        if (this.variantesProducto().length > 0) {
-          this.imagenPrincipal.set(this.selectedVariant()?.imagenes?.[0]);
-          this.galeriaActual.set(this.selectedVariant()?.imagenes ?? []);
+        const productImage = this.product()?.image ?? '';
+        const variantImages = this.selectedVariant()?.imagenes ?? [];
+        const filterValidImages = (image: string | undefined): image is string => Boolean(image);
+        const uniqueImages = (images: string[]) => Array.from(new Set(images));
+
+        if (this.variantesProducto().length > 0 && variantImages.length > 0) {
+          this.imagenPrincipal.set(productImage);
+          this.galeriaActual.set(
+            uniqueImages([productImage, ...variantImages].filter(filterValidImages)),
+          );
         } else {
-          this.imagenPrincipal.set(this.product()?.image);
-          this.galeriaActual.set(this.product()?.gallery ?? []);
+          this.imagenPrincipal.set(productImage);
+          this.galeriaActual.set(
+            uniqueImages(
+              [productImage, ...(this.product()?.gallery ?? [])].filter(filterValidImages),
+            ),
+          );
         }
       },
       error: () => {
@@ -61,15 +80,78 @@ export class ProductDetails {
     this.imagenPrincipal.set(imagen);
   }
 
+  groupTrack(group: VariantGroup): string {
+    return `${group.key}:${group.value}`;
+  }
+
   // Devuelve todas las variantes del producto actual
-  private setProductAttributes() {
+  private setProductAttributes(): VariantGroup[] {
     const variantes = this.product()?.variantes ?? [];
+    const cleanedVariants = variantes.map((variant) => this.cleanVariant(variant));
 
-    return variantes.map((variant) => {
-      const { imagenes, physical_attributes, precio_adicional, sku, stock_quantity, ...resto } =
-        variant;
+    return this.buildVariantGroups(cleanedVariants);
+  }
 
-      return resto;
+  private cleanVariant(variant: Variant): Record<string, unknown> {
+    const { imagenes, physical_attributes, precio_adicional, sku, stock_quantity, ...resto } =
+      variant;
+
+    return resto;
+  }
+
+  private buildVariantGroups(variants: Array<Record<string, unknown>>): VariantGroup[] {
+    const groups = new Map<
+      string,
+      {
+        key: string;
+        value: VariantValue;
+        variants: Array<Record<string, unknown>>;
+      }
+    >();
+
+    variants.forEach((variant) => {
+      const entries = Object.entries(variant).filter(
+        ([, value]) => value !== undefined && value !== null,
+      );
+
+      if (entries.length === 0) {
+        return;
+      }
+
+      const [groupKey, rawGroupValue] = entries[0];
+      const groupValues = Array.isArray(rawGroupValue) ? rawGroupValue : [rawGroupValue];
+      const childVariant = Object.fromEntries(entries.slice(1));
+
+      groupValues.forEach((rawValue) => {
+        if (rawValue === undefined || rawValue === null) {
+          return;
+        }
+
+        const value = this.normalizeVariantValue(rawValue);
+        const mapKey = `${groupKey}:${String(value)}`;
+        const currentGroup = groups.get(mapKey) ?? {
+          key: groupKey,
+          value,
+          variants: [],
+        };
+
+        currentGroup.variants.push(childVariant);
+        groups.set(mapKey, currentGroup);
+      });
     });
+
+    return Array.from(groups.values()).map((group) => ({
+      key: group.key,
+      value: group.value,
+      children: this.buildVariantGroups(group.variants),
+    }));
+  }
+
+  private normalizeVariantValue(value: unknown): VariantValue {
+    if (typeof value === 'string' || typeof value === 'number') {
+      return value;
+    }
+
+    return String(value);
   }
 }
