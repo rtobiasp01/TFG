@@ -2,30 +2,31 @@
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
-        <img src="{{ imagenPrincipal() }}" alt="" />
+        <img class="img-principal__image" src="{{ imagenPrincipal() }}" alt="" />
       </div>
       <div class="gallery">
         @for (img of galeriaActual(); track $index) {
-          <img src="{{ img }}" alt="" (click)="changeImage(img)" />
+          <img class="gallery__image" src="{{ img }}" alt="" (click)="changeImage(img)" />
         }
       </div>
     </div>
     <div class="product-variables">
-      <p>{{ product()?.title }}</p>
-      <p>{{ product()?.short_description }}</p>
-      <p>Stock:</p>
-      <p>{{ product()?.price }}</p>
+      <p class="product-title">{{ product()?.title }}</p>
+      <p class="product-short-description">{{ product()?.short_description }}</p>
+      <p class="product-meta-label">Stock</p>
+      <p class="product-stock-status">{{ stockAvailabilityLabel() }}</p>
+      <p class="product-price">{{ product()?.price }}</p>
       <div class="variant-selector">
         @for (group of variantesProducto(); track group.key; let groupIndex = $index) {
           @if (getAvailableValues(group.key, groupIndex); as availableValues) {
             @if (availableValues.length > 0) {
               <div class="variant-group-row">
-                <p>{{ group.key }}</p>
+                <p class="variant-group-title">{{ group.key }}</p>
                 <div class="variant-options">
                   @for (value of availableValues; track optionTrack(value)) {
                     <button
                       type="button"
-                      class="variant-key"
+                      class="variant-key variant-option"
                       [class.active]="isSelectedOption(group.key, value)"
                       (click)="selectVariantOption(group.key, value)"
                     >
@@ -38,7 +39,7 @@
           }
         }
       </div>
-      <button class="btn-cart">Añadir carrito</button>
+      <button type="button" class="btn-cart" (click)="addToCart()">Añadir carrito</button>
       <div class="product-description"></div>
     </div>
   </div>

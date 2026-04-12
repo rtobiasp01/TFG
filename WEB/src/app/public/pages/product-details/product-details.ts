@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
+import { CartService } from '../../../services/cart-service';
 import { Variant } from '../../../interfaces/variant';
 
 type VariantValue = string | number;
@@ -22,6 +23,7 @@ interface VariantOptionGroup {
 export class ProductDetails {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
+  private readonly cartService = inject(CartService);
 
   readonly product = signal<Product | null>(null);
   readonly selectedVariant = signal<Variant | undefined>(undefined);
@@ -68,6 +70,16 @@ export class ProductDetails {
     this.imagenPrincipal.set(imagen);
   }
 
+  stockAvailabilityLabel(): string {
+    const variantStock = this.selectedVariant()?.stock_quantity;
+    if (typeof variantStock === 'number') {
+      return variantStock > 0 ? 'Hay stock' : 'Sin stock';
+    }
+
+    const productStock = this.product()?.stock_quantity ?? 0;
+    return productStock > 0 ? 'Hay stock' : 'Sin stock';
+  }
+
   optionTrack(value: VariantValue): string {
     return String(value);
   }
@@ -91,9 +103,7 @@ export class ProductDetails {
     }
 
     this.selectedAttributes.set(nextSelectedAttributes);
-
     this.updateSelectedVariantFromAttributes();
-    console.log('selectedVariant:', this.selectedVariant());
   }
 
   getAvailableValues(groupKey: string, groupIndex: number): VariantValue[] {
@@ -219,5 +229,45 @@ export class ProductDetails {
     this.galeriaActual.set(
       uniqueImages([productImage, ...productGallery].filter(filterValidImages)),
     );
+  }
+
+  addToCart(): void {
+    const product = this.product();
+    const selectedVariant = this.selectedVariant();
+
+    if (!product) {
+      return;
+    }
+
+    const isSimple = (product?.variantes?.length ?? 0) === 0 || !selectedVariant;
+    const basePrice = product.price;
+    const productImage = product.image;
+    const additionalPrice = selectedVariant?.precio_adicional ?? 0;
+
+    if (isSimple) {
+      this.cartService.addItem({
+        productId: product._id,
+        productTitle: product.title,
+        productType: 'simple',
+        productImage,
+        basePrice,
+        simpleSku: product.sku,
+        quantity: 1,
+        availableStock: product.stock_quantity,
+      });
+    } else {
+      this.cartService.addItem({
+        productId: product._id,
+        productTitle: product.title,
+        productType: 'variable',
+        productImage,
+        basePrice,
+        variantSku: selectedVariant?.sku,
+        variantAttributes: this.selectedAttributes(),
+        variantAdditionalPrice: additionalPrice,
+        quantity: 1,
+        availableStock: selectedVariant?.stock_quantity ?? 0,
+      });
+    }
   }
 }
