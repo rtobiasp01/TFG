@@ -4,7 +4,7 @@
   (keydown.enter)="$event.preventDefault()"
   id="productForm"
 >
-  <div class="info-form">
+  <div class="info-form" [class.modal-open]="showImagePickerModal()">
     <div class="info-izquierda">
       <h2>{{ id() ? 'Editar Producto' : 'Crear Producto' }}</h2>
 
@@ -26,12 +26,16 @@
             <div class="form-grid">
               <div class="form-group full-width">
                 <label for="description">Descripción:</label>
-                <div class="rich-text-editor product-description-editor">
+                <div
+                  class="rich-text-editor product-description-editor"
+                  [class.disabled]="showImagePickerModal()"
+                >
                   <div
                     id="product-description-toolbar"
                     class="quill-toolbar"
                     (mousedown)="$event.stopPropagation()"
                     (click)="$event.stopPropagation()"
+                    [style.pointer-events]="showImagePickerModal() ? 'none' : 'auto'"
                   >
                     <span class="ql-formats">
                       <button type="button" class="ql-bold" title="Negrita"></button>
@@ -53,8 +57,18 @@
                       <button type="button" class="ql-header" value="1" title="Título H1"></button>
                       <button type="button" class="ql-header" value="2" title="Título H2"></button>
                       <button type="button" class="ql-header" value="3" title="Título H3"></button>
-                      <button type="button" class="ql-list" value="ordered" title="Lista numerada"></button>
-                      <button type="button" class="ql-list" value="bullet" title="Lista con viñetas"></button>
+                      <button
+                        type="button"
+                        class="ql-list"
+                        value="ordered"
+                        title="Lista numerada"
+                      ></button>
+                      <button
+                        type="button"
+                        class="ql-list"
+                        value="bullet"
+                        title="Lista con viñetas"
+                      ></button>
                       <button type="button" class="ql-blockquote" title="Cita"></button>
                     </span>
 
@@ -69,10 +83,12 @@
                     formControlName="description"
                     [modules]="descriptionModules"
                     [formats]="descriptionFormats"
+                    [readOnly]="showImagePickerModal()"
                     theme="snow"
                     placeholder="Descripción completa del producto"
                     (mousedown)="$event.stopPropagation()"
                     (click)="$event.stopPropagation()"
+                    [style.pointer-events]="showImagePickerModal() ? 'none' : 'auto'"
                   ></quill-editor>
                 </div>
               </div>
@@ -146,7 +162,12 @@
               </div>
 
               <div class="form-group checkbox-group">
-                <input type="checkbox" id="manage_stock" formControlName="manage_stock" (change)="onManageStockChange()" />
+                <input
+                  type="checkbox"
+                  id="manage_stock"
+                  formControlName="manage_stock"
+                  (change)="onManageStockChange()"
+                />
                 <label for="manage_stock" style="margin: 0">Gestionar stock</label>
               </div>
 
@@ -206,142 +227,195 @@
                     <div class="variant-card-header">
                       <h4>{{ getVariantDisplayName(variantIndex) }}</h4>
                       <div class="variant-card-actions">
-                        <button type="button" class="btn-secondary btn-small" (click)="toggleVariantCollapse(variantIndex)">
+                        <button
+                          type="button"
+                          class="btn-secondary btn-small"
+                          (click)="toggleVariantCollapse(variantIndex)"
+                        >
                           {{ isVariantCollapsed(variantIndex) ? 'Expandir' : 'Contraer' }}
                         </button>
-                        <button type="button" class="btn-secondary btn-small" (click)="duplicateVariant(variantIndex)">Duplicar</button>
-                        <button type="button" class="btn-danger btn-small" (click)="removeVariant(variantIndex)">Eliminar</button>
+                        <button
+                          type="button"
+                          class="btn-secondary btn-small"
+                          (click)="duplicateVariant(variantIndex)"
+                        >
+                          Duplicar
+                        </button>
+                        <button
+                          type="button"
+                          class="btn-danger btn-small"
+                          (click)="removeVariant(variantIndex)"
+                        >
+                          Eliminar
+                        </button>
                       </div>
                     </div>
 
                     @if (!isVariantCollapsed(variantIndex)) {
-                    <div class="form-grid">
-                      <div class="form-group full-width">
-                        <label>Atributos de la variante (clave / valores):</label>
-                        <div formArrayName="attributes" class="variant-attributes-container">
-                          @for (attribute of variantAttributesControls(variantIndex); track $index; let attrIndex = $index) {
-                            <div class="variant-attribute-row" [formGroupName]="attrIndex">
-                              <input type="text" formControlName="key" placeholder="Ej: color" />
-                              <div class="variant-values-container">
-                                <div class="variant-values-list" [formArrayName]="'values'">
-                                  @for (value of getAttributeValuesControls(variantIndex, attrIndex); track $index; let valueIndex = $index) {
-                                    <div class="variant-value-row">
-                                      <input type="text" [formControlName]="valueIndex" placeholder="Ej: blanco" />
-                                      @if (getAttributeValuesControls(variantIndex, attrIndex).length > 1) {
-                                        <button
-                                          type="button"
-                                          class="btn-danger btn-small"
-                                          (click)="removeValueFromAttribute(variantIndex, attrIndex, valueIndex)"
-                                        >
-                                          Quitar valor
-                                        </button>
-                                      }
-                                    </div>
-                                  }
+                      <div class="form-grid">
+                        <div class="form-group full-width">
+                          <label>Atributos de la variante (clave / valores):</label>
+                          <div formArrayName="attributes" class="variant-attributes-container">
+                            @for (
+                              attribute of variantAttributesControls(variantIndex);
+                              track $index;
+                              let attrIndex = $index
+                            ) {
+                              <div class="variant-attribute-row" [formGroupName]="attrIndex">
+                                <input type="text" formControlName="key" placeholder="Ej: color" />
+                                <div class="variant-values-container">
+                                  <div class="variant-values-list" [formArrayName]="'values'">
+                                    @for (
+                                      value of getAttributeValuesControls(variantIndex, attrIndex);
+                                      track $index;
+                                      let valueIndex = $index
+                                    ) {
+                                      <div class="variant-value-row">
+                                        <input
+                                          type="text"
+                                          [formControlName]="valueIndex"
+                                          placeholder="Ej: blanco"
+                                        />
+                                        @if (
+                                          getAttributeValuesControls(variantIndex, attrIndex)
+                                            .length > 1
+                                        ) {
+                                          <button
+                                            type="button"
+                                            class="btn-danger btn-small"
+                                            (click)="
+                                              removeValueFromAttribute(
+                                                variantIndex,
+                                                attrIndex,
+                                                valueIndex
+                                              )
+                                            "
+                                          >
+                                            Quitar valor
+                                          </button>
+                                        }
+                                      </div>
+                                    }
+                                  </div>
+                                  <button
+                                    type="button"
+                                    class="btn-secondary btn-small"
+                                    (click)="addValueToAttribute(variantIndex, attrIndex)"
+                                  >
+                                    Añadir valor
+                                  </button>
                                 </div>
                                 <button
                                   type="button"
-                                  class="btn-secondary btn-small"
-                                  (click)="addValueToAttribute(variantIndex, attrIndex)"
+                                  class="btn-danger btn-small"
+                                  (click)="removeVariantAttribute(variantIndex, attrIndex)"
                                 >
-                                  Añadir valor
+                                  Quitar
                                 </button>
                               </div>
-                              <button
-                                type="button"
-                                class="btn-danger btn-small"
-                                (click)="removeVariantAttribute(variantIndex, attrIndex)"
-                              >
-                                Quitar
-                              </button>
-                            </div>
-                          }
+                            }
 
-                          <button type="button" class="btn-secondary btn-small" (click)="addVariantAttribute(variantIndex)">
-                            Añadir atributo
-                          </button>
-                        </div>
-                      </div>
-
-                      <div class="form-group">
-                        <label>Stock:</label>
-                        <input type="number" formControlName="stock_quantity" min="0" />
-                      </div>
-
-                      <div class="form-group">
-                        <label>Precio adicional (€):</label>
-                        <input type="number" formControlName="precio_adicional" min="0" step="0.01" />
-                      </div>
-
-                      <div class="form-group full-width">
-                        <label>Imágenes de la variante:</label>
-                        <div class="media-actions">
-                          <label [for]="'gallery-variant-' + variantIndex" class="upload-btn variant-upload-btn">
-                            Subir imágenes
-                          </label>
-                          <button
-                            type="button"
-                            class="btn-secondary btn-small"
-                            (click)="openImagePickerModal('variant', variantIndex)"
-                          >
-                            Seleccionar desde API
-                          </button>
-                        </div>
-                        <input
-                          [id]="'gallery-variant-' + variantIndex"
-                          class="variant-file-input"
-                          type="file"
-                          (change)="onVariantImagesSelected($event, variantIndex)"
-                          accept="image/*"
-                          multiple
-                        />
-                        <div class="gallery variant-gallery">
-                          @for (img of getVariantImagePreviews(variantIndex); track $index; let imageIndex = $index) {
-                            <div class="gallery-item">
-                              <img [src]="img" alt="Variante imagen" />
-                              <button
-                                type="button"
-                                class="gallery-remove-btn"
-                                (click)="removeVariantImageAt(variantIndex, imageIndex)"
-                                aria-label="Quitar imagen de variante"
-                                title="Quitar imagen"
-                              >
-                                x
-                              </button>
-                            </div>
-                          }
-                        </div>
-                      </div>
-
-                      <div class="form-group checkbox-group">
-                        <input type="checkbox" formControlName="has_custom_physical_attributes" />
-                        <label style="margin: 0">Usar atributos físicos propios</label>
-                      </div>
-                    </div>
-
-                    @if (variant.get('has_custom_physical_attributes')?.value) {
-                      <div class="form-grid" formGroupName="physical_attributes">
-                        <div class="form-group">
-                          <label>Largo (cm):</label>
-                          <input type="number" formControlName="length" step="0.01" min="0" />
+                            <button
+                              type="button"
+                              class="btn-secondary btn-small"
+                              (click)="addVariantAttribute(variantIndex)"
+                            >
+                              Añadir atributo
+                            </button>
+                          </div>
                         </div>
 
                         <div class="form-group">
-                          <label>Ancho (cm):</label>
-                          <input type="number" formControlName="width" step="0.01" min="0" />
+                          <label>Stock:</label>
+                          <input type="number" formControlName="stock_quantity" min="0" />
                         </div>
 
                         <div class="form-group">
-                          <label>Alto (cm):</label>
-                          <input type="number" formControlName="height" step="0.01" min="0" />
+                          <label>Precio adicional (€):</label>
+                          <input
+                            type="number"
+                            formControlName="precio_adicional"
+                            min="0"
+                            step="0.01"
+                          />
                         </div>
 
-                        <div class="form-group">
-                          <label>Peso (kg):</label>
-                          <input type="number" formControlName="weight" step="0.01" min="0" />
+                        <div class="form-group full-width">
+                          <label>Imágenes de la variante:</label>
+                          <div class="media-actions">
+                            <label
+                              [for]="'gallery-variant-' + variantIndex"
+                              class="upload-btn variant-upload-btn"
+                            >
+                              Subir imágenes
+                            </label>
+                            <button
+                              type="button"
+                              class="btn-secondary btn-small"
+                              (click)="openImagePickerModal('variant', variantIndex)"
+                            >
+                              Seleccionar desde API
+                            </button>
+                          </div>
+                          <input
+                            [id]="'gallery-variant-' + variantIndex"
+                            class="variant-file-input"
+                            type="file"
+                            (change)="onVariantImagesSelected($event, variantIndex)"
+                            accept="image/*"
+                            multiple
+                          />
+                          <div class="gallery variant-gallery">
+                            @for (
+                              img of getVariantImagePreviews(variantIndex);
+                              track $index;
+                              let imageIndex = $index
+                            ) {
+                              <div class="gallery-item">
+                                <img [src]="img" alt="Variante imagen" />
+                                <button
+                                  type="button"
+                                  class="gallery-remove-btn"
+                                  (click)="removeVariantImageAt(variantIndex, imageIndex)"
+                                  aria-label="Quitar imagen de variante"
+                                  title="Quitar imagen"
+                                >
+                                  x
+                                </button>
+                              </div>
+                            }
+                          </div>
+                        </div>
+
+                        <div class="form-group checkbox-group">
+                          <input type="checkbox" formControlName="has_custom_physical_attributes" />
+                          <label style="margin: 0">Usar atributos físicos propios</label>
                         </div>
                       </div>
-                    }
+
+                      @if (variant.get('has_custom_physical_attributes')?.value) {
+                        <div class="form-grid" formGroupName="physical_attributes">
+                          <div class="form-group">
+                            <label>Largo (cm):</label>
+                            <input type="number" formControlName="length" step="0.01" min="0" />
+                          </div>
+
+                          <div class="form-group">
+                            <label>Ancho (cm):</label>
+                            <input type="number" formControlName="width" step="0.01" min="0" />
+                          </div>
+
+                          <div class="form-group">
+                            <label>Alto (cm):</label>
+                            <input type="number" formControlName="height" step="0.01" min="0" />
+                          </div>
+
+                          <div class="form-group">
+                            <label>Peso (kg):</label>
+                            <input type="number" formControlName="weight" step="0.01" min="0" />
+                          </div>
+                        </div>
+                      }
                     }
                   </div>
                 }
@@ -369,7 +443,11 @@
         <h3>Imagen del producto</h3>
         <div class="media-actions">
           <label for="image" class="upload-btn">Subir imagen</label>
-          <button type="button" class="btn-secondary btn-small" (click)="openImagePickerModal('main')">
+          <button
+            type="button"
+            class="btn-secondary btn-small"
+            (click)="openImagePickerModal('main')"
+          >
             Seleccionar desde API
           </button>
         </div>
@@ -386,11 +464,21 @@
           <h3>Galeria del producto</h3>
           <div class="media-actions">
             <label for="gallery" class="upload-btn">Subir imagenes</label>
-            <button type="button" class="btn-secondary btn-small" (click)="openImagePickerModal('gallery')">
+            <button
+              type="button"
+              class="btn-secondary btn-small"
+              (click)="openImagePickerModal('gallery')"
+            >
               Seleccionar desde API
             </button>
           </div>
-          <input type="file" (change)="onGalerySelected($event)" id="gallery" accept="image/*" multiple/>
+          <input
+            type="file"
+            (change)="onGalerySelected($event)"
+            id="gallery"
+            accept="image/*"
+            multiple
+          />
           <div class="gallery">
             @for (img of galeryPaths(); track $index; let imageIndex = $index) {
               <div class="gallery-item">
@@ -410,35 +498,14 @@
         </div>
       }
 
-      @if (showImagePickerModal()) {
-        <div class="image-picker-modal-backdrop" (click)="closeImagePickerModal()">
-          <div class="image-picker-modal" (click)="$event.stopPropagation()">
-            <div class="image-picker-modal-header">
-              <h4>{{ getImagePickerTitle() }}</h4>
-              <button type="button" class="btn-danger btn-small" (click)="closeImagePickerModal()">Cerrar</button>
-            </div>
-
-            <div class="api-picker-grid modal-grid">
-              @for (file of uploadedFiles(); track file) {
-                <button
-                  type="button"
-                  class="api-picker-item"
-                  [class.selected]="isModalImageSelected(file)"
-                  (click)="onModalImageClick(file)"
-                >
-                  <img [src]="getUploadedImageUrl(file)" [alt]="file" />
-                </button>
-              }
-            </div>
-          </div>
-        </div>
-      }
-
       <div class="image-upload-container">
         <h3>Categorias</h3>
         <div class="categories-checkboxes">
           @if (categories().length === 0) {
-            <p class="no-categories">No hay categorías disponibles. <a href="/admin/products/categories">Crear una categoría</a></p>
+            <p class="no-categories">
+              No hay categorías disponibles.
+              <a href="/admin/products/categories">Crear una categoría</a>
+            </p>
           } @else {
             <div class="checkbox-group">
               @for (category of categories(); track category._id) {
@@ -455,7 +522,32 @@
           }
         </div>
       </div>
-
     </div>
   </div>
+
+  @if (showImagePickerModal()) {
+    <div class="image-picker-modal-backdrop" (click)="closeImagePickerModal()">
+      <div class="image-picker-modal" (click)="$event.stopPropagation()">
+        <div class="image-picker-modal-header">
+          <h4>{{ getImagePickerTitle() }}</h4>
+          <button type="button" class="btn-danger btn-small" (click)="closeImagePickerModal()">
+            Cerrar
+          </button>
+        </div>
+
+        <div class="api-picker-grid modal-grid">
+          @for (file of uploadedFiles(); track file) {
+            <button
+              type="button"
+              class="api-picker-item"
+              [class.selected]="isModalImageSelected(file)"
+              (click)="onModalImageClick(file)"
+            >
+              <img [src]="getUploadedImageUrl(file)" [alt]="file" />
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  }
 </form>

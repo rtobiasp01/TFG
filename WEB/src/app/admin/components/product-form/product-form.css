@@ -376,12 +376,16 @@
 
 .image-picker-modal-backdrop {
   position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.4);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1200;
+  z-index: 9999;
+  pointer-events: all;
 }
 
 .image-picker-modal {
@@ -393,6 +397,8 @@
   border: 1px solid #e2e2e2;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.22);
   padding: 1rem;
+  pointer-events: all;
+  z-index: 10000;
 }
 
 .image-picker-modal-header {
@@ -778,4 +784,25 @@ input:checked + .slider:before {
   background: #fcfdff;
   border: 1px solid #dde4ef;
   border-radius: 12px;
+}
+
+/* --- MODAL OPEN STATE --- */
+.info-form.modal-open {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Desabilitar editor Quill cuando modal está abierto */
+.product-description-editor.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.product-description-editor.disabled ::ng-deep .ql-toolbar {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+.product-description-editor.disabled ::ng-deep .ql-container {
+  pointer-events: none;
 }
