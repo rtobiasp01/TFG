@@ -14,6 +14,13 @@ export interface BackgroundRemovalResponse {
   format?: 'png' | 'deltapng';
 }
 
+export interface BackgroundRemovalPreviewResponse {
+  message: string;
+  fileDetails: unknown;
+  previewDataUrl: string;
+  format?: 'png' | 'deltapng';
+}
+
 export interface UploadFilesResponse {
   message: string;
   files: string[];
@@ -49,6 +56,19 @@ export class UploadService {
     }
 
     return this.http.post<BackgroundRemovalResponse>(url, formData);
+  }
+
+  previsualizarArchivoSinFondo(archivo: File, useDeltaPng: boolean = false) {
+    const formData = new FormData();
+
+    formData.append('archivo', archivo);
+
+    let url = `${this.URL}/remove-background-preview`;
+    if (useDeltaPng) {
+      url += '?format=deltapng';
+    }
+
+    return this.http.post<BackgroundRemovalPreviewResponse>(url, formData);
   }
 
   obtenerArchivos() {

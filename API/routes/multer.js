@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
 const upload = require("../services/multer-service");
 
 const fs = require("fs").promises;
@@ -14,6 +15,7 @@ const PIXIAN_TEST_MODE = (process.env.PIXIAN_TEST_MODE || "true").toLowerCase() 
 const PIXIAN_TIMEOUT_MS = 180000; // 180 segundos como recomienda Pixian
 const PIXIAN_MAX_RETRIES = 3;
 const PIXIAN_INITIAL_BACKOFF_MS = 5000; // 5 segundos iniciales para 429
+const memoryUpload = multer({ storage: multer.memoryStorage() });
 
 /**
  * Intenta retryable con backoff exponencial
@@ -83,6 +85,78 @@ async function parsePixianError(response) {
   }
 }
 
+async function removeBackgroundWithPixian({ fileBuffer, mimetype, originalname, useDeltaPng }) {
+  const formData = new FormData();
+  formData.append(
+    "image",
+    new Blob([fileBuffer], { type: mimetype || "application/octet-stream" }),
+    originalname || "image",
+  );
+
+  if (PIXIAN_TEST_MODE) {
+    formData.append("test", "true");
+  }
+  if (useDeltaPng) {
+    formData.append("format", "deltapng");
+  }
+
+  const authToken = Buffer.from(`${PIXIAN_API_USER}:${PIXIAN_API_PASS}`).toString("base64");
+
+  const pixianResponse = await fetchWithRetry(PIXIAN_API_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Basic ${authToken}`,
+    },
+    body: formData,
+  });
+
+  if (!pixianResponse.ok) {
+    const errorData = await parsePixianError(pixianResponse);
+    const errorMessage = errorData?.error?.message || `HTTP ${pixianResponse.status}`;
+
+    if (pixianResponse.status === 402) {
+      throw new Error(`Créditos insuficientes (402): ${errorMessage}`);
+    } else if (pixianResponse.status === 429) {
+      throw new Error(`Rate limit excedido (429): ${errorMessage}`);
+    } else if (pixianResponse.status >= 400 && pixianResponse.status < 500) {
+      throw new Error(`Error de solicitud (${pixianResponse.status}): ${errorMessage}`);
+    }
+
+    throw new Error(`Error de Pixian (${pixianResponse.status}): ${errorMessage}`);
+  }
+
+  return {
+    outputBuffer: Buffer.from(await pixianResponse.arrayBuffer()),
+    format: useDeltaPng ? "deltapng" : "png",
+  };
+}
+
+function buildPixianErrorResponse(error) {
+  let statusCode = 500;
+  let errorMessage = "No se pudo eliminar el fondo de la imagen.";
+
+  if (error.message.includes("402")) {
+    statusCode = 402;
+    errorMessage = "Créditos de Pixian insuficientes. Compre un paquete de créditos.";
+  } else if (error.message.includes("429")) {
+    statusCode = 429;
+    errorMessage = "Límite de velocidad excedido. Intente más tarde.";
+  } else if (error.message.includes("AbortError") || error.message.includes("timeout")) {
+    errorMessage = "La solicitud excedió el tiempo máximo (180s). Intente de nuevo.";
+  } else if (error.message.includes("Error de solicitud")) {
+    statusCode = 400;
+  }
+
+  return {
+    statusCode,
+    body: {
+      error: errorMessage,
+      details: error.message,
+      timestamp: new Date().toISOString(),
+    },
+  };
+}
+
 router.post("/", upload.single("archivo"), (req, res) => {
   if (!req.file) {
     return res.status(400).send("No se seleccionó ningún archivo.");
@@ -104,55 +178,18 @@ router.post("/remove-background", upload.single("archivo"), async (req, res) => 
 
   try {
     const fileBuffer = await fs.readFile(inputFilePath);
-    const formData = new FormData();
-    formData.append(
-      "image",
-      new Blob([fileBuffer], { type: req.file.mimetype || "application/octet-stream" }),
-      req.file.originalname,
-    );
-    
-    // Agregar parámetros opcionales
-    if (PIXIAN_TEST_MODE) {
-      formData.append("test", "true");
-    }
-    if (useDeltaPng) {
-      formData.append("format", "deltapng");
-    }
-
-    const authToken = Buffer.from(`${PIXIAN_API_USER}:${PIXIAN_API_PASS}`).toString("base64");
-
-    // Usar fetchWithRetry para manejar timeouts y rate limiting
-    const pixianResponse = await fetchWithRetry(PIXIAN_API_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Basic ${authToken}`,
-      },
-      body: formData,
+    const { outputBuffer, format } = await removeBackgroundWithPixian({
+      fileBuffer,
+      mimetype: req.file.mimetype,
+      originalname: req.file.originalname,
+      useDeltaPng,
     });
-
-    if (!pixianResponse.ok) {
-      const errorData = await parsePixianError(pixianResponse);
-      const errorMessage = errorData?.error?.message || 
-                          `HTTP ${pixianResponse.status}`;
-      
-      // Detectar errores específicos de Pixian
-      if (pixianResponse.status === 402) {
-        throw new Error(`Créditos insuficientes (402): ${errorMessage}`);
-      } else if (pixianResponse.status === 429) {
-        throw new Error(`Rate limit excedido (429): ${errorMessage}`);
-      } else if (pixianResponse.status >= 400 && pixianResponse.status < 500) {
-        throw new Error(`Error de solicitud (${pixianResponse.status}): ${errorMessage}`);
-      } else {
-        throw new Error(`Error de Pixian (${pixianResponse.status}): ${errorMessage}`);
-      }
-    }
 
     // Determinar extensión según formato
     const fileExtension = useDeltaPng ? 'png' : 'png'; // Ambos son .png
     const outputFilename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}.${fileExtension}`;
     const outputPath = path.join(UPLOADS_DIR, outputFilename);
 
-    const outputBuffer = Buffer.from(await pixianResponse.arrayBuffer());
     await fs.writeFile(outputPath, outputBuffer);
     await fs.unlink(inputFilePath).catch(() => {});
 
@@ -162,34 +199,49 @@ router.post("/remove-background", upload.single("archivo"), async (req, res) => 
       fileDetails: req.file,
       processedFile: outputFilename,
       processedFileUrl: `${req.protocol}://${req.get("host")}/uploads/${outputFilename}`,
-      format: useDeltaPng ? 'deltapng' : 'png',
+      format,
     });
   } catch (error) {
     await fs.unlink(inputFilePath).catch(() => {});
 
     console.error("Error al eliminar el fondo de la imagen:", error.message);
-    
-    let statusCode = 500;
-    let errorMessage = "No se pudo eliminar el fondo de la imagen.";
+    const { statusCode, body } = buildPixianErrorResponse(error);
+    return res.status(statusCode).json(body);
+  }
+});
 
-    // Detectar tipo de error para respuesta apropiada
-    if (error.message.includes('402')) {
-      statusCode = 402;
-      errorMessage = "Créditos de Pixian insuficientes. Compre un paquete de créditos.";
-    } else if (error.message.includes('429')) {
-      statusCode = 429;
-      errorMessage = "Límite de velocidad excedido. Intente más tarde.";
-    } else if (error.message.includes('AbortError') || error.message.includes('timeout')) {
-      errorMessage = "La solicitud excedió el tiempo máximo (180s). Intente de nuevo.";
-    } else if (error.message.includes('Error de solicitud')) {
-      statusCode = 400;
-    }
+router.post("/remove-background-preview", memoryUpload.single("archivo"), async (req, res) => {
+  if (!req.file || !req.file.buffer) {
+    return res.status(400).json({ error: "No se seleccionó ningún archivo." });
+  }
 
-    return res.status(statusCode).json({
-      error: errorMessage,
-      details: error.message,
-      timestamp: new Date().toISOString(),
+  const useDeltaPng = req.query.format === "deltapng";
+
+  try {
+    const { outputBuffer, format } = await removeBackgroundWithPixian({
+      fileBuffer: req.file.buffer,
+      mimetype: req.file.mimetype,
+      originalname: req.file.originalname,
+      useDeltaPng,
     });
+
+    // Se devuelve en base64 para previsualizar sin persistir en disco/API.
+    const previewDataUrl = `data:image/png;base64,${outputBuffer.toString("base64")}`;
+
+    return res.status(200).json({
+      message: "Vista previa sin fondo generada con éxito.",
+      format,
+      previewDataUrl,
+      fileDetails: {
+        originalname: req.file.originalname,
+        mimetype: req.file.mimetype,
+        size: req.file.size,
+      },
+    });
+  } catch (error) {
+    console.error("Error al generar vista previa sin fondo:", error.message);
+    const { statusCode, body } = buildPixianErrorResponse(error);
+    return res.status(statusCode).json(body);
   }
 });
 

@@ -2,6 +2,7 @@ export type ProductType = 'simple' | 'variable' | 'virtual' | 'custom-personaliz
 
 export interface CustomizationConfig {
   allowImage: boolean;
+  enableBackgroundRemoval?: boolean;
   allowText: boolean;
   maxImageSize: number;
   maxTextLength: number;

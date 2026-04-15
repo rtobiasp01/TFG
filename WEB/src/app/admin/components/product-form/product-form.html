@@ -219,6 +219,18 @@
                 </div>
 
                 <div class="form-group checkbox-group">
+                  <input
+                    type="checkbox"
+                    id="enableBackgroundRemoval"
+                    formControlName="enableBackgroundRemoval"
+                    (change)="onEnableBackgroundRemovalChange()"
+                  />
+                  <label for="enableBackgroundRemoval" style="margin: 0"
+                    >Activar quitar fondo automáticamente</label
+                  >
+                </div>
+
+                <div class="form-group checkbox-group">
                   <input type="checkbox" id="allowText" formControlName="allowText" />
                   <label for="allowText" style="margin: 0">Permitir texto personalizado</label>
                 </div>
@@ -239,6 +251,10 @@
                     type="text"
                     id="imageFormats"
                     formControlName="imageFormats"
+                    [readonly]="
+                      productForm.get('customization_config.enableBackgroundRemoval')?.value ===
+                      false
+                    "
                     placeholder="jpg,jpeg,png,webp"
                   />
                 </div>

@@ -102,6 +102,7 @@ class Product {
 
     const defaults = {
       allowImage: true,
+      enableBackgroundRemoval: true,
       allowText: true,
       maxImageSize: 5242880,
       maxTextLength: 200,
@@ -113,14 +114,25 @@ class Product {
       return defaults;
     }
 
+    const enableBackgroundRemoval =
+      rawConfig.enableBackgroundRemoval !== undefined
+        ? Boolean(rawConfig.enableBackgroundRemoval)
+        : defaults.enableBackgroundRemoval;
+
+    const normalizedImageFormats = this.normalizeImageFormats(
+      rawConfig.imageFormats,
+      defaults.imageFormats,
+    );
+
     return {
       allowImage:
         rawConfig.allowImage !== undefined ? Boolean(rawConfig.allowImage) : defaults.allowImage,
+      enableBackgroundRemoval,
       allowText:
         rawConfig.allowText !== undefined ? Boolean(rawConfig.allowText) : defaults.allowText,
       maxImageSize: Number(rawConfig.maxImageSize) || defaults.maxImageSize,
       maxTextLength: Number(rawConfig.maxTextLength) || defaults.maxTextLength,
-      imageFormats: this.normalizeImageFormats(rawConfig.imageFormats, defaults.imageFormats),
+      imageFormats: enableBackgroundRemoval ? normalizedImageFormats : ["png"],
       textPlaceholder:
         rawConfig.textPlaceholder !== undefined && rawConfig.textPlaceholder !== null
           ? String(rawConfig.textPlaceholder).trim()

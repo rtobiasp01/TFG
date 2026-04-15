@@ -320,32 +320,54 @@ export class ProductDetails {
     }
 
     const file = input.files[0];
+    const previousPreview = this.customImagePreview();
+
+    if (previousPreview.startsWith('blob:')) {
+      URL.revokeObjectURL(previousPreview);
+    }
+
     this.customImageFile.set(file);
     this.customizationErrors.set([]);
     this.customImagePreview.set('');
-    this.isUploadingCustomization.set(true);
 
-    this.uploadService.subirArchivoSinFondo(file).subscribe({
+    if (!this.isBackgroundRemovalEnabled()) {
+      this.customImagePreview.set(URL.createObjectURL(file));
+      this.isUploadingCustomization.set(false);
+      return;
+    }
+
+    this.isUploadingCustomization.set(true);
+    this.uploadService.previsualizarArchivoSinFondo(file, true).subscribe({
       next: (response) => {
-        this.customImagePreview.set(response.processedFileUrl);
+        this.customImagePreview.set(response.previewDataUrl);
         this.isUploadingCustomization.set(false);
       },
       error: () => {
         this.isUploadingCustomization.set(false);
         this.customizationErrors.set([
-          'No se pudo procesar la imagen sin fondo. Inténtalo de nuevo.',
+          'No se pudo generar la previsualización sin fondo. Inténtalo de nuevo.',
         ]);
       },
     });
   }
 
   removeCustomizationImage(): void {
+    const preview = this.customImagePreview();
+
+    if (preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
+
     this.customImageFile.set(null);
     this.customImagePreview.set('');
     this.isUploadingCustomization.set(false);
   }
 
   customizationAcceptAttribute(): string {
+    if (!this.isBackgroundRemovalEnabled()) {
+      return '.png';
+    }
+
     const allowedFormats = this.customizationConfig()?.imageFormats ?? [
       'jpg',
       'jpeg',
@@ -434,14 +456,44 @@ export class ProductDetails {
   }
 
   private uploadAndAddCustomProduct(): void {
-    const uploadedImageUrl = this.customImagePreview();
+    const imageFile = this.customImageFile();
 
-    if (!uploadedImageUrl) {
-      this.customizationErrors.set(['La imagen todavía se está procesando.']);
+    if (!imageFile) {
+      this.customizationErrors.set(['No se ha seleccionado ninguna imagen.']);
       return;
     }
 
-    this.validateCustomizationOnServerAndAdd(uploadedImageUrl);
+    if (!this.isBackgroundRemovalEnabled()) {
+      this.isUploadingCustomization.set(true);
+      this.uploadService.subirArchivo(imageFile).subscribe({
+        next: (response: any) => {
+          const uploadedImageUrl = `${API_BASE_URL}/${String(response?.fileDetails?.path || '').replace(/\\/g, '/')}`;
+          this.customImagePreview.set(uploadedImageUrl);
+          this.isUploadingCustomization.set(false);
+          this.validateCustomizationOnServerAndAdd(uploadedImageUrl);
+        },
+        error: () => {
+          this.isUploadingCustomization.set(false);
+          this.customizationErrors.set(['No se pudo subir la imagen PNG. Inténtalo de nuevo.']);
+        },
+      });
+      return;
+    }
+
+    this.isUploadingCustomization.set(true);
+    this.uploadService.subirArchivoSinFondo(imageFile, true).subscribe({
+      next: (response) => {
+        this.customImagePreview.set(response.processedFileUrl);
+        this.isUploadingCustomization.set(false);
+        this.validateCustomizationOnServerAndAdd(response.processedFileUrl);
+      },
+      error: () => {
+        this.isUploadingCustomization.set(false);
+        this.customizationErrors.set([
+          'No se pudo procesar la imagen sin fondo. Inténtalo de nuevo.',
+        ]);
+      },
+    });
   }
 
   private finalizeCustomProductAddToCart(uploadedImageUrl?: string): void {
@@ -499,11 +551,17 @@ export class ProductDetails {
   private getDefaultCustomizationConfig(): CustomizationConfig {
     return {
       allowImage: true,
+      enableBackgroundRemoval: true,
       allowText: true,
       maxImageSize: 5242880,
       maxTextLength: 200,
       imageFormats: ['jpg', 'jpeg', 'png', 'webp'],
       textPlaceholder: 'Escribe un mensaje personalizado',
     };
+  }
+
+  private isBackgroundRemovalEnabled(): boolean {
+    const config = this.customizationConfig();
+    return config?.enableBackgroundRemoval !== false;
   }
 }

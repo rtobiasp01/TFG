@@ -356,6 +356,7 @@ async function validateProductCustomization({
 
   const config = product.customization_config || {
     allowImage: true,
+    enableBackgroundRemoval: true,
     allowText: true,
     maxImageSize: 5242880,
     maxTextLength: 200,
@@ -376,9 +377,11 @@ async function validateProductCustomization({
     }
 
     const imageExtension = uploadedImageUrl.split("?")[0].split(".").pop().toLowerCase();
-    const allowedFormats = Array.isArray(config.imageFormats)
+    const allowedFormatsFromConfig = Array.isArray(config.imageFormats)
       ? config.imageFormats.map((format) => String(format).toLowerCase())
       : [];
+    const allowedFormats =
+      config.enableBackgroundRemoval === false ? ["png"] : allowedFormatsFromConfig;
 
     if (allowedFormats.length > 0 && !allowedFormats.includes(imageExtension)) {
       errors.push("IMAGE_FORMAT_NOT_ALLOWED");

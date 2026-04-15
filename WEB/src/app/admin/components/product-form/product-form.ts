@@ -15,6 +15,7 @@ const API_BASE_URL = 'http://localhost:3000';
 type ImagePickerTarget = 'main' | 'gallery' | 'variant';
 interface CustomizationConfigFormValue {
   allowImage: boolean;
+  enableBackgroundRemoval: boolean;
   allowText: boolean;
   maxImageSize: number;
   maxTextLength: number;
@@ -88,6 +89,7 @@ export class ProductForm {
     }),
     customization_config: this.fb.group({
       allowImage: [true],
+      enableBackgroundRemoval: [true],
       allowText: [true],
       maxImageSize: [5242880, [Validators.min(0)]],
       maxTextLength: [200, [Validators.min(0)]],
@@ -999,6 +1001,8 @@ export class ProductForm {
 
     return {
       allowImage: customizationConfig.allowImage ?? defaultConfig.allowImage,
+      enableBackgroundRemoval:
+        customizationConfig.enableBackgroundRemoval ?? defaultConfig.enableBackgroundRemoval,
       allowText: customizationConfig.allowText ?? defaultConfig.allowText,
       maxImageSize: customizationConfig.maxImageSize ?? defaultConfig.maxImageSize,
       maxTextLength: customizationConfig.maxTextLength ?? defaultConfig.maxTextLength,
@@ -1017,6 +1021,8 @@ export class ProductForm {
   ): CustomizationConfig {
     const defaultConfig = this.getDefaultCustomizationConfigFormValue();
     const rawImageFormats = customizationConfig?.imageFormats ?? defaultConfig.imageFormats;
+    const enableBackgroundRemoval =
+      customizationConfig?.enableBackgroundRemoval ?? defaultConfig.enableBackgroundRemoval;
     const imageFormats = String(rawImageFormats)
       .split(',')
       .map((format) => format.trim().toLowerCase())
@@ -1025,10 +1031,15 @@ export class ProductForm {
 
     return {
       allowImage: customizationConfig?.allowImage ?? defaultConfig.allowImage,
+      enableBackgroundRemoval,
       allowText: customizationConfig?.allowText ?? defaultConfig.allowText,
       maxImageSize: customizationConfig?.maxImageSize ?? defaultConfig.maxImageSize,
       maxTextLength: customizationConfig?.maxTextLength ?? defaultConfig.maxTextLength,
-      imageFormats: imageFormats.length > 0 ? imageFormats : ['jpg', 'jpeg', 'png', 'webp'],
+      imageFormats: enableBackgroundRemoval
+        ? imageFormats.length > 0
+          ? imageFormats
+          : ['jpg', 'jpeg', 'png', 'webp']
+        : ['png'],
       textPlaceholder: String(textPlaceholder).trim(),
     };
   }
@@ -1036,12 +1047,28 @@ export class ProductForm {
   private getDefaultCustomizationConfigFormValue(): CustomizationConfigFormValue {
     return {
       allowImage: true,
+      enableBackgroundRemoval: true,
       allowText: true,
       maxImageSize: 5242880,
       maxTextLength: 200,
       imageFormats: 'jpg,jpeg,png,webp',
       textPlaceholder: 'Escribe un mensaje personalizado',
     };
+  }
+
+  onEnableBackgroundRemovalChange(): void {
+    const customizationConfigGroup = this.productForm.get(
+      'customization_config',
+    ) as FormGroup | null;
+    const isEnabled = customizationConfigGroup?.get('enableBackgroundRemoval')?.value !== false;
+
+    if (!customizationConfigGroup) {
+      return;
+    }
+
+    if (!isEnabled) {
+      customizationConfigGroup.patchValue({ imageFormats: 'png' });
+    }
   }
 
   private getVariantAttributesFormArray(variantIndex: number): FormArray<FormGroup> {
