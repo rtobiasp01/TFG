@@ -124,8 +124,7 @@ export class ProductForm {
           this.galeryPaths.set(Array.isArray(product.gallery) ? product.gallery : []);
           this.selectedCategories.set(new Set(product.categoria || []));
           this.patchProductInForm(product);
-          this.hasManualSlugEdition = true;
-          this.hasManualSkuEdition = true;
+          this.syncIdentifierManualFlags();
           this.updateTabsByProductType(product.type);
           this.updateStockQuantityState(product.manage_stock ?? false);
         },
@@ -296,6 +295,13 @@ export class ProductForm {
 
   private enviarFormularioFinal(variantImagesMap: Map<number, string[]> = new Map()): void {
     const rawValue = this.productForm.getRawValue();
+    const titleForAutoIds = String(rawValue.title ?? '');
+    const normalizedSlug = String(rawValue.slug ?? '').trim();
+    const normalizedSku = String(rawValue.sku ?? '').trim();
+    const resolvedSlug =
+      normalizedSlug.length > 0 ? normalizedSlug : this.generateSlugFromTitle(titleForAutoIds);
+    const resolvedSku =
+      normalizedSku.length > 0 ? normalizedSku : this.generateSkuFromTitle(titleForAutoIds);
     const categorias = Array.from(this.selectedCategories());
     const sanitizedDescription = this.sanitizeRichText(rawValue.description || '');
     const safeGallery = Array.isArray(rawValue.gallery)
@@ -306,6 +312,8 @@ export class ProductForm {
 
     const payload: any = {
       ...rawValue,
+      slug: resolvedSlug,
+      sku: resolvedSku,
       description: sanitizedDescription,
       gallery: safeGallery,
       stock_quantity: rawValue.manage_stock ? Number(rawValue.stock_quantity) || 0 : 0,
@@ -380,12 +388,38 @@ export class ProductForm {
     });
   }
 
+  private syncIdentifierManualFlags(): void {
+    const title = String(this.productForm.get('title')?.value ?? '');
+    const currentSlug = String(this.productForm.get('slug')?.value ?? '').trim();
+    const currentSku = String(this.productForm.get('sku')?.value ?? '').trim();
+    const autoSlug = this.generateSlugFromTitle(title);
+    const autoSku = this.generateSkuFromTitle(title);
+
+    this.hasManualSlugEdition = currentSlug.length > 0 && currentSlug !== autoSlug;
+    this.hasManualSkuEdition = currentSku.length > 0 && currentSku !== autoSku;
+  }
+
   onSlugInputChange(): void {
-    this.hasManualSlugEdition = true;
+    const currentSlug = String(this.productForm.get('slug')?.value ?? '').trim();
+    this.hasManualSlugEdition = currentSlug.length > 0;
+
+    if (!this.hasManualSlugEdition) {
+      const title = String(this.productForm.get('title')?.value ?? '');
+      this.productForm.patchValue(
+        { slug: this.generateSlugFromTitle(title) },
+        { emitEvent: false },
+      );
+    }
   }
 
   onSkuInputChange(): void {
-    this.hasManualSkuEdition = true;
+    const currentSku = String(this.productForm.get('sku')?.value ?? '').trim();
+    this.hasManualSkuEdition = currentSku.length > 0;
+
+    if (!this.hasManualSkuEdition) {
+      const title = String(this.productForm.get('title')?.value ?? '');
+      this.productForm.patchValue({ sku: this.generateSkuFromTitle(title) }, { emitEvent: false });
+    }
   }
 
   private generateSlugFromTitle(title: string): string {

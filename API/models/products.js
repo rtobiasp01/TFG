@@ -26,7 +26,6 @@ class Product {
     this.short_description = short_description;
     this.price = Number(price);
     this.sale_price = sale_price ? Number(sale_price) : null;
-    this.sku = sku;
     this.stock_status = stock_status;
     this.stock_quantity = Number(stock_quantity);
     this.manage_stock = Boolean(manage_stock);
@@ -59,9 +58,27 @@ class Product {
     this.image = image;
     this.gallery = Array.isArray(gallery) ? gallery : [];
 
-    this.visible = Boolean(visible);
-
     this.slug = custom_slug || this.generateSlug(this.title);
+    this.sku = this.normalizeSku(sku, this.slug, this.title);
+
+    this.visible = Boolean(visible);
+  }
+
+  normalizeSku(sku, slug, title) {
+    const candidate =
+      typeof sku === "string" && sku.trim().length > 0
+        ? sku
+        : slug || this.generateSlug(title) || "PROD";
+
+    return candidate
+      .toString()
+      .toUpperCase()
+      .trim()
+      .replace(/[^A-Z0-9 -]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 64);
   }
 
   generateSlug(text) {
