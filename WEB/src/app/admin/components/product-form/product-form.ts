@@ -348,8 +348,7 @@ export class ProductForm {
   }
 
   private handleSaveError(err: any): void {
-    const backendMessage =
-      typeof err?.error?.message === 'string' ? err.error.message.trim() : '';
+    const backendMessage = typeof err?.error?.message === 'string' ? err.error.message.trim() : '';
 
     if (err?.status === 409 && backendMessage.length > 0) {
       this.saveError.set(backendMessage);
@@ -366,11 +365,17 @@ export class ProductForm {
       const title = String(rawTitle ?? '');
 
       if (!this.hasManualSlugEdition) {
-        this.productForm.patchValue({ slug: this.generateSlugFromTitle(title) }, { emitEvent: false });
+        this.productForm.patchValue(
+          { slug: this.generateSlugFromTitle(title) },
+          { emitEvent: false },
+        );
       }
 
       if (!this.hasManualSkuEdition) {
-        this.productForm.patchValue({ sku: this.generateSkuFromTitle(title) }, { emitEvent: false });
+        this.productForm.patchValue(
+          { sku: this.generateSkuFromTitle(title) },
+          { emitEvent: false },
+        );
       }
     });
   }
