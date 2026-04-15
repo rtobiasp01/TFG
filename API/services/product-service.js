@@ -1,6 +1,63 @@
 const connectDB = require("../db/mongo");
 const { ObjectId } = require("mongodb");
 
+function normalizePrimitiveValue(value) {
+  if (value === undefined || value === null) {
+    return null;
+  }
+
+  return String(value).trim().toLowerCase();
+}
+
+function getVariantAttributes(variant) {
+  const explicitAttributes =
+    variant.attributes && typeof variant.attributes === "object" && !Array.isArray(variant.attributes)
+      ? variant.attributes
+      : {};
+
+  const reservedKeys = new Set([
+    "sku",
+    "stock",
+    "stock_quantity",
+    "precio_adicional",
+    "imagenes",
+    "physical_attributes",
+    "attributes",
+    "_id",
+  ]);
+
+  const mergedAttributes = { ...explicitAttributes };
+
+  Object.entries(variant).forEach(([key, value]) => {
+    if (reservedKeys.has(key) || mergedAttributes[key] !== undefined) {
+      return;
+    }
+
+    mergedAttributes[key] = value;
+  });
+
+  const normalizedAttributes = {};
+
+  Object.entries(mergedAttributes).forEach(([key, value]) => {
+    if (typeof value === "string" || typeof value === "number") {
+      normalizedAttributes[key] = normalizePrimitiveValue(value);
+      return;
+    }
+
+    if (Array.isArray(value)) {
+      const firstPrimitiveValue = value.find(
+        (item) => typeof item === "string" || typeof item === "number",
+      );
+
+      if (firstPrimitiveValue !== undefined) {
+        normalizedAttributes[key] = normalizePrimitiveValue(firstPrimitiveValue);
+      }
+    }
+  });
+
+  return normalizedAttributes;
+}
+
 // Obtener todos los productos
 async function getAllProducts() {
   try {
@@ -85,46 +142,32 @@ async function updateProduct(id, updateData) {
 }
 
 function variantMatchesSelection(variant, selection = {}) {
-  const selectedColor =
-    selection.color !== undefined ? String(selection.color).toLowerCase() : null;
-  const selectedSize =
-    selection.talla !== undefined ? String(selection.talla).toLowerCase() : null;
+  const normalizedSelection = Object.entries(selection).reduce((accumulator, [key, value]) => {
+    const normalizedValue = normalizePrimitiveValue(value);
 
-  if (selectedColor === null && selectedSize === null) {
+    if (normalizedValue !== null) {
+      accumulator[key] = normalizedValue;
+    }
+
+    return accumulator;
+  }, {});
+
+  if (Object.keys(normalizedSelection).length === 0) {
     return false;
   }
 
-  const variantAttributes = {
-    ...(variant.attributes && typeof variant.attributes === "object"
-      ? variant.attributes
-      : {}),
-    ...variant,
-  };
+  const variantAttributes = getVariantAttributes(variant);
 
-  const variantColor =
-    variantAttributes.color !== undefined
-      ? String(variantAttributes.color).toLowerCase()
-      : null;
-  const variantSize =
-    variantAttributes.talla !== undefined
-      ? String(variantAttributes.talla).toLowerCase()
-      : null;
-
-  if (selectedColor !== null && variantColor !== selectedColor) {
-    return false;
-  }
-
-  if (selectedSize !== null && variantSize !== selectedSize) {
-    return false;
-  }
-
-  return true;
+  return Object.entries(normalizedSelection).every(
+    ([key, value]) => variantAttributes[key] === value,
+  );
 }
 
 async function findProductAndVariantForStockLookup({
   productId,
   productSku,
   variantSku,
+  selection = {},
   color,
   talla,
 }) {
@@ -153,7 +196,11 @@ async function findProductAndVariantForStockLookup({
     variantIndex = variants.findIndex((variant) => variant.sku === variantSku);
   } else {
     variantIndex = variants.findIndex((variant) =>
-      variantMatchesSelection(variant, { color, talla }),
+      variantMatchesSelection(variant, {
+        ...selection,
+        ...(color !== undefined ? { color } : {}),
+        ...(talla !== undefined ? { talla } : {}),
+      }),
     );
   }
 
@@ -172,6 +219,7 @@ async function validateVariantStock({
   productId,
   productSku,
   variantSku,
+  selection = {},
   color,
   talla,
   quantity = 1,
@@ -180,6 +228,7 @@ async function validateVariantStock({
     productId,
     productSku,
     variantSku,
+    selection,
     color,
     talla,
   });
@@ -216,6 +265,7 @@ async function decrementVariantStock({
   productId,
   productSku,
   variantSku,
+  selection = {},
   color,
   talla,
   quantity = 1,
@@ -224,6 +274,7 @@ async function decrementVariantStock({
     productId,
     productSku,
     variantSku,
+    selection,
     color,
     talla,
     quantity,
@@ -280,6 +331,77 @@ async function decrementVariantStock({
   };
 }
 
+async function validateProductCustomization({
+  productId,
+  productSku,
+  customization = {},
+}) {
+  const db = await connectDB();
+  const collection = db.collection("products");
+
+  let product = null;
+
+  if (productId) {
+    product = await collection.findOne({ _id: new ObjectId(productId) });
+  } else if (productSku) {
+    product = await collection.findOne({ sku: productSku });
+  }
+
+  if (!product) {
+    return {
+      valid: false,
+      errors: ["PRODUCT_NOT_FOUND"],
+    };
+  }
+
+  const config = product.customization_config || {
+    allowImage: true,
+    allowText: true,
+    maxImageSize: 5242880,
+    maxTextLength: 200,
+    imageFormats: ["jpg", "jpeg", "png", "webp"],
+    textPlaceholder: "Escribe un mensaje personalizado",
+  };
+
+  const errors = [];
+  const customText = typeof customization.customText === "string" ? customization.customText.trim() : "";
+  const uploadedImageUrl =
+    typeof customization.uploadedImageUrl === "string"
+      ? customization.uploadedImageUrl.trim()
+      : "";
+
+  if (uploadedImageUrl) {
+    if (!config.allowImage) {
+      errors.push("IMAGE_NOT_ALLOWED");
+    }
+
+    const imageExtension = uploadedImageUrl.split("?")[0].split(".").pop().toLowerCase();
+    const allowedFormats = Array.isArray(config.imageFormats)
+      ? config.imageFormats.map((format) => String(format).toLowerCase())
+      : [];
+
+    if (allowedFormats.length > 0 && !allowedFormats.includes(imageExtension)) {
+      errors.push("IMAGE_FORMAT_NOT_ALLOWED");
+    }
+  }
+
+  if (customText) {
+    if (!config.allowText) {
+      errors.push("TEXT_NOT_ALLOWED");
+    }
+
+    if (customText.length > Number(config.maxTextLength || 0)) {
+      errors.push("TEXT_TOO_LONG");
+    }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    productId: product._id,
+  };
+}
+
 module.exports = {
   getAllProducts,
   createProduct,
@@ -289,4 +411,5 @@ module.exports = {
   updateProduct,
   validateVariantStock,
   decrementVariantStock,
+  validateProductCustomization,
 };

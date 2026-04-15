@@ -5,6 +5,10 @@ import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
 import { CartService } from '../../../services/cart-service';
 import { Variant } from '../../../interfaces/variant';
+import { UploadService } from '../../../services/upload-service';
+import { CustomizationConfig, UserCustomization } from '../../../interfaces/customization';
+
+const API_BASE_URL = 'http://localhost:3000';
 
 type VariantValue = string | number;
 
@@ -24,9 +28,16 @@ export class ProductDetails {
   private readonly route = inject(ActivatedRoute);
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
+  private readonly uploadService = inject(UploadService);
 
   readonly product = signal<Product | null>(null);
   readonly selectedVariant = signal<Variant | undefined>(undefined);
+  readonly customizationConfig = signal<CustomizationConfig | null>(null);
+  readonly customizationErrors = signal<string[]>([]);
+  readonly customText = signal<string>('');
+  readonly customImagePreview = signal<string>('');
+  readonly customImageFile = signal<File | null>(null);
+  readonly isUploadingCustomization = signal<boolean>(false);
 
   readonly imagenPrincipal = signal<string | undefined>('');
   readonly galeriaActual = signal<string[]>([]);
@@ -48,6 +59,9 @@ export class ProductDetails {
     this.productService.getBySku(sku).subscribe({
       next: (product) => {
         this.product.set(product);
+        this.customizationConfig.set(
+          product?.customization_config ?? this.getDefaultCustomizationConfig(),
+        );
         const allVariants = product?.variantes ?? [];
         const initialVariant = allVariants[0];
 
@@ -70,14 +84,14 @@ export class ProductDetails {
     this.imagenPrincipal.set(imagen);
   }
 
-  stockAvailabilityLabel(): string {
+  stockAvailability(): boolean {
     const variantStock = this.selectedVariant()?.stock_quantity;
     if (typeof variantStock === 'number') {
-      return variantStock > 0 ? 'Hay stock' : 'Sin stock';
+      return variantStock > 0;
     }
 
     const productStock = this.product()?.stock_quantity ?? 0;
-    return productStock > 0 ? 'Hay stock' : 'Sin stock';
+    return productStock > 0;
   }
 
   optionTrack(value: VariantValue): string {
@@ -239,6 +253,23 @@ export class ProductDetails {
       return;
     }
 
+    if (product.type === 'custom-personalized') {
+      const localValidationErrors = this.validateCustomizationLocally();
+
+      if (localValidationErrors.length > 0) {
+        this.customizationErrors.set(localValidationErrors);
+        return;
+      }
+
+      if (this.customImageFile()) {
+        this.uploadAndAddCustomProduct();
+        return;
+      }
+
+      this.validateCustomizationOnServerAndAdd();
+      return;
+    }
+
     const isSimple = (product?.variantes?.length ?? 0) === 0 || !selectedVariant;
     const basePrice = product.price;
     const productImage = product.image;
@@ -269,5 +300,210 @@ export class ProductDetails {
         availableStock: selectedVariant?.stock_quantity ?? 0,
       });
     }
+  }
+
+  isCustomPersonalizedProduct(): boolean {
+    return this.product()?.type === 'custom-personalized';
+  }
+
+  onCustomizationTextInput(event: Event): void {
+    const input = event.target as HTMLTextAreaElement;
+    this.customText.set(input.value);
+    this.customizationErrors.set([]);
+  }
+
+  onCustomizationImageSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+    this.customImageFile.set(file);
+    this.customizationErrors.set([]);
+    this.customImagePreview.set('');
+    this.isUploadingCustomization.set(true);
+
+    this.uploadService.subirArchivoSinFondo(file).subscribe({
+      next: (response) => {
+        this.customImagePreview.set(response.processedFileUrl);
+        this.isUploadingCustomization.set(false);
+      },
+      error: () => {
+        this.isUploadingCustomization.set(false);
+        this.customizationErrors.set([
+          'No se pudo procesar la imagen sin fondo. Inténtalo de nuevo.',
+        ]);
+      },
+    });
+  }
+
+  removeCustomizationImage(): void {
+    this.customImageFile.set(null);
+    this.customImagePreview.set('');
+    this.isUploadingCustomization.set(false);
+  }
+
+  customizationAcceptAttribute(): string {
+    const allowedFormats = this.customizationConfig()?.imageFormats ?? [
+      'jpg',
+      'jpeg',
+      'png',
+      'webp',
+    ];
+    return allowedFormats.map((format) => `.${format.replace(/^[.]+/, '')}`).join(',');
+  }
+
+  private validateCustomizationLocally(): string[] {
+    const product = this.product();
+    const customizationConfig = this.customizationConfig();
+
+    if (!product || !customizationConfig) {
+      return [];
+    }
+
+    const errors: string[] = [];
+    const customText = this.customText().trim();
+    const customImageFile = this.customImageFile();
+
+    if (this.isUploadingCustomization()) {
+      errors.push('La imagen todavía se está procesando. Espera a que termine.');
+      return errors;
+    }
+
+    if (customImageFile && !customizationConfig.allowImage) {
+      errors.push('Este producto no permite subir imagen.');
+    }
+
+    if (customText && !customizationConfig.allowText) {
+      errors.push('Este producto no permite texto personalizado.');
+    }
+
+    if (customText.length > customizationConfig.maxTextLength) {
+      errors.push(
+        `El texto supera el máximo permitido de ${customizationConfig.maxTextLength} caracteres.`,
+      );
+    }
+
+    if (customImageFile) {
+      const allowedFormats = (customizationConfig.imageFormats ?? []).map((format) =>
+        format.toLowerCase(),
+      );
+      const fileExtension = customImageFile.name.split('.').pop()?.toLowerCase() ?? '';
+
+      if (customImageFile.size > customizationConfig.maxImageSize) {
+        errors.push(
+          `La imagen supera el tamaño máximo de ${customizationConfig.maxImageSize} bytes.`,
+        );
+      }
+
+      if (allowedFormats.length > 0 && !allowedFormats.includes(fileExtension)) {
+        errors.push(`El formato ${fileExtension || 'seleccionado'} no está permitido.`);
+      }
+    }
+
+    return errors;
+  }
+
+  private validateCustomizationOnServerAndAdd(uploadedImageUrl?: string): void {
+    const product = this.product();
+
+    if (!product) {
+      return;
+    }
+
+    this.productService
+      .validateCustomization({
+        product_id: product._id,
+        customization: this.buildCustomizationPayload(uploadedImageUrl),
+      })
+      .subscribe({
+        next: (result) => {
+          if (result?.valid === false || result?.errors?.length > 0) {
+            this.customizationErrors.set(result.errors ?? ['La personalización no es válida.']);
+            return;
+          }
+
+          this.finalizeCustomProductAddToCart(uploadedImageUrl);
+        },
+        error: () => {
+          this.customizationErrors.set(['No se ha podido validar la personalización.']);
+        },
+      });
+  }
+
+  private uploadAndAddCustomProduct(): void {
+    const uploadedImageUrl = this.customImagePreview();
+
+    if (!uploadedImageUrl) {
+      this.customizationErrors.set(['La imagen todavía se está procesando.']);
+      return;
+    }
+
+    this.validateCustomizationOnServerAndAdd(uploadedImageUrl);
+  }
+
+  private finalizeCustomProductAddToCart(uploadedImageUrl?: string): void {
+    const product = this.product();
+    const selectedVariant = this.selectedVariant();
+
+    if (!product) {
+      return;
+    }
+
+    const isSimple = (product?.variantes?.length ?? 0) === 0 || !selectedVariant;
+    const basePrice = product.price;
+    const productImage = product.image;
+    const additionalPrice = selectedVariant?.precio_adicional ?? 0;
+    const customization = this.buildCustomizationPayload(uploadedImageUrl);
+
+    if (isSimple) {
+      this.cartService.addItem({
+        productId: product._id,
+        productTitle: product.title,
+        productType: 'custom-personalized',
+        productImage,
+        basePrice,
+        simpleSku: product.sku,
+        quantity: 1,
+        availableStock: product.stock_quantity,
+        customization,
+      });
+      return;
+    }
+
+    this.cartService.addItem({
+      productId: product._id,
+      productTitle: product.title,
+      productType: 'custom-personalized',
+      productImage,
+      basePrice,
+      variantSku: selectedVariant?.sku,
+      variantAttributes: this.selectedAttributes(),
+      variantAdditionalPrice: additionalPrice,
+      quantity: 1,
+      availableStock: selectedVariant?.stock_quantity ?? 0,
+      customization,
+    });
+  }
+
+  private buildCustomizationPayload(uploadedImageUrl?: string): UserCustomization {
+    return {
+      uploadedImageUrl: uploadedImageUrl ?? this.customImagePreview() ?? null,
+      customText: this.customText().trim() || null,
+      timestamp: Date.now(),
+    };
+  }
+
+  private getDefaultCustomizationConfig(): CustomizationConfig {
+    return {
+      allowImage: true,
+      allowText: true,
+      maxImageSize: 5242880,
+      maxTextLength: 200,
+      imageFormats: ['jpg', 'jpeg', 'png', 'webp'],
+      textPlaceholder: 'Escribe un mensaje personalizado',
+    };
   }
 }

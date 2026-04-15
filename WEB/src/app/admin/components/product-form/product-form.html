@@ -109,6 +109,7 @@
                   <option value="simple">Simple</option>
                   <option value="variable">Variable</option>
                   <option value="virtual">Virtual</option>
+                  <option value="custom-personalized">Personalizado</option>
                 </select>
               </div>
 
@@ -200,6 +201,56 @@
                 <div class="form-group">
                   <label for="weight">Peso (kg):</label>
                   <input type="number" id="weight" formControlName="weight" step="0.01" min="0" />
+                </div>
+              </div>
+            </div>
+          </label>
+        }
+
+        @if (showCustomizationTab()) {
+          <label class="radio">
+            <input type="radio" name="radio" />
+            <span class="name">Personalización</span>
+            <div class="content">
+              <div class="form-grid" formGroupName="customization_config">
+                <div class="form-group checkbox-group">
+                  <input type="checkbox" id="allowImage" formControlName="allowImage" />
+                  <label for="allowImage" style="margin: 0">Permitir imagen subida</label>
+                </div>
+
+                <div class="form-group checkbox-group">
+                  <input type="checkbox" id="allowText" formControlName="allowText" />
+                  <label for="allowText" style="margin: 0">Permitir texto personalizado</label>
+                </div>
+
+                <div class="form-group">
+                  <label for="maxImageSize">Tamaño máximo de imagen (bytes):</label>
+                  <input type="number" id="maxImageSize" formControlName="maxImageSize" min="0" />
+                </div>
+
+                <div class="form-group">
+                  <label for="maxTextLength">Longitud máxima del texto:</label>
+                  <input type="number" id="maxTextLength" formControlName="maxTextLength" min="0" />
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="imageFormats">Formatos permitidos (separados por coma):</label>
+                  <input
+                    type="text"
+                    id="imageFormats"
+                    formControlName="imageFormats"
+                    placeholder="jpg,jpeg,png,webp"
+                  />
+                </div>
+
+                <div class="form-group full-width">
+                  <label for="textPlaceholder">Placeholder del texto:</label>
+                  <input
+                    type="text"
+                    id="textPlaceholder"
+                    formControlName="textPlaceholder"
+                    placeholder="Escribe un mensaje personalizado"
+                  />
                 </div>
               </div>
             </div>

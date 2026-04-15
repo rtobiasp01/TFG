@@ -57,6 +57,7 @@ router.post("/validate-stock", async (req, res) => {
       productId: req.body.product_id,
       productSku: req.body.product_sku,
       variantSku: req.body.variant_sku,
+      selection: req.body.selection || req.body.attributes || {},
       color: req.body.color,
       talla: req.body.talla,
       quantity: req.body.quantity,
@@ -76,12 +77,35 @@ router.post("/validate-stock", async (req, res) => {
   }
 });
 
+router.post("/validate-customization", async (req, res) => {
+  try {
+    const result = await productService.validateProductCustomization({
+      productId: req.body.product_id,
+      productSku: req.body.product_sku,
+      customization: req.body.customization,
+    });
+
+    if (!result.valid) {
+      return res.status(409).json(result);
+    }
+
+    return res.json(result);
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Error al validar la personalización",
+      error: error.message,
+    });
+  }
+});
+
 router.post("/decrement-stock", async (req, res) => {
   try {
     const result = await productService.decrementVariantStock({
       productId: req.body.product_id,
       productSku: req.body.product_sku,
       variantSku: req.body.variant_sku,
+      selection: req.body.selection || req.body.attributes || {},
       color: req.body.color,
       talla: req.body.talla,
       quantity: req.body.quantity,
@@ -155,6 +179,10 @@ router.put("/:id", async (req, res) => {
       stock_quantity: req.body.stock_quantity,
       manage_stock: req.body.manage_stock,
       type: req.body.type,
+      customization_config:
+        req.body.customization_config !== undefined
+          ? normalizedProduct.customization_config
+          : undefined,
       physical_attributes:
         req.body.physical_attributes !== undefined
           ? normalizedProduct.physical_attributes

@@ -6,6 +6,14 @@ export interface UploadResponse {
   fileDetails: unknown;
 }
 
+export interface BackgroundRemovalResponse {
+  message: string;
+  fileDetails: unknown;
+  processedFile: string;
+  processedFileUrl: string;
+  format?: 'png' | 'deltapng';
+}
+
 export interface UploadFilesResponse {
   message: string;
   files: string[];
@@ -28,6 +36,19 @@ export class UploadService {
     formData.append('archivo', archivo);
 
     return this.http.post<UploadResponse>(this.URL, formData);
+  }
+
+  subirArchivoSinFondo(archivo: File, useDeltaPng: boolean = false) {
+    const formData = new FormData();
+
+    formData.append('archivo', archivo);
+
+    let url = `${this.URL}/remove-background`;
+    if (useDeltaPng) {
+      url += '?format=deltapng';
+    }
+
+    return this.http.post<BackgroundRemovalResponse>(url, formData);
   }
 
   obtenerArchivos() {

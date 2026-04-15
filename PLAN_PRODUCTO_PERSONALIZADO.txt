@@ -7,6 +7,7 @@ Fecha: 2026-04-14
 Implementar un nuevo tipo de producto "custom-personalized" que permita:
 - Personalizacion con imagen subida por el cliente.
 - Personalizacion con mensaje de texto.
+- Pueden ser las dos a la vez o no.
 - Compatibilidad con variantes (talla, color u otros atributos).
 
 ============================================================
@@ -15,16 +16,14 @@ Implementar un nuevo tipo de producto "custom-personalized" que permita:
 
 [ALTO] No se valida stock al anadir al carrito en frontend
 - En product-details se llama a cartService.addItem() directamente.
-- Existe endpoint /products/validate-stock, pero no se usa en ese flujo.
 - Riesgo: overselling.
 
 [ALTO] Matching de variantes hardcodeado a color/talla
 - En backend, variantMatchesSelection() usa color y talla de forma fija.
 - Riesgo: si se crean atributos dinamicos, la seleccion de variante puede fallar.
 
-[ALTO] Carrito sin soporte para personalizacion y solo localStorage
+[ALTO] Carrito sin soporte para personalizacion
 - CartItem actual no incluye datos de personalizacion (imagen/mensaje).
-- Persistencia solo client-side; sin trazabilidad robusta para pedido.
 
 [MEDIO-ALTO] Tipo de producto sin contrato cerrado
 - type se maneja como string libre en varios puntos.

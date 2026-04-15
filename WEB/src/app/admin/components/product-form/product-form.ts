@@ -9,9 +9,18 @@ import { Variant } from '../../../interfaces/variant';
 import { Category } from '../../../interfaces/category';
 import { CommonModule } from '@angular/common';
 import { QuillModule } from 'ngx-quill';
+import { CustomizationConfig } from '../../../interfaces/customization';
 
 const API_BASE_URL = 'http://localhost:3000';
 type ImagePickerTarget = 'main' | 'gallery' | 'variant';
+interface CustomizationConfigFormValue {
+  allowImage: boolean;
+  allowText: boolean;
+  maxImageSize: number;
+  maxTextLength: number;
+  imageFormats: string;
+  textPlaceholder: string;
+}
 
 @Component({
   selector: 'app-product-form',
@@ -33,6 +42,7 @@ export class ProductForm {
   readonly galeryPaths = signal<string[]>([]);
   readonly showLogisticsTab = signal<boolean>(true);
   readonly showVariantsTab = signal<boolean>(false);
+  readonly showCustomizationTab = signal<boolean>(false);
   readonly categories = signal<Category[]>([]);
   readonly selectedCategories = signal<Set<string>>(new Set());
   readonly variantImagePreviews = signal<Map<number, string[]>>(new Map());
@@ -50,7 +60,6 @@ export class ProductForm {
     'underline',
     'strike',
     'list',
-    'bullet',
     'header',
     'blockquote',
     'link',
@@ -76,6 +85,14 @@ export class ProductForm {
       width: [0, [Validators.min(0)]],
       height: [0, [Validators.min(0)]],
       weight: [0, [Validators.min(0)]],
+    }),
+    customization_config: this.fb.group({
+      allowImage: [true],
+      allowText: [true],
+      maxImageSize: [5242880, [Validators.min(0)]],
+      maxTextLength: [200, [Validators.min(0)]],
+      imageFormats: ['jpg,jpeg,png,webp'],
+      textPlaceholder: ['Escribe un mensaje personalizado'],
     }),
     variantes: this.fb.array([]),
     image: [''],
@@ -196,7 +213,10 @@ export class ProductForm {
     });
   }
 
-  private subirVariantesImagenes(variantIndex = 0, allVariantImages: Map<number, string[]> = new Map()): void {
+  private subirVariantesImagenes(
+    variantIndex = 0,
+    allVariantImages: Map<number, string[]> = new Map(),
+  ): void {
     const variantIndices = Array.from(this.variantFilesToUpload.keys());
 
     if (variantIndices.length === 0) {
@@ -217,7 +237,14 @@ export class ProductForm {
       return;
     }
 
-    this.subirVariantImagenesRecursive(currentVariantIdx, 0, [], allVariantImages, variantIndex, variantIndices.length);
+    this.subirVariantImagenesRecursive(
+      currentVariantIdx,
+      0,
+      [],
+      allVariantImages,
+      variantIndex,
+      variantIndices.length,
+    );
   }
 
   private subirVariantImagenesRecursive(
@@ -262,7 +289,9 @@ export class ProductForm {
     const categorias = Array.from(this.selectedCategories());
     const sanitizedDescription = this.sanitizeRichText(rawValue.description || '');
     const safeGallery = Array.isArray(rawValue.gallery)
-      ? rawValue.gallery.filter((url: string) => typeof url === 'string' && !url.startsWith('blob:'))
+      ? rawValue.gallery.filter(
+          (url: string) => typeof url === 'string' && !url.startsWith('blob:'),
+        )
       : [];
 
     const payload: any = {
@@ -274,11 +303,16 @@ export class ProductForm {
       categoria: categorias,
     };
 
+    payload.customization_config =
+      rawValue.type === 'custom-personalized'
+        ? this.normalizeCustomizationConfigPayload(rawValue.customization_config)
+        : null;
+
     if (rawValue.type === 'virtual') {
       payload.physical_attributes = null;
     }
 
-    if (rawValue.type !== 'variable') {
+    if (rawValue.type !== 'variable' && rawValue.type !== 'custom-personalized') {
       payload.variantes = [];
     }
 
@@ -322,7 +356,12 @@ export class ProductForm {
 
       const safeClasses = classAttr
         .split(/\s+/)
-        .filter((className) => className === 'ql-size-small' || className === 'ql-size-large' || className === 'ql-size-huge');
+        .filter(
+          (className) =>
+            className === 'ql-size-small' ||
+            className === 'ql-size-large' ||
+            className === 'ql-size-huge',
+        );
 
       if (safeClasses.length > 0) {
         node.setAttribute('class', safeClasses.join(' '));
@@ -389,7 +428,9 @@ export class ProductForm {
         return newMap;
       });
 
-      const existingUrls = this.getVariantImagePreviews(variantIndex).filter((url) => !url.startsWith('blob:'));
+      const existingUrls = this.getVariantImagePreviews(variantIndex).filter(
+        (url) => !url.startsWith('blob:'),
+      );
       this.updateVariantFormImagesText(variantIndex, existingUrls);
       this.closeImagePickerModal();
     }
@@ -532,7 +573,10 @@ export class ProductForm {
       }
     }
 
-    this.updateVariantFormImagesText(variantIndex, updatedPreviews.filter((url) => !url.startsWith('blob:')));
+    this.updateVariantFormImagesText(
+      variantIndex,
+      updatedPreviews.filter((url) => !url.startsWith('blob:')),
+    );
   }
 
   isModalImageSelected(filename: string): boolean {
@@ -563,7 +607,8 @@ export class ProductForm {
 
   private updateTabsByProductType(type: string): void {
     this.showLogisticsTab.set(type !== 'virtual');
-    this.showVariantsTab.set(type === 'variable');
+    this.showVariantsTab.set(type === 'variable' || type === 'custom-personalized');
+    this.showCustomizationTab.set(type === 'custom-personalized');
 
     if (type === 'variable' && this.variantesFormArray.length === 0) {
       this.addVariant(undefined, { insertAtTop: true, collapsed: true });
@@ -598,10 +643,22 @@ export class ProductForm {
       attributes: this.fb.array([]),
       has_custom_physical_attributes: [Boolean(variant?.physical_attributes)],
       physical_attributes: this.fb.group({
-        length: [this.getPhysicalAttributeValue(variant?.physical_attributes, 'length', 0), [Validators.min(0)]],
-        width: [this.getPhysicalAttributeValue(variant?.physical_attributes, 'width', 0), [Validators.min(0)]],
-        height: [this.getPhysicalAttributeValue(variant?.physical_attributes, 'height', 0), [Validators.min(0)]],
-        weight: [this.getPhysicalAttributeValue(variant?.physical_attributes, 'weight', 0), [Validators.min(0)]],
+        length: [
+          this.getPhysicalAttributeValue(variant?.physical_attributes, 'length', 0),
+          [Validators.min(0)],
+        ],
+        width: [
+          this.getPhysicalAttributeValue(variant?.physical_attributes, 'width', 0),
+          [Validators.min(0)],
+        ],
+        height: [
+          this.getPhysicalAttributeValue(variant?.physical_attributes, 'height', 0),
+          [Validators.min(0)],
+        ],
+        weight: [
+          this.getPhysicalAttributeValue(variant?.physical_attributes, 'weight', 0),
+          [Validators.min(0)],
+        ],
       }),
     });
 
@@ -719,7 +776,10 @@ export class ProductForm {
         next.set(newIndex, [...existingImages]);
         return next;
       });
-      this.updateVariantFormImagesText(newIndex, existingImages.filter((url) => !url.startsWith('blob:')));
+      this.updateVariantFormImagesText(
+        newIndex,
+        existingImages.filter((url) => !url.startsWith('blob:')),
+      );
     }
 
     if (filesToUpload.length > 0) {
@@ -781,9 +841,8 @@ export class ProductForm {
   }
 
   addVariantAttribute(variantIndex: number, key = '', values: string[] = []): void {
-
     const valuesFormArray = this.fb.array(
-      values.map((val) => this.fb.control(val || '', Validators.required))
+      values.map((val) => this.fb.control(val || '', Validators.required)),
     );
 
     // Si no hay valores, agregar al menos uno vacío
@@ -828,17 +887,25 @@ export class ProductForm {
     }
   }
   private patchProductInForm(product: Product): void {
-    const { variantes, physical_attributes, gallery, categoria, ...productWithoutVariants } = product;
+    const {
+      variantes,
+      physical_attributes,
+      gallery,
+      categoria,
+      customization_config,
+      user_customization,
+      ...productWithoutVariants
+    } = product;
     this.productForm.patchValue({
       ...productWithoutVariants,
       gallery: Array.isArray(gallery) ? gallery : [],
-      physical_attributes:
-        physical_attributes ?? {
-          length: 0,
-          width: 0,
-          height: 0,
-          weight: 0,
-        },
+      physical_attributes: physical_attributes ?? {
+        length: 0,
+        width: 0,
+        height: 0,
+        weight: 0,
+      },
+      customization_config: this.normalizeCustomizationConfigFormValue(customization_config),
     });
 
     this.variantesFormArray.clear();
@@ -875,14 +942,19 @@ export class ProductForm {
     this.variantFilesToUpload = shiftedFiles;
   }
 
-  private buildVariantsPayload(rawVariants: any[], variantImagesMap: Map<number, string[]> = new Map()): Variant[] {
+  private buildVariantsPayload(
+    rawVariants: any[],
+    variantImagesMap: Map<number, string[]> = new Map(),
+  ): Variant[] {
     if (!Array.isArray(rawVariants)) {
       return [];
     }
 
     return rawVariants.flatMap((rawVariant, index) => {
       const uploadedImages = variantImagesMap.get(index) || [];
-      const existingImages = this.parseImages(rawVariant.imagenes_text).filter((url) => !url.startsWith('blob:'));
+      const existingImages = this.parseImages(rawVariant.imagenes_text).filter(
+        (url) => !url.startsWith('blob:'),
+      );
       const imagenes = Array.from(new Set([...existingImages, ...uploadedImages]));
 
       const dynamicAttributes = this.buildDynamicAttributes(rawVariant.attributes ?? []);
@@ -912,11 +984,73 @@ export class ProductForm {
     });
   }
 
+  private normalizeCustomizationConfigFormValue(
+    customizationConfig?: CustomizationConfig | null,
+  ): CustomizationConfigFormValue {
+    const defaultConfig = this.getDefaultCustomizationConfigFormValue();
+
+    if (!customizationConfig || typeof customizationConfig !== 'object') {
+      return defaultConfig;
+    }
+
+    const imageFormats = Array.isArray(customizationConfig.imageFormats)
+      ? customizationConfig.imageFormats.join(', ')
+      : defaultConfig.imageFormats;
+
+    return {
+      allowImage: customizationConfig.allowImage ?? defaultConfig.allowImage,
+      allowText: customizationConfig.allowText ?? defaultConfig.allowText,
+      maxImageSize: customizationConfig.maxImageSize ?? defaultConfig.maxImageSize,
+      maxTextLength: customizationConfig.maxTextLength ?? defaultConfig.maxTextLength,
+      imageFormats,
+      textPlaceholder: customizationConfig.textPlaceholder ?? defaultConfig.textPlaceholder,
+    };
+  }
+
+  private normalizeCustomizationConfigPayload(
+    customizationConfig:
+      | {
+          [K in keyof CustomizationConfigFormValue]?: CustomizationConfigFormValue[K] | null;
+        }
+      | null
+      | undefined,
+  ): CustomizationConfig {
+    const defaultConfig = this.getDefaultCustomizationConfigFormValue();
+    const rawImageFormats = customizationConfig?.imageFormats ?? defaultConfig.imageFormats;
+    const imageFormats = String(rawImageFormats)
+      .split(',')
+      .map((format) => format.trim().toLowerCase())
+      .filter((format) => format.length > 0);
+    const textPlaceholder = customizationConfig?.textPlaceholder ?? defaultConfig.textPlaceholder;
+
+    return {
+      allowImage: customizationConfig?.allowImage ?? defaultConfig.allowImage,
+      allowText: customizationConfig?.allowText ?? defaultConfig.allowText,
+      maxImageSize: customizationConfig?.maxImageSize ?? defaultConfig.maxImageSize,
+      maxTextLength: customizationConfig?.maxTextLength ?? defaultConfig.maxTextLength,
+      imageFormats: imageFormats.length > 0 ? imageFormats : ['jpg', 'jpeg', 'png', 'webp'],
+      textPlaceholder: String(textPlaceholder).trim(),
+    };
+  }
+
+  private getDefaultCustomizationConfigFormValue(): CustomizationConfigFormValue {
+    return {
+      allowImage: true,
+      allowText: true,
+      maxImageSize: 5242880,
+      maxTextLength: 200,
+      imageFormats: 'jpg,jpeg,png,webp',
+      textPlaceholder: 'Escribe un mensaje personalizado',
+    };
+  }
+
   private getVariantAttributesFormArray(variantIndex: number): FormArray<FormGroup> {
     return this.variantesFormArray.at(variantIndex).get('attributes') as FormArray<FormGroup>;
   }
 
-  private extractDynamicAttributes(variant?: Variant): Array<{ key: string; values: (string | number)[] }> {
+  private extractDynamicAttributes(
+    variant?: Variant,
+  ): Array<{ key: string; values: (string | number)[] }> {
     if (!variant) {
       return [];
     }
@@ -967,7 +1101,11 @@ export class ProductForm {
     });
 
     // Luego, procesar el objeto attributes si existe (para redundancia)
-    if (variant.attributes && typeof variant.attributes === 'object' && !Array.isArray(variant.attributes)) {
+    if (
+      variant.attributes &&
+      typeof variant.attributes === 'object' &&
+      !Array.isArray(variant.attributes)
+    ) {
       Object.entries(variant.attributes).forEach(([key, value]) => {
         if (key && value !== null && value !== undefined && !seenKeys.has(key)) {
           if (Array.isArray(value)) {
@@ -982,7 +1120,10 @@ export class ProductForm {
           } else {
             const cleanValue = String(value).trim();
             if (cleanValue.length > 0) {
-              dynamicAttributes.push({ key, values: [this.parseDynamicAttributeValue(cleanValue)] });
+              dynamicAttributes.push({
+                key,
+                values: [this.parseDynamicAttributeValue(cleanValue)],
+              });
             }
             seenKeys.add(key);
           }
@@ -993,41 +1134,46 @@ export class ProductForm {
     return dynamicAttributes;
   }
 
-  private buildDynamicAttributes(rawAttributes: any[]): Record<string, string | number | (string | number)[]> {
+  private buildDynamicAttributes(
+    rawAttributes: any[],
+  ): Record<string, string | number | (string | number)[]> {
     if (!Array.isArray(rawAttributes)) {
       return {};
     }
 
-    return rawAttributes.reduce((acc, attribute) => {
-      const rawKey = String(attribute?.key ?? '').trim();
-      const rawValues = attribute?.values;
+    return rawAttributes.reduce(
+      (acc, attribute) => {
+        const rawKey = String(attribute?.key ?? '').trim();
+        const rawValues = attribute?.values;
 
-      if (!rawKey) {
+        if (!rawKey) {
+          return acc;
+        }
+
+        // Procesar valores (pueden ser array de FormControls o array de strings)
+        let valueArray: (string | number)[] = [];
+
+        if (Array.isArray(rawValues)) {
+          valueArray = rawValues
+            .map((val) => {
+              // Si es un FormControl, obtener su valor; si no, usar directamente
+              const value = val?.value !== undefined ? val.value : val;
+              return String(value).trim();
+            })
+            .filter((val) => val.length > 0)
+            .map((val) => this.parseDynamicAttributeValue(val));
+        }
+
+        if (valueArray.length === 0) {
+          return acc;
+        }
+
+        // Si solo hay un valor, guardar como string/número simple. Si hay múltiples, guardar como array
+        acc[rawKey] = valueArray.length === 1 ? valueArray[0] : valueArray;
         return acc;
-      }
-
-      // Procesar valores (pueden ser array de FormControls o array de strings)
-      let valueArray: (string | number)[] = [];
-
-      if (Array.isArray(rawValues)) {
-        valueArray = rawValues
-          .map((val) => {
-            // Si es un FormControl, obtener su valor; si no, usar directamente
-            const value = val?.value !== undefined ? val.value : val;
-            return String(value).trim();
-          })
-          .filter((val) => val.length > 0)
-          .map((val) => this.parseDynamicAttributeValue(val));
-      }
-
-      if (valueArray.length === 0) {
-        return acc;
-      }
-
-      // Si solo hay un valor, guardar como string/número simple. Si hay múltiples, guardar como array
-      acc[rawKey] = valueArray.length === 1 ? valueArray[0] : valueArray;
-      return acc;
-    }, {} as Record<string, string | number | (string | number)[]>);
+      },
+      {} as Record<string, string | number | (string | number)[]>,
+    );
   }
 
   private parseDynamicAttributeValue(value: string): string | number {
@@ -1036,9 +1182,7 @@ export class ProductForm {
   }
 
   private normalizeAttributeLabel(rawLabel: string): string {
-    return rawLabel
-      .replace(/_/g, ' ')
-      .replace(/\b\w/g, (char) => char.toUpperCase());
+    return rawLabel.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
   }
 
   private formatAttributeValue(value: unknown): string {
@@ -1097,9 +1241,11 @@ export class ProductForm {
     key: 'length' | 'width' | 'height' | 'weight',
     fallback: number,
   ): number {
-    const value = physicalAttributes && typeof physicalAttributes === 'object' ? (physicalAttributes as any)[key] : fallback;
+    const value =
+      physicalAttributes && typeof physicalAttributes === 'object'
+        ? (physicalAttributes as any)[key]
+        : fallback;
     const parsedValue = Number(value);
     return Number.isFinite(parsedValue) ? parsedValue : fallback;
   }
-
 }

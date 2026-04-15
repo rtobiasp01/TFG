@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Product } from '../interfaces/product';
+import { UserCustomization } from '../interfaces/customization';
 
 @Injectable({
   providedIn: 'root',
@@ -35,6 +36,7 @@ export class ProductService {
     product_id?: string;
     product_sku?: string;
     variant_sku?: string;
+    selection?: Record<string, string | number>;
     color?: string;
     talla?: string | number;
     quantity?: number;
@@ -42,10 +44,19 @@ export class ProductService {
     return this.http.post<any>(`${this.API_URL}/validate-stock`, payload);
   }
 
+  validateCustomization(payload: {
+    product_id?: string;
+    product_sku?: string;
+    customization?: UserCustomization;
+  }) {
+    return this.http.post<any>(`${this.API_URL}/validate-customization`, payload);
+  }
+
   decrementVariantStock(payload: {
     product_id?: string;
     product_sku?: string;
     variant_sku?: string;
+    selection?: Record<string, string | number>;
     color?: string;
     talla?: string | number;
     quantity?: number;

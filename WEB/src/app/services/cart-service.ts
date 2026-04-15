@@ -1,16 +1,18 @@
 import { Injectable, signal } from '@angular/core';
+import { ProductType, UserCustomization } from '../interfaces/customization';
 
 export interface CartItem {
   cartItemId: string;
   productId: string;
   productTitle: string;
-  productType: string;
+  productType: ProductType;
   productImage: string;
   basePrice: number;
   simpleSku?: string;
   variantSku?: string;
   variantAttributes?: Record<string, string | number>;
   variantAdditionalPrice?: number;
+  customization?: UserCustomization;
   quantity: number;
   availableStock: number;
 }
@@ -96,12 +98,57 @@ export class CartService {
           isSameProduct &&
           isSameType &&
           existingItem.variantSku === item.variantSku &&
-          JSON.stringify(existingItem.variantAttributes) === JSON.stringify(item.variantAttributes)
+          this.serializeRecord(existingItem.variantAttributes) ===
+            this.serializeRecord(item.variantAttributes)
+        );
+      }
+
+      if (item.productType === 'custom-personalized') {
+        return (
+          isSameProduct &&
+          isSameType &&
+          existingItem.variantSku === item.variantSku &&
+          this.serializeRecord(existingItem.variantAttributes) ===
+            this.serializeRecord(item.variantAttributes) &&
+          this.serializeCustomization(existingItem.customization) ===
+            this.serializeCustomization(item.customization)
         );
       }
 
       return false;
     });
+  }
+
+  private serializeRecord(record?: Record<string, string | number>): string {
+    if (!record) {
+      return '';
+    }
+
+    return JSON.stringify(
+      Object.keys(record)
+        .sort()
+        .reduce<Record<string, string | number>>((accumulator, key) => {
+          accumulator[key] = record[key];
+          return accumulator;
+        }, {}),
+    );
+  }
+
+  private serializeCustomization(customization?: UserCustomization): string {
+    if (!customization) {
+      return '';
+    }
+
+    const { timestamp, ...rest } = customization;
+
+    return JSON.stringify(
+      Object.keys(rest)
+        .sort()
+        .reduce<Record<string, unknown>>((accumulator, key) => {
+          accumulator[key] = rest[key as keyof Omit<UserCustomization, 'timestamp'>];
+          return accumulator;
+        }, {}),
+    );
   }
 
   private generateCartItemId(): string {

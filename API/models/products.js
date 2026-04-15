@@ -12,6 +12,8 @@ class Product {
     type = "simple",
     physical_attributes = null,
     variantes = [],
+    customization_config = null,
+    user_customization = null,
     average_rating = 0,
     categoria = [],
     custom_slug = null,
@@ -28,13 +30,16 @@ class Product {
     this.stock_status = stock_status;
     this.stock_quantity = Number(stock_quantity);
     this.manage_stock = Boolean(manage_stock);
-    this.type = type;
+    this.type = this.normalizeProductType(type);
 
     this.physical_attributes = this.normalizePhysicalAttributes(physical_attributes);
 
     this.variantes = Array.isArray(variantes)
       ? this.normalizeVariants(variantes)
       : [];
+
+    this.customization_config = this.normalizeCustomizationConfig(customization_config);
+    this.user_customization = this.normalizeUserCustomization(user_customization);
 
     this.average_rating = Number(average_rating);
 
@@ -76,6 +81,96 @@ class Product {
     if (url && typeof url === "string") {
       this.gallery.push(url);
     }
+  }
+
+  normalizeProductType(type) {
+    const allowedTypes = new Set(["simple", "variable", "virtual", "custom-personalized"]);
+    const normalizedType = String(type || "simple").trim();
+
+    return allowedTypes.has(normalizedType) ? normalizedType : "simple";
+  }
+
+  normalizeCustomizationConfig(customizationConfig) {
+    const rawConfig =
+      customizationConfig && typeof customizationConfig === "object" && !Array.isArray(customizationConfig)
+        ? customizationConfig
+        : null;
+
+    if (!rawConfig && this.type !== "custom-personalized") {
+      return null;
+    }
+
+    const defaults = {
+      allowImage: true,
+      allowText: true,
+      maxImageSize: 5242880,
+      maxTextLength: 200,
+      imageFormats: ["jpg", "jpeg", "png", "webp"],
+      textPlaceholder: "Escribe un mensaje personalizado",
+    };
+
+    if (!rawConfig) {
+      return defaults;
+    }
+
+    return {
+      allowImage:
+        rawConfig.allowImage !== undefined ? Boolean(rawConfig.allowImage) : defaults.allowImage,
+      allowText:
+        rawConfig.allowText !== undefined ? Boolean(rawConfig.allowText) : defaults.allowText,
+      maxImageSize: Number(rawConfig.maxImageSize) || defaults.maxImageSize,
+      maxTextLength: Number(rawConfig.maxTextLength) || defaults.maxTextLength,
+      imageFormats: this.normalizeImageFormats(rawConfig.imageFormats, defaults.imageFormats),
+      textPlaceholder:
+        rawConfig.textPlaceholder !== undefined && rawConfig.textPlaceholder !== null
+          ? String(rawConfig.textPlaceholder).trim()
+          : defaults.textPlaceholder,
+    };
+  }
+
+  normalizeUserCustomization(userCustomization) {
+    if (!userCustomization || typeof userCustomization !== "object" || Array.isArray(userCustomization)) {
+      return null;
+    }
+
+    const normalized = {};
+
+    if (userCustomization.uploadedImageUrl !== undefined && userCustomization.uploadedImageUrl !== null) {
+      normalized.uploadedImageUrl = String(userCustomization.uploadedImageUrl);
+    }
+
+    if (userCustomization.customText !== undefined && userCustomization.customText !== null) {
+      normalized.customText = String(userCustomization.customText);
+    }
+
+    if (userCustomization.timestamp !== undefined) {
+      const parsedTimestamp = Number(userCustomization.timestamp);
+      if (Number.isFinite(parsedTimestamp)) {
+        normalized.timestamp = parsedTimestamp;
+      }
+    }
+
+    if (userCustomization.metadata && typeof userCustomization.metadata === "object" && !Array.isArray(userCustomization.metadata)) {
+      normalized.metadata = { ...userCustomization.metadata };
+    }
+
+    return Object.keys(normalized).length > 0 ? normalized : null;
+  }
+
+  normalizeImageFormats(imageFormats, fallbackFormats = []) {
+    const sourceFormats = Array.isArray(imageFormats)
+      ? imageFormats
+      : typeof imageFormats === "string"
+        ? imageFormats.split(",")
+        : fallbackFormats;
+
+    return Array.from(
+      new Set(
+        sourceFormats
+          .map((format) => String(format).trim().toLowerCase().replace(/^\.+/, ""))
+          .filter((format) => format.length > 0),
+      ),
+    );
   }
 
   normalizeVariants(variantes) {

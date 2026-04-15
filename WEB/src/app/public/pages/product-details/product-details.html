@@ -13,9 +13,10 @@
     <div class="product-variables">
       <p class="product-title">{{ product()?.title }}</p>
       <p class="product-short-description">{{ product()?.short_description }}</p>
-      <p class="product-meta-label">Stock</p>
-      <p class="product-stock-status">{{ stockAvailabilityLabel() }}</p>
-      <p class="product-price">{{ product()?.price }}</p>
+      @if (!stockAvailability()) {
+        <p class="product-stock-status">Sin Stock</p>
+      }
+      <p class="product-price">{{ product()?.price }} €</p>
       <div class="variant-selector">
         @for (group of variantesProducto(); track group.key; let groupIndex = $index) {
           @if (getAvailableValues(group.key, groupIndex); as availableValues) {
@@ -39,8 +40,77 @@
           }
         }
       </div>
-      <button type="button" class="btn-cart" (click)="addToCart()">Añadir carrito</button>
-      <div class="product-description"></div>
+      @if (isCustomPersonalizedProduct()) {
+        <div class="customization-panel">
+          <div class="customization-panel__header">
+            <p class="product-meta-label">Personalización</p>
+            <p class="customization-panel__copy">
+              Añade una imagen, un texto o ambos para completar tu pedido.
+            </p>
+          </div>
+
+          @if (customizationConfig()?.allowImage) {
+            <div class="customization-field">
+              <label for="custom-image">Subir imagen</label>
+              <input
+                id="custom-image"
+                type="file"
+                [accept]="customizationAcceptAttribute()"
+                (change)="onCustomizationImageSelected($event)"
+              />
+            </div>
+          }
+
+          @if (isUploadingCustomization()) {
+            <p class="customization-panel__status">Procesando imagen sin fondo...</p>
+          }
+
+          @if (customImagePreview()) {
+            <div class="customization-preview">
+              <img [src]="customImagePreview()" alt="Vista previa de la personalización" />
+              <button
+                type="button"
+                class="customization-preview__remove"
+                (click)="removeCustomizationImage()"
+              >
+                Quitar imagen
+              </button>
+            </div>
+          }
+
+          @if (customizationConfig()?.allowText) {
+            <div class="customization-field">
+              <label for="custom-text">Texto personalizado</label>
+              <textarea
+                id="custom-text"
+                [placeholder]="customizationConfig()?.textPlaceholder || 'Escribe tu mensaje'"
+                [value]="customText()"
+                (input)="onCustomizationTextInput($event)"
+                rows="4"
+              ></textarea>
+            </div>
+          }
+
+          @if (customizationErrors().length > 0) {
+            <div class="customization-errors">
+              @for (error of customizationErrors(); track error) {
+                <p>{{ error }}</p>
+              }
+            </div>
+          }
+        </div>
+      }
+      @if (stockAvailability()) {
+        <button
+          type="button"
+          class="btn-cart"
+          [disabled]="isUploadingCustomization()"
+          (click)="addToCart()"
+        >
+          Añadir carrito
+        </button>
+      }
+      <!-- <div class="product-description"></div> -->
     </div>
   </div>
   <div class="other-content"></div>
