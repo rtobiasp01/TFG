@@ -8,6 +8,12 @@
     <div class="info-izquierda">
       <h2>{{ id() ? 'Editar Producto' : 'Crear Producto' }}</h2>
 
+      @if (saveError()) {
+        <div class="form-error-banner" role="alert">
+          {{ saveError() }}
+        </div>
+      }
+
       <div class="form-product-title">
         <input
           type="text"
@@ -119,6 +125,7 @@
                   type="text"
                   id="slug"
                   formControlName="slug"
+                  (input)="onSlugInputChange()"
                   placeholder="url-amigable-del-producto"
                 />
               </div>
@@ -149,6 +156,7 @@
                   type="text"
                   id="sku"
                   formControlName="sku"
+                  (input)="onSkuInputChange()"
                   placeholder="Código de inventario"
                 />
               </div>

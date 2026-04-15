@@ -128,7 +128,11 @@ router.post("/decrement-stock", async (req, res) => {
 // POST para crear un producto
 router.post("/", async function (req, res, next) {
   try {
-    const newProduct = new Product(req.body);
+    const productPayload = {
+      ...req.body,
+      custom_slug: req.body.custom_slug ?? req.body.slug,
+    };
+    const newProduct = new Product(productPayload);
 
     const product = await productService.createProduct(newProduct);
 
@@ -138,6 +142,15 @@ router.post("/", async function (req, res, next) {
       data: product,
     });
   } catch (error) {
+    if (error?.statusCode === 409) {
+      return res.status(409).json({
+        success: false,
+        message: error.message,
+        field: error.field,
+        code: error.code,
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Error al crear el producto",
@@ -162,6 +175,7 @@ router.put("/:id", async (req, res) => {
     const mergedProductData = {
       ...existingProduct,
       ...req.body,
+      custom_slug: req.body.custom_slug ?? req.body.slug ?? existingProduct?.slug ?? null,
     };
 
     delete mergedProductData._id;
@@ -191,7 +205,11 @@ router.put("/:id", async (req, res) => {
         req.body.variantes !== undefined ? normalizedProduct.variantes : undefined,
       average_rating: req.body.average_rating,
       categoria: req.body.categoria,
-      custom_slug: req.body.custom_slug,
+      custom_slug: req.body.custom_slug ?? req.body.slug,
+      slug:
+        req.body.slug !== undefined || req.body.custom_slug !== undefined || req.body.title !== undefined
+          ? normalizedProduct.slug
+          : undefined,
       image: req.body.image,
       gallery: req.body.gallery,
       visible: req.body.visible,
@@ -209,6 +227,15 @@ router.put("/:id", async (req, res) => {
       data: updatedProduct,
     });
   } catch (error) {
+    if (error?.statusCode === 409) {
+      return res.status(409).json({
+        success: false,
+        message: error.message,
+        field: error.field,
+        code: error.code,
+      });
+    }
+
     res.status(500).json({
       success: false,
       message: "Error al actualizar el producto",

@@ -1,6 +1,16 @@
 const connectDB = require("../db/mongo");
 const { ObjectId } = require("mongodb");
 
+class ProductConflictError extends Error {
+  constructor(message, field) {
+    super(message);
+    this.name = "ProductConflictError";
+    this.statusCode = 409;
+    this.code = "PRODUCT_DUPLICATE";
+    this.field = field;
+  }
+}
+
 function normalizePrimitiveValue(value) {
   if (value === undefined || value === null) {
     return null;
@@ -73,8 +83,54 @@ async function createProduct(productData) {
   const db = await connectDB();
   const collection = db.collection("products");
 
+  await validateUniqueProductIdentifiers({
+    sku: productData?.sku,
+    slug: productData?.slug,
+  });
+
   const result = await collection.insertOne(productData);
   return { ...productData, _id: result.insertedId };
+}
+
+async function validateUniqueProductIdentifiers({ sku, slug, excludeProductId } = {}) {
+  const db = await connectDB();
+  const collection = db.collection("products");
+  const exclusionFilter = excludeProductId
+    ? { _id: { $ne: new ObjectId(excludeProductId) } }
+    : {};
+
+  const normalizedSku = typeof sku === "string" ? sku.trim() : "";
+  const normalizedSlug = typeof slug === "string" ? slug.trim() : "";
+
+  if (normalizedSku.length > 0) {
+    const existingBySku = await collection.findOne({
+      sku: normalizedSku,
+      ...exclusionFilter,
+    });
+
+    if (existingBySku) {
+      throw new ProductConflictError(
+        `Ya existe un producto con el SKU "${normalizedSku}".`,
+        "sku",
+      );
+    }
+  }
+
+  if (normalizedSlug.length > 0) {
+    const existingBySlug = await collection.findOne({
+      slug: normalizedSlug,
+      ...exclusionFilter,
+    });
+
+    if (existingBySlug) {
+      throw new ProductConflictError(
+        `Ya existe un producto con el slug "${normalizedSlug}".`,
+        "slug",
+      );
+    }
+  }
+
+  return { valid: true };
 }
 
 async function deleteProduct(id) {
@@ -123,6 +179,12 @@ async function updateProduct(id, updateData) {
   try {
     const db = await connectDB();
     const collection = db.collection("products");
+
+    await validateUniqueProductIdentifiers({
+      sku: updateData?.sku,
+      slug: updateData?.slug,
+      excludeProductId: id,
+    });
 
     // Usamos $set para actualizar solo los campos enviados en updateData
     const result = await collection.updateOne(
@@ -408,6 +470,7 @@ async function validateProductCustomization({
 module.exports = {
   getAllProducts,
   createProduct,
+  validateUniqueProductIdentifiers,
   deleteProduct,
   getProductById,
   getProductBySku,
