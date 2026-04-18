@@ -9,7 +9,7 @@ import { Variant } from '../../../interfaces/variant';
 import { Category } from '../../../interfaces/category';
 import { CommonModule } from '@angular/common';
 import { QuillModule } from 'ngx-quill';
-import { CustomizationConfig } from '../../../interfaces/customization';
+import { CustomImagePlacement, CustomizationConfig } from '../../../interfaces/customization';
 
 const API_BASE_URL = 'http://localhost:3000';
 type ImagePickerTarget = 'main' | 'gallery' | 'variant';
@@ -21,6 +21,10 @@ interface CustomizationConfigFormValue {
   maxTextLength: number;
   imageFormats: string;
   textPlaceholder: string;
+  imagePlacementXPercent: number;
+  imagePlacementYPercent: number;
+  imagePlacementWidthPercent: number;
+  imagePlacementHeightPercent: number;
 }
 
 @Component({
@@ -98,6 +102,10 @@ export class ProductForm {
       maxTextLength: [200, [Validators.min(0)]],
       imageFormats: ['jpg,jpeg,png,webp'],
       textPlaceholder: ['Escribe un mensaje personalizado'],
+      imagePlacementXPercent: [50, [Validators.min(0), Validators.max(100)]],
+      imagePlacementYPercent: [50, [Validators.min(0), Validators.max(100)]],
+      imagePlacementWidthPercent: [56, [Validators.min(1), Validators.max(100)]],
+      imagePlacementHeightPercent: [56, [Validators.min(1), Validators.max(100)]],
     }),
     variantes: this.fb.array([]),
     image: [''],
@@ -1110,6 +1118,11 @@ export class ProductForm {
       ? customizationConfig.imageFormats.join(', ')
       : defaultConfig.imageFormats;
 
+    const placement = this.normalizeImagePlacementForForm(
+      customizationConfig.imagePlacement,
+      this.getDefaultImagePlacement(),
+    );
+
     return {
       allowImage: customizationConfig.allowImage ?? defaultConfig.allowImage,
       enableBackgroundRemoval:
@@ -1119,6 +1132,10 @@ export class ProductForm {
       maxTextLength: customizationConfig.maxTextLength ?? defaultConfig.maxTextLength,
       imageFormats,
       textPlaceholder: customizationConfig.textPlaceholder ?? defaultConfig.textPlaceholder,
+      imagePlacementXPercent: placement.xPercent,
+      imagePlacementYPercent: placement.yPercent,
+      imagePlacementWidthPercent: placement.widthPercent,
+      imagePlacementHeightPercent: placement.heightPercent,
     };
   }
 
@@ -1139,6 +1156,15 @@ export class ProductForm {
       .map((format) => format.trim().toLowerCase())
       .filter((format) => format.length > 0);
     const textPlaceholder = customizationConfig?.textPlaceholder ?? defaultConfig.textPlaceholder;
+    const imagePlacement = this.normalizeImagePlacementForForm(
+      {
+        xPercent: customizationConfig?.imagePlacementXPercent,
+        yPercent: customizationConfig?.imagePlacementYPercent,
+        widthPercent: customizationConfig?.imagePlacementWidthPercent,
+        heightPercent: customizationConfig?.imagePlacementHeightPercent,
+      },
+      this.getDefaultImagePlacement(),
+    );
 
     return {
       allowImage: customizationConfig?.allowImage ?? defaultConfig.allowImage,
@@ -1152,6 +1178,7 @@ export class ProductForm {
           : ['jpg', 'jpeg', 'png', 'webp']
         : ['png'],
       textPlaceholder: String(textPlaceholder).trim(),
+      imagePlacement,
     };
   }
 
@@ -1164,6 +1191,49 @@ export class ProductForm {
       maxTextLength: 200,
       imageFormats: 'jpg,jpeg,png,webp',
       textPlaceholder: 'Escribe un mensaje personalizado',
+      imagePlacementXPercent: 50,
+      imagePlacementYPercent: 50,
+      imagePlacementWidthPercent: 56,
+      imagePlacementHeightPercent: 56,
+    };
+  }
+
+  private getDefaultImagePlacement(): CustomImagePlacement {
+    return {
+      xPercent: 50,
+      yPercent: 50,
+      widthPercent: 56,
+      heightPercent: 56,
+    };
+  }
+
+  private normalizeImagePlacementForForm(
+    rawPlacement:
+      | {
+          xPercent?: number | null;
+          yPercent?: number | null;
+          widthPercent?: number | null;
+          heightPercent?: number | null;
+        }
+      | null
+      | undefined,
+    fallback: CustomImagePlacement,
+  ): CustomImagePlacement {
+    const clamp = (value: unknown, min: number, max: number, fallbackValue: number): number => {
+      const parsed = Number(value);
+
+      if (!Number.isFinite(parsed)) {
+        return fallbackValue;
+      }
+
+      return Math.min(max, Math.max(min, parsed));
+    };
+
+    return {
+      xPercent: clamp(rawPlacement?.xPercent, 0, 100, fallback.xPercent),
+      yPercent: clamp(rawPlacement?.yPercent, 0, 100, fallback.yPercent),
+      widthPercent: clamp(rawPlacement?.widthPercent, 1, 100, fallback.widthPercent),
+      heightPercent: clamp(rawPlacement?.heightPercent, 1, 100, fallback.heightPercent),
     };
   }
 

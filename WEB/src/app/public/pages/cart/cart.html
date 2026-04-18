@@ -1,0 +1,58 @@
+<section class="cart-page">
+  <h1>Carrito</h1>
+
+  @if (items().length > 0) {
+    <div class="cart-content">
+      <ul class="cart-list">
+        @for (item of items(); track item.cartItemId) {
+          <li class="cart-item">
+            <img [src]="item.productImage" [alt]="item.productTitle" class="cart-item-image" />
+
+            <div class="cart-item-info">
+              <h2>{{ item.productTitle }}</h2>
+              <p>SKU: {{ item.simpleSku || item.variantSku || 'N/A' }}</p>
+            </div>
+
+            <div class="cart-item-actions">
+              <div class="quantity-controls">
+                <button type="button" (click)="decreaseQuantity(item)">-</button>
+                <span>{{ item.quantity }}</span>
+                <button type="button" (click)="increaseQuantity(item)">+</button>
+              </div>
+
+              <a
+                class="remove-button"
+                [class.is-deleting]="isDeleting(item)"
+                (click)="removeItem(item)"
+              >
+                <img [src]="removeIconPath(item)" alt="Icono eliminar" />
+              </a>
+            </div>
+          </li>
+        }
+      </ul>
+
+      <aside class="order-summary">
+        <h2>Informacion del pedido</h2>
+        <div class="summary-row">
+          <span>Productos</span>
+          <span>{{ totalItems() }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Subtotal</span>
+          <span>{{ formatPrice(subtotal()) }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Envio</span>
+          <span>{{ formatPrice(shipping()) }}</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>{{ formatPrice(total()) }}</span>
+        </div>
+      </aside>
+    </div>
+  } @else {
+    <p>Tu carrito esta vacio.</p>
+  }
+</section>

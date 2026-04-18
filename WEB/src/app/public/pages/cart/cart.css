@@ -1,0 +1,144 @@
+.cart-page {
+  max-width: 1100px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.cart-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.cart-list {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+}
+
+.order-summary {
+  margin-top: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  background: #ffffff;
+  position: sticky;
+  top: 1rem;
+}
+
+.order-summary h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0.35rem 0;
+}
+
+.summary-row.total {
+  margin-top: 0.75rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid #e5e7eb;
+  font-weight: 700;
+}
+
+.cart-item {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+
+.cart-item-info {
+  flex: 1;
+}
+
+.cart-item-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  background: #f3f4f6;
+}
+
+.cart-item-info h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.cart-item-info p {
+  margin: 0.25rem 0;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.cart-item-actions {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+}
+
+.quantity-controls button {
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #d1d5db;
+  background: #ffffff;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+
+.remove-button {
+  border: 1px solid #ef4444;
+  background: #ffffff;
+  color: #b91c1c;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  padding: 2px;
+}
+
+.remove-button.is-deleting {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.remove-button img {
+    height: 20px;
+    width: auto;
+}
+
+@media (max-width: 640px) {
+  .cart-content {
+    grid-template-columns: 1fr;
+  }
+
+  .order-summary {
+    position: static;
+    margin-top: 0;
+    order: -1;
+  }
+
+  .cart-item {
+    flex-wrap: wrap;
+    align-items: flex-start;
+  }
+
+  .cart-item-actions {
+    width: 100%;
+    margin-left: 0;
+    align-items: flex-start;
+  }
+}

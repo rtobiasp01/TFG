@@ -1,14 +1,24 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
 import { CartService } from '../../../services/cart-service';
 import { Variant } from '../../../interfaces/variant';
 import { UploadService } from '../../../services/upload-service';
-import { CustomizationConfig, UserCustomization } from '../../../interfaces/customization';
+import {
+  CustomImagePlacement,
+  CustomizationConfig,
+  UserCustomization,
+} from '../../../interfaces/customization';
 
 const API_BASE_URL = 'http://localhost:3000';
+const DEFAULT_IMAGE_PLACEMENT: CustomImagePlacement = {
+  xPercent: 50,
+  yPercent: 50,
+  widthPercent: 56,
+  heightPercent: 56,
+};
 
 type VariantValue = string | number;
 
@@ -43,6 +53,16 @@ export class ProductDetails {
   readonly galeriaActual = signal<string[]>([]);
   readonly variantesProducto = signal<VariantOptionGroup[]>([]);
   readonly selectedAttributes = signal<Record<string, VariantValue>>({});
+  readonly customOverlayStyles = computed(() => {
+    const placement = this.resolveImagePlacement();
+
+    return {
+      left: `${placement.xPercent}%`,
+      top: `${placement.yPercent}%`,
+      width: `${placement.widthPercent}%`,
+      height: `${placement.heightPercent}%`,
+    };
+  });
 
   constructor() {
     this.setProductoActual();
@@ -557,6 +577,47 @@ export class ProductDetails {
       maxTextLength: 200,
       imageFormats: ['jpg', 'jpeg', 'png', 'webp'],
       textPlaceholder: 'Escribe un mensaje personalizado',
+      imagePlacement: { ...DEFAULT_IMAGE_PLACEMENT },
+    };
+  }
+
+  private resolveImagePlacement(): CustomImagePlacement {
+    const rawPlacement = this.customizationConfig()?.imagePlacement;
+
+    if (!rawPlacement) {
+      return DEFAULT_IMAGE_PLACEMENT;
+    }
+
+    const clampPercent = (
+      value: number | undefined,
+      min: number,
+      max: number,
+      fallback: number,
+    ): number => {
+      const parsed = Number(value);
+
+      if (!Number.isFinite(parsed)) {
+        return fallback;
+      }
+
+      return Math.min(max, Math.max(min, parsed));
+    };
+
+    return {
+      xPercent: clampPercent(rawPlacement.xPercent, 0, 100, DEFAULT_IMAGE_PLACEMENT.xPercent),
+      yPercent: clampPercent(rawPlacement.yPercent, 0, 100, DEFAULT_IMAGE_PLACEMENT.yPercent),
+      widthPercent: clampPercent(
+        rawPlacement.widthPercent,
+        1,
+        100,
+        DEFAULT_IMAGE_PLACEMENT.widthPercent,
+      ),
+      heightPercent: clampPercent(
+        rawPlacement.heightPercent,
+        1,
+        100,
+        DEFAULT_IMAGE_PLACEMENT.heightPercent,
+      ),
     };
   }
 

@@ -125,6 +125,12 @@ class Product {
       maxTextLength: 200,
       imageFormats: ["jpg", "jpeg", "png", "webp"],
       textPlaceholder: "Escribe un mensaje personalizado",
+      imagePlacement: {
+        xPercent: 50,
+        yPercent: 50,
+        widthPercent: 56,
+        heightPercent: 56,
+      },
     };
 
     if (!rawConfig) {
@@ -140,6 +146,10 @@ class Product {
       rawConfig.imageFormats,
       defaults.imageFormats,
     );
+    const normalizedImagePlacement = this.normalizeImagePlacement(
+      rawConfig.imagePlacement,
+      defaults.imagePlacement,
+    );
 
     return {
       allowImage:
@@ -154,6 +164,30 @@ class Product {
         rawConfig.textPlaceholder !== undefined && rawConfig.textPlaceholder !== null
           ? String(rawConfig.textPlaceholder).trim()
           : defaults.textPlaceholder,
+      imagePlacement: normalizedImagePlacement,
+    };
+  }
+
+  normalizeImagePlacement(imagePlacement, fallbackPlacement) {
+    const safeSource =
+      imagePlacement && typeof imagePlacement === "object" && !Array.isArray(imagePlacement)
+        ? imagePlacement
+        : fallbackPlacement;
+
+    const parsePercent = (value, fallback, min = 0, max = 100) => {
+      const parsed = Number(value);
+      if (!Number.isFinite(parsed)) {
+        return fallback;
+      }
+
+      return Math.min(max, Math.max(min, parsed));
+    };
+
+    return {
+      xPercent: parsePercent(safeSource.xPercent, fallbackPlacement.xPercent),
+      yPercent: parsePercent(safeSource.yPercent, fallbackPlacement.yPercent),
+      widthPercent: parsePercent(safeSource.widthPercent, fallbackPlacement.widthPercent, 1, 100),
+      heightPercent: parsePercent(safeSource.heightPercent, fallbackPlacement.heightPercent, 1, 100),
     };
   }
 

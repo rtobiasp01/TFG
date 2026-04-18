@@ -1,5 +1,12 @@
 export type ProductType = 'simple' | 'variable' | 'virtual' | 'custom-personalized';
 
+export interface CustomImagePlacement {
+  xPercent: number;
+  yPercent: number;
+  widthPercent: number;
+  heightPercent: number;
+}
+
 export interface CustomizationConfig {
   allowImage: boolean;
   enableBackgroundRemoval?: boolean;
@@ -8,6 +15,7 @@ export interface CustomizationConfig {
   maxTextLength: number;
   imageFormats: string[];
   textPlaceholder?: string;
+  imagePlacement?: CustomImagePlacement;
 }
 
 export interface UserCustomization {

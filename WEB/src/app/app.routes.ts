@@ -9,6 +9,7 @@ import { Variants } from './admin/pages/variants/variants';
 import { Media } from './admin/pages/media/media';
 import { Categories } from './admin/pages/categories/categories';
 import { ProductDetails } from './public/pages/product-details/product-details';
+import { Cart } from './public/pages/cart/cart';
 
 export const routes: Routes = [
   {
@@ -60,7 +61,11 @@ export const routes: Routes = [
       },
       {
         path: 'productos/:sku',
-        component: ProductDetails
+        component: ProductDetails,
+      },
+      {
+        path: 'cart',
+        component: Cart,
       },
       {
         path: '',

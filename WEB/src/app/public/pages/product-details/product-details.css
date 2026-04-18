@@ -39,6 +39,7 @@
 	flex: 1 1 auto;
 	height: clamp(320px, calc(100dvh - 285px), 620px);
 	width: 100%;
+	position: relative;
 	background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-md);
@@ -53,6 +54,22 @@
 	width: 100%;
 	object-fit: contain;
 	padding: clamp(0.5rem, 1vw, 1rem);
+}
+
+.img-principal__image {
+	position: relative;
+	z-index: 1;
+}
+
+.img-principal__custom-overlay {
+	position: absolute;
+	z-index: 2;
+	max-width: 92%;
+	max-height: 92%;
+	object-fit: contain;
+	transform: translate(-50%, -50%);
+	pointer-events: none;
+	filter: drop-shadow(0 6px 12px rgba(16, 24, 40, 0.18));
 }
 
 .gallery {

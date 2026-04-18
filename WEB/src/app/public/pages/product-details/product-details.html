@@ -2,7 +2,20 @@
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
-        <img class="img-principal__image" src="{{ imagenPrincipal() }}" alt="" />
+        <img
+          class="img-principal__image"
+          [src]="imagenPrincipal()"
+          [alt]="product()?.title || ''"
+        />
+
+        @if (isCustomPersonalizedProduct() && customImagePreview()) {
+          <img
+            class="img-principal__custom-overlay"
+            [src]="customImagePreview()"
+            [ngStyle]="customOverlayStyles()"
+            alt="Previsualizacion de personalizacion"
+          />
+        }
       </div>
       <div class="gallery">
         @for (img of galeriaActual(); track $index) {
