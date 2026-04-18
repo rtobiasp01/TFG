@@ -3,6 +3,7 @@ import { CartService } from '../../../services/cart-service';
 import { CartItem } from '../../../services/cart-service';
 
 const REMOVE_ANIMATION_MS = 450;
+const API_BASE_URL = 'http://localhost:3000';
 
 @Component({
   selector: 'app-cart',
@@ -13,6 +14,8 @@ const REMOVE_ANIMATION_MS = 450;
 export class Cart {
   private readonly cartService = inject(CartService);
   private readonly deletingItemIds = signal<Set<string>>(new Set());
+  readonly selectedCustomImage = signal<string>('');
+  readonly showCustomImageModal = signal<boolean>(false);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -66,11 +69,47 @@ export class Cart {
     return this.deletingItemIds().has(item.cartItemId);
   }
 
+  hasCustomImage(item: CartItem): boolean {
+    return Boolean(item.customization?.uploadedImageUrl?.trim());
+  }
+
+  openCustomImageModal(item: CartItem): void {
+    const imageUrl = this.resolveCustomImageUrl(item.customization?.uploadedImageUrl);
+
+    if (!imageUrl) {
+      return;
+    }
+
+    this.selectedCustomImage.set(imageUrl);
+    this.showCustomImageModal.set(true);
+  }
+
+  closeCustomImageModal(): void {
+    this.showCustomImageModal.set(false);
+    this.selectedCustomImage.set('');
+  }
+
   removeIconPath(item: CartItem): string {
     return this.isDeleting(item) ? '/images/icons8-papelera.gif' : '/images/icons8-papelera-50.png';
   }
 
   formatPrice(value: number): string {
     return this.currencyFormatter.format(value);
+  }
+
+  private resolveCustomImageUrl(imageUrl?: string | null): string {
+    const normalizedImageUrl = imageUrl?.trim();
+
+    if (!normalizedImageUrl) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(normalizedImageUrl)) {
+      return normalizedImageUrl;
+    }
+
+    const sanitizedPath = normalizedImageUrl.replace(/^\/+/, '');
+
+    return `${API_BASE_URL}/${sanitizedPath}`;
   }
 }

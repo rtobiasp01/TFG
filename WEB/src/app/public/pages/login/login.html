@@ -1,0 +1,33 @@
+<section class="auth-page">
+  <article class="auth-card">
+    <h1>Iniciar sesion</h1>
+    <p class="auth-subtitle">Accede para continuar con tu cuenta.</p>
+
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+      <label for="login-email">Email</label>
+      <input id="login-email" type="email" formControlName="email" />
+      @if (form.controls.email.touched && form.controls.email.invalid) {
+        <p class="auth-error">Introduce un email valido.</p>
+      }
+
+      <label for="login-password">Contrasena</label>
+      <input id="login-password" type="password" formControlName="password" />
+      @if (form.controls.password.touched && form.controls.password.invalid) {
+        <p class="auth-error">La contrasena debe tener al menos 4 caracteres.</p>
+      }
+
+      @if (errorMessage()) {
+        <p class="auth-error">{{ errorMessage() }}</p>
+      }
+
+      <button type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Entrando...' : 'Entrar' }}
+      </button>
+    </form>
+
+    <p class="auth-footer">
+      No tienes cuenta?
+      <a routerLink="/register">Registrate</a>
+    </p>
+  </article>
+</section>

@@ -10,11 +10,15 @@ import { Media } from './admin/pages/media/media';
 import { Categories } from './admin/pages/categories/categories';
 import { ProductDetails } from './public/pages/product-details/product-details';
 import { Cart } from './public/pages/cart/cart';
+import { Login } from './public/pages/login/login';
+import { Register } from './public/pages/register/register';
+import { adminGuard, publicOnlyGuard } from './guards/auth-guards';
 
 export const routes: Routes = [
   {
     path: 'admin',
     component: AdminLayout,
+    canActivate: [adminGuard],
     children: [
       {
         path: 'home',
@@ -66,6 +70,16 @@ export const routes: Routes = [
       {
         path: 'cart',
         component: Cart,
+      },
+      {
+        path: 'login',
+        component: Login,
+        canActivate: [publicOnlyGuard],
+      },
+      {
+        path: 'register',
+        component: Register,
+        canActivate: [publicOnlyGuard],
       },
       {
         path: '',

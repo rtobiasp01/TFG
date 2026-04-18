@@ -9,10 +9,16 @@ const router = express.Router();
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, isAdmin } = req.body;
+    const wantsAdmin = Boolean(isAdmin);
 
     const existingUser = await userService.findUserByEmail(email);
     if (existingUser) {
+      if (wantsAdmin && !existingUser.isAdmin) {
+        await userService.setUserAdminByEmail(email, true);
+        return res.status(200).json({ message: "Usuario actualizado a admin" });
+      }
+
       return res.status(400).json({ error: "Usuario ya existe" });
     }
 
@@ -21,6 +27,7 @@ router.post("/register", async (req, res) => {
     await userService.createUser({
       email,
       password: hash,
+      isAdmin: wantsAdmin,
     });
 
     res.status(201).json({ message: "Usuario creado" });
@@ -44,11 +51,23 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ error: "Contraseña incorrecta" });
     }
 
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const isAdmin = Boolean(user.isAdmin);
+    const token = jwt.sign(
+      { userId: user._id, email: user.email, isAdmin },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "1h",
+      },
+    );
 
-    res.json({ token });
+    res.json({
+      token,
+      user: {
+        _id: user._id,
+        email: user.email,
+        isAdmin,
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: "Error en login" });
   }
@@ -56,13 +75,41 @@ router.post("/login", async (req, res) => {
 
 router.get("/profile", middlewareAuth, async (req, res) => {
   try {
-    const users = await userService.getAllUsers();
-    if (!users || users.length === 0) {
-      return res.status(404).json({ error: "No hay usuarios registrados" });
+    const user = await userService.findUserById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
     }
-    res.json({ users: users });
+
+    res.json({
+      user: {
+        _id: user._id,
+        email: user.email,
+        isAdmin: Boolean(user.isAdmin),
+      },
+    });
   } catch (err) {
     res.status(500).json({ error: "Error al obtener perfil" });
+  }
+});
+
+router.get("/me", middlewareAuth, async (req, res) => {
+  try {
+    const user = await userService.findUserById(req.userId);
+
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json({
+      user: {
+        _id: user._id,
+        email: user.email,
+        isAdmin: Boolean(user.isAdmin),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener usuario autenticado" });
   }
 });
 

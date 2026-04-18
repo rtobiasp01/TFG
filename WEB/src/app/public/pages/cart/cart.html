@@ -11,6 +11,18 @@
             <div class="cart-item-info">
               <h2>{{ item.productTitle }}</h2>
               <p>SKU: {{ item.simpleSku || item.variantSku || 'N/A' }}</p>
+              @if (hasCustomImage(item)) {
+                <p
+                  class="cart-item-info__custom-label cart-item-info__custom-label--clickable"
+                  role="button"
+                  tabindex="0"
+                  (click)="openCustomImageModal(item)"
+                  (keydown.enter)="openCustomImageModal(item)"
+                  (keydown.space)="openCustomImageModal(item)"
+                >
+                  Personalización >
+                </p>
+              }
             </div>
 
             <div class="cart-item-actions">
@@ -56,3 +68,19 @@
     <p>Tu carrito esta vacio.</p>
   }
 </section>
+
+@if (showCustomImageModal()) {
+  <div class="custom-image-modal-backdrop" (click)="closeCustomImageModal()">
+    <div class="custom-image-modal" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="custom-image-modal__close"
+        (click)="closeCustomImageModal()"
+        aria-label="Cerrar imagen personalizada"
+      >
+        ×
+      </button>
+      <img [src]="selectedCustomImage()" [alt]="'Foto personalizada del carrito'" />
+    </div>
+  </div>
+}

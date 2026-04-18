@@ -1,13 +1,28 @@
 <div>
   <nav class="navbar">
-    <a routerLink="/" class="logo">E-Commerce</a>
+    <a routerLink="/inicio" class="logo">E-Commerce</a>
     <ul class="nav-links">
-      <li><a routerLink="/">Home</a></li>
-      <li><a routerLink="/products">Products</a></li>
-      <li><a routerLink="/categories">Categories</a></li>
+      <li><a routerLink="/inicio" routerLinkActive="active-link">Home</a></li>
       <li>
-        <a routerLink="/cart">Cart ({{ cartItemCount() }})</a>
+        <a routerLink="/cart" routerLinkActive="active-link">Carrito ({{ cartItemCount() }})</a>
       </li>
+
+      @if (!isAuthenticated()) {
+        <li><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
+        <li><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
+      } @else {
+        @if (isAdmin()) {
+          <li>
+            <a routerLink="/admin/home" routerLinkActive="active-link" class="admin-link">
+              Panel de admin
+            </a>
+          </li>
+        }
+        <li class="user-email">{{ currentUser()?.email }}</li>
+        <li>
+          <button type="button" class="logout-button" (click)="logout()">Cerrar sesión</button>
+        </li>
+      }
     </ul>
   </nav>
 </div>
