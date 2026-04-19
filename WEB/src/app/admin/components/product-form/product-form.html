@@ -278,51 +278,37 @@
                 </div>
 
                 <div class="form-group full-width">
-                  <label>Zona de imagen personalizada (% sobre imagen principal):</label>
-                </div>
+                  <label>Zona de imagen personalizada (editor visual):</label>
+                  <p class="placement-hint">
+                    Arrastra el recuadro para moverlo y usa la esquina para cambiar su tamaño.
+                  </p>
+                  <div class="placement-editor" #placementCanvas>
+                    @if (imagePath()) {
+                      <img
+                        class="placement-editor__base"
+                        [src]="customizationPreviewImageUrl()"
+                        alt="Previsualización del producto"
+                      />
+                    } @else {
+                      <div class="placement-editor__base placement-editor__base--empty">
+                        Sube una imagen principal para una previsualización real
+                      </div>
+                    }
 
-                <div class="form-group">
-                  <label for="imagePlacementXPercent">Centro X (%):</label>
-                  <input
-                    type="number"
-                    id="imagePlacementXPercent"
-                    formControlName="imagePlacementXPercent"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="imagePlacementYPercent">Centro Y (%):</label>
-                  <input
-                    type="number"
-                    id="imagePlacementYPercent"
-                    formControlName="imagePlacementYPercent"
-                    min="0"
-                    max="100"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="imagePlacementWidthPercent">Ancho zona (%):</label>
-                  <input
-                    type="number"
-                    id="imagePlacementWidthPercent"
-                    formControlName="imagePlacementWidthPercent"
-                    min="1"
-                    max="100"
-                  />
-                </div>
-
-                <div class="form-group">
-                  <label for="imagePlacementHeightPercent">Alto zona (%):</label>
-                  <input
-                    type="number"
-                    id="imagePlacementHeightPercent"
-                    formControlName="imagePlacementHeightPercent"
-                    min="1"
-                    max="100"
-                  />
+                    <div
+                      class="placement-zone"
+                      [ngStyle]="customizationPlacementStyles()"
+                      (pointerdown)="startPlacementDrag($event, placementCanvas)"
+                    >
+                      <span class="placement-zone__label">Zona personalizada</span>
+                      <button
+                        type="button"
+                        class="placement-zone__resize"
+                        (pointerdown)="startPlacementResize($event, placementCanvas)"
+                        aria-label="Cambiar tamaño de la zona personalizada"
+                      ></button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

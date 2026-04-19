@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ProductService } from '../../../services/product-service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -13,6 +13,7 @@ import { firstValueFrom } from 'rxjs';
 import { CustomImagePlacement, CustomizationConfig } from '../../../interfaces/customization';
 
 const API_BASE_URL = 'http://localhost:3000';
+const PREVIEW_OVERLAY_MAX_PERCENT = 92;
 type ImagePickerTarget = 'main' | 'gallery' | 'variant';
 interface CustomizationConfigFormValue {
   allowImage: boolean;
@@ -26,6 +27,16 @@ interface CustomizationConfigFormValue {
   imagePlacementYPercent: number;
   imagePlacementWidthPercent: number;
   imagePlacementHeightPercent: number;
+}
+
+type PlacementInteractionMode = 'drag' | 'resize';
+
+interface PlacementInteractionState {
+  mode: PlacementInteractionMode;
+  startClientX: number;
+  startClientY: number;
+  startPlacement: CustomImagePlacement;
+  canvasRect: DOMRect;
 }
 
 @Component({
@@ -79,6 +90,7 @@ export class ProductForm {
   variantFilesToUpload: Map<number, File[]> = new Map();
   private hasManualSlugEdition = false;
   private hasManualSkuEdition = false;
+  private placementInteraction: PlacementInteractionState | null = null;
 
   readonly productForm = this.fb.group({
     title: ['', [Validators.required, Validators.minLength(3)]],
@@ -1369,8 +1381,18 @@ export class ProductForm {
     return {
       xPercent: clamp(rawPlacement?.xPercent, 0, 100, fallback.xPercent),
       yPercent: clamp(rawPlacement?.yPercent, 0, 100, fallback.yPercent),
-      widthPercent: clamp(rawPlacement?.widthPercent, 1, 100, fallback.widthPercent),
-      heightPercent: clamp(rawPlacement?.heightPercent, 1, 100, fallback.heightPercent),
+      widthPercent: clamp(
+        rawPlacement?.widthPercent,
+        1,
+        PREVIEW_OVERLAY_MAX_PERCENT,
+        fallback.widthPercent,
+      ),
+      heightPercent: clamp(
+        rawPlacement?.heightPercent,
+        1,
+        PREVIEW_OVERLAY_MAX_PERCENT,
+        fallback.heightPercent,
+      ),
     };
   }
 
@@ -1387,6 +1409,165 @@ export class ProductForm {
     if (!isEnabled) {
       customizationConfigGroup.patchValue({ imageFormats: 'png' });
     }
+  }
+
+  customizationPreviewImageUrl(): string {
+    const mainImage = this.imagePath().trim();
+
+    if (mainImage.length > 0) {
+      return mainImage;
+    }
+
+    return '/images/customization-placeholder.svg';
+  }
+
+  customizationPlacementStyles(): Record<string, string> {
+    const placement = this.getPlacementFromForm();
+
+    return {
+      left: `${placement.xPercent}%`,
+      top: `${placement.yPercent}%`,
+      width: `${placement.widthPercent}%`,
+      height: `${placement.heightPercent}%`,
+    };
+  }
+
+  startPlacementDrag(event: PointerEvent, canvasElement: HTMLElement): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.placementInteraction = {
+      mode: 'drag',
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPlacement: this.getPlacementFromForm(),
+      canvasRect: canvasElement.getBoundingClientRect(),
+    };
+  }
+
+  startPlacementResize(event: PointerEvent, canvasElement: HTMLElement): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.placementInteraction = {
+      mode: 'resize',
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPlacement: this.getPlacementFromForm(),
+      canvasRect: canvasElement.getBoundingClientRect(),
+    };
+  }
+
+  @HostListener('window:pointermove', ['$event'])
+  onWindowPointerMove(event: PointerEvent): void {
+    if (!this.placementInteraction) {
+      return;
+    }
+
+    event.preventDefault();
+    const interaction = this.placementInteraction;
+    const widthPx = interaction.canvasRect.width;
+    const heightPx = interaction.canvasRect.height;
+
+    if (widthPx <= 0 || heightPx <= 0) {
+      return;
+    }
+
+    const deltaXPercent = ((event.clientX - interaction.startClientX) / widthPx) * 100;
+    const deltaYPercent = ((event.clientY - interaction.startClientY) / heightPx) * 100;
+
+    if (interaction.mode === 'drag') {
+      const movedPlacement = {
+        ...interaction.startPlacement,
+        xPercent: interaction.startPlacement.xPercent + deltaXPercent,
+        yPercent: interaction.startPlacement.yPercent + deltaYPercent,
+      };
+
+      this.patchPlacementToForm(this.clampPlacement(movedPlacement));
+      return;
+    }
+
+    const initialLeft =
+      interaction.startPlacement.xPercent - interaction.startPlacement.widthPercent / 2;
+    const initialTop =
+      interaction.startPlacement.yPercent - interaction.startPlacement.heightPercent / 2;
+
+    const nextWidth = Math.max(5, interaction.startPlacement.widthPercent + deltaXPercent);
+    const nextHeight = Math.max(5, interaction.startPlacement.heightPercent + deltaYPercent);
+    const maxWidthFromLeft = 100 - initialLeft;
+    const maxHeightFromTop = 100 - initialTop;
+    const constrainedWidth = Math.min(nextWidth, maxWidthFromLeft, PREVIEW_OVERLAY_MAX_PERCENT);
+    const constrainedHeight = Math.min(nextHeight, maxHeightFromTop, PREVIEW_OVERLAY_MAX_PERCENT);
+
+    const resizedPlacement = {
+      xPercent: initialLeft + constrainedWidth / 2,
+      yPercent: initialTop + constrainedHeight / 2,
+      widthPercent: constrainedWidth,
+      heightPercent: constrainedHeight,
+    };
+
+    this.patchPlacementToForm(this.clampPlacement(resizedPlacement));
+  }
+
+  @HostListener('window:pointerup')
+  onWindowPointerUp(): void {
+    this.placementInteraction = null;
+  }
+
+  private getPlacementFromForm(): CustomImagePlacement {
+    const rawConfig = this.productForm.get('customization_config')?.value as
+      | Partial<CustomizationConfigFormValue>
+      | null
+      | undefined;
+
+    return this.normalizeImagePlacementForForm(
+      {
+        xPercent: rawConfig?.imagePlacementXPercent,
+        yPercent: rawConfig?.imagePlacementYPercent,
+        widthPercent: rawConfig?.imagePlacementWidthPercent,
+        heightPercent: rawConfig?.imagePlacementHeightPercent,
+      },
+      this.getDefaultImagePlacement(),
+    );
+  }
+
+  private patchPlacementToForm(placement: CustomImagePlacement): void {
+    const customizationConfigGroup = this.productForm.get(
+      'customization_config',
+    ) as FormGroup | null;
+
+    if (!customizationConfigGroup) {
+      return;
+    }
+
+    customizationConfigGroup.patchValue({
+      imagePlacementXPercent: Number(placement.xPercent.toFixed(2)),
+      imagePlacementYPercent: Number(placement.yPercent.toFixed(2)),
+      imagePlacementWidthPercent: Number(placement.widthPercent.toFixed(2)),
+      imagePlacementHeightPercent: Number(placement.heightPercent.toFixed(2)),
+    });
+  }
+
+  private clampPlacement(placement: CustomImagePlacement): CustomImagePlacement {
+    const width = Math.min(
+      PREVIEW_OVERLAY_MAX_PERCENT,
+      Math.max(5, Number(placement.widthPercent) || 5),
+    );
+    const height = Math.min(
+      PREVIEW_OVERLAY_MAX_PERCENT,
+      Math.max(5, Number(placement.heightPercent) || 5),
+    );
+    const minX = width / 2;
+    const maxX = 100 - width / 2;
+    const minY = height / 2;
+    const maxY = 100 - height / 2;
+    const x = Math.min(maxX, Math.max(minX, Number(placement.xPercent) || 50));
+    const y = Math.min(maxY, Math.max(minY, Number(placement.yPercent) || 50));
+
+    return {
+      xPercent: x,
+      yPercent: y,
+      widthPercent: width,
+      heightPercent: height,
+    };
   }
 
   private getVariantAttributesFormArray(variantIndex: number): FormArray<FormGroup> {
@@ -1417,11 +1598,6 @@ export class ProductForm {
     // Primero, procesar propiedades dinámicas del objeto variante
     Object.entries(variant).forEach(([key, value]) => {
       if (reservedKeys.has(key) || value === null || value === undefined) {
-        return;
-      }
-
-      // Si es un tipo de objeto (pero no array), saltarse (ej: physical_attributes)
-      if (typeof value === 'object' && !Array.isArray(value)) {
         return;
       }
 
