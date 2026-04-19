@@ -41,7 +41,8 @@ export class AuthService {
 
   constructor() {
     this.restoreSession();
-    this.syncUserFromServer();
+    // Avoid triggering HTTP interceptors while the service is still being constructed.
+    queueMicrotask(() => this.syncUserFromServer());
   }
 
   register(email: string, password: string): Observable<RegisterResponse> {
