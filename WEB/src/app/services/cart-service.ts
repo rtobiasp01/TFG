@@ -33,6 +33,7 @@ export class CartService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly STORAGE_KEY = 'tfg_cart';
+  private wasAuthenticated = false;
   readonly cart = signal<CartState>({ items: [], lastUpdated: 0 });
 
   constructor() {
@@ -42,10 +43,17 @@ export class CartService {
       const isAuthenticated = this.authService.isAuthenticated();
 
       if (isAuthenticated) {
+        if (!this.wasAuthenticated) {
+          this.wasAuthenticated = true;
+          this.mergeLocalCartIntoApi();
+          return;
+        }
+
         this.loadFromApi();
         return;
       }
 
+      this.wasAuthenticated = false;
       this.loadFromStorage();
     });
   }
@@ -183,10 +191,10 @@ export class CartService {
 
   private loadFromStorage(): void {
     try {
-      const stored = localStorage.getItem(this.STORAGE_KEY);
-      if (stored) {
-        const state = JSON.parse(stored) as CartState;
-        this.cart.set(this.normalizeCartState(state));
+      const state = this.readStorageState();
+
+      if (state) {
+        this.cart.set(state);
         return;
       }
 
@@ -194,6 +202,21 @@ export class CartService {
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
       this.cart.set({ items: [], lastUpdated: 0 });
+    }
+  }
+
+  private readStorageState(): CartState | null {
+    try {
+      const stored = localStorage.getItem(this.STORAGE_KEY);
+
+      if (!stored) {
+        return null;
+      }
+
+      return this.normalizeCartState(JSON.parse(stored) as CartState);
+    } catch (error) {
+      console.error('Error reading cart state from localStorage:', error);
+      return null;
     }
   }
 
@@ -224,6 +247,94 @@ export class CartService {
         this.cart.set({ items: [], lastUpdated: 0 });
       },
     });
+  }
+
+  private mergeLocalCartIntoApi(): void {
+    const localCart = this.readStorageState();
+
+    this.http.get<Partial<CartState>>(CART_API_URL).subscribe({
+      next: (remoteState) => {
+        const remoteCart = this.normalizeCartState(remoteState);
+
+        if (!localCart || localCart.items.length === 0) {
+          this.cart.set(remoteCart);
+          return;
+        }
+
+        const mergedCart = this.mergeCartStates(remoteCart, localCart);
+
+        this.http.put<CartState>(CART_API_URL, mergedCart).subscribe({
+          next: () => {
+            this.cart.set(mergedCart);
+            localStorage.removeItem(this.STORAGE_KEY);
+          },
+          error: (error) => {
+            console.error('Error saving merged cart to API:', error);
+            this.cart.set(remoteCart);
+          },
+        });
+      },
+      error: (error) => {
+        console.error('Error loading cart from API during merge:', error);
+        this.cart.set({ items: [], lastUpdated: 0 });
+      },
+    });
+  }
+
+  private mergeCartStates(primary: CartState, secondary: CartState): CartState {
+    const mergedItems = primary.items.map((item) => ({ ...item }));
+
+    secondary.items.forEach((item) => {
+      const duplicate = mergedItems.find((existingItem) => this.isSameCartItem(existingItem, item));
+
+      if (duplicate) {
+        duplicate.quantity += item.quantity;
+        return;
+      }
+
+      mergedItems.push({
+        ...item,
+        cartItemId: item.cartItemId || this.generateCartItemId(),
+      });
+    });
+
+    return {
+      items: mergedItems,
+      lastUpdated: Math.max(primary.lastUpdated, secondary.lastUpdated, Date.now()),
+    };
+  }
+
+  private isSameCartItem(left: CartItem, right: CartItem): boolean {
+    const isSameProduct = left.productId === right.productId;
+    const isSameType = left.productType === right.productType;
+
+    if (left.productType === 'simple' && right.productType === 'simple') {
+      return isSameProduct && isSameType && left.simpleSku === right.simpleSku;
+    }
+
+    if (left.productType === 'variable' && right.productType === 'variable') {
+      return (
+        isSameProduct &&
+        isSameType &&
+        left.variantSku === right.variantSku &&
+        this.serializeRecord(left.variantAttributes) ===
+          this.serializeRecord(right.variantAttributes)
+      );
+    }
+
+    if (left.productType === 'custom-personalized' && right.productType === 'custom-personalized') {
+      return (
+        isSameProduct &&
+        isSameType &&
+        left.variantSku === right.variantSku &&
+        this.serializeRecord(left.variantAttributes) ===
+          this.serializeRecord(right.variantAttributes) &&
+        this.serializeCustomization(left.customization) ===
+          this.serializeCustomization(right.customization)
+      );
+    }
+
+    return false;
   }
 
   private normalizeCartState(state: Partial<CartState> | null | undefined): CartState {
