@@ -280,8 +280,28 @@
                 <div class="form-group full-width">
                   <label>Zona de imagen personalizada (editor visual):</label>
                   <p class="placement-hint">
-                    Arrastra el recuadro para moverlo y usa la esquina para cambiar su tamaño.
+                    Selecciona la zona que quieres editar y arrastra su recuadro para moverlo.
                   </p>
+
+                  <div class="placement-target-switch">
+                    <button
+                      type="button"
+                      class="btn-secondary btn-small"
+                      [class.active]="activePlacementTarget() === 'image'"
+                      (click)="setPlacementTarget('image')"
+                    >
+                      Editar zona de imagen
+                    </button>
+                    <button
+                      type="button"
+                      class="btn-secondary btn-small"
+                      [class.active]="activePlacementTarget() === 'text'"
+                      (click)="setPlacementTarget('text')"
+                    >
+                      Editar zona de texto
+                    </button>
+                  </div>
+
                   <div class="placement-editor" #placementCanvas>
                     @if (imagePath()) {
                       <img
@@ -296,16 +316,32 @@
                     }
 
                     <div
-                      class="placement-zone"
-                      [ngStyle]="customizationPlacementStyles()"
-                      (pointerdown)="startPlacementDrag($event, placementCanvas)"
+                      class="placement-zone placement-zone--image"
+                      [class.is-active]="activePlacementTarget() === 'image'"
+                      [ngStyle]="imagePlacementStyles()"
+                      (pointerdown)="startPlacementDrag($event, placementCanvas, 'image')"
                     >
-                      <span class="placement-zone__label">Zona personalizada</span>
+                      <span class="placement-zone__label">Imagen</span>
                       <button
                         type="button"
                         class="placement-zone__resize"
-                        (pointerdown)="startPlacementResize($event, placementCanvas)"
-                        aria-label="Cambiar tamaño de la zona personalizada"
+                        (pointerdown)="startPlacementResize($event, placementCanvas, 'image')"
+                        aria-label="Cambiar tamaño de la zona de imagen"
+                      ></button>
+                    </div>
+
+                    <div
+                      class="placement-zone placement-zone--text"
+                      [class.is-active]="activePlacementTarget() === 'text'"
+                      [ngStyle]="textPlacementStyles()"
+                      (pointerdown)="startPlacementDrag($event, placementCanvas, 'text')"
+                    >
+                      <span class="placement-zone__label">Texto</span>
+                      <button
+                        type="button"
+                        class="placement-zone__resize"
+                        (pointerdown)="startPlacementResize($event, placementCanvas, 'text')"
+                        aria-label="Cambiar tamaño de la zona de texto"
                       ></button>
                     </div>
                   </div>

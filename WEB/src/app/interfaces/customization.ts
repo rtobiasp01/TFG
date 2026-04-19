@@ -16,6 +16,7 @@ export interface CustomizationConfig {
   imageFormats: string[];
   textPlaceholder?: string;
   imagePlacement?: CustomImagePlacement;
+  textPlacement?: CustomImagePlacement;
 }
 
 export interface UserCustomization {

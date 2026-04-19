@@ -16,6 +16,12 @@
             alt="Previsualizacion de personalizacion"
           />
         }
+
+        @if (isCustomPersonalizedProduct() && customTextPreview()) {
+          <div class="img-principal__custom-text-overlay" [ngStyle]="customTextOverlayStyles()">
+            {{ customTextPreview() }}
+          </div>
+        }
       </div>
       <div class="gallery">
         @for (img of galeriaActual(); track $index) {

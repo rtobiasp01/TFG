@@ -27,11 +27,18 @@ interface CustomizationConfigFormValue {
   imagePlacementYPercent: number;
   imagePlacementWidthPercent: number;
   imagePlacementHeightPercent: number;
+  textPlacementXPercent: number;
+  textPlacementYPercent: number;
+  textPlacementWidthPercent: number;
+  textPlacementHeightPercent: number;
 }
+
+type PlacementTarget = 'image' | 'text';
 
 type PlacementInteractionMode = 'drag' | 'resize';
 
 interface PlacementInteractionState {
+  target: PlacementTarget;
   mode: PlacementInteractionMode;
   startClientX: number;
   startClientY: number;
@@ -71,6 +78,7 @@ export class ProductForm {
   readonly saveError = signal<string>('');
   readonly manualCategoryName = signal<string>('');
   readonly categoryInputError = signal<string>('');
+  readonly activePlacementTarget = signal<PlacementTarget>('image');
   readonly descriptionModules = {
     toolbar: '#product-description-toolbar',
   };
@@ -121,6 +129,10 @@ export class ProductForm {
       imagePlacementYPercent: [50, [Validators.min(0), Validators.max(100)]],
       imagePlacementWidthPercent: [56, [Validators.min(1), Validators.max(100)]],
       imagePlacementHeightPercent: [56, [Validators.min(1), Validators.max(100)]],
+      textPlacementXPercent: [50, [Validators.min(0), Validators.max(100)]],
+      textPlacementYPercent: [80, [Validators.min(0), Validators.max(100)]],
+      textPlacementWidthPercent: [70, [Validators.min(1), Validators.max(100)]],
+      textPlacementHeightPercent: [22, [Validators.min(1), Validators.max(100)]],
     }),
     variantes: this.fb.array([]),
     image: [''],
@@ -1271,6 +1283,10 @@ export class ProductForm {
       customizationConfig.imagePlacement,
       this.getDefaultImagePlacement(),
     );
+    const textPlacement = this.normalizeImagePlacementForForm(
+      customizationConfig.textPlacement ?? customizationConfig.imagePlacement,
+      this.getDefaultTextPlacement(),
+    );
 
     return {
       allowImage: customizationConfig.allowImage ?? defaultConfig.allowImage,
@@ -1285,6 +1301,10 @@ export class ProductForm {
       imagePlacementYPercent: placement.yPercent,
       imagePlacementWidthPercent: placement.widthPercent,
       imagePlacementHeightPercent: placement.heightPercent,
+      textPlacementXPercent: textPlacement.xPercent,
+      textPlacementYPercent: textPlacement.yPercent,
+      textPlacementWidthPercent: textPlacement.widthPercent,
+      textPlacementHeightPercent: textPlacement.heightPercent,
     };
   }
 
@@ -1314,6 +1334,15 @@ export class ProductForm {
       },
       this.getDefaultImagePlacement(),
     );
+    const textPlacement = this.normalizeImagePlacementForForm(
+      {
+        xPercent: customizationConfig?.textPlacementXPercent,
+        yPercent: customizationConfig?.textPlacementYPercent,
+        widthPercent: customizationConfig?.textPlacementWidthPercent,
+        heightPercent: customizationConfig?.textPlacementHeightPercent,
+      },
+      this.getDefaultTextPlacement(),
+    );
 
     return {
       allowImage: customizationConfig?.allowImage ?? defaultConfig.allowImage,
@@ -1328,6 +1357,7 @@ export class ProductForm {
         : ['png'],
       textPlaceholder: String(textPlaceholder).trim(),
       imagePlacement,
+      textPlacement,
     };
   }
 
@@ -1344,6 +1374,10 @@ export class ProductForm {
       imagePlacementYPercent: 50,
       imagePlacementWidthPercent: 56,
       imagePlacementHeightPercent: 56,
+      textPlacementXPercent: 50,
+      textPlacementYPercent: 80,
+      textPlacementWidthPercent: 70,
+      textPlacementHeightPercent: 22,
     };
   }
 
@@ -1353,6 +1387,15 @@ export class ProductForm {
       yPercent: 50,
       widthPercent: 56,
       heightPercent: 56,
+    };
+  }
+
+  private getDefaultTextPlacement(): CustomImagePlacement {
+    return {
+      xPercent: 50,
+      yPercent: 80,
+      widthPercent: 70,
+      heightPercent: 22,
     };
   }
 
@@ -1422,7 +1465,7 @@ export class ProductForm {
   }
 
   customizationPlacementStyles(): Record<string, string> {
-    const placement = this.getPlacementFromForm();
+    const placement = this.getPlacementFromForm(this.activePlacementTarget());
 
     return {
       left: `${placement.xPercent}%`,
@@ -1432,28 +1475,66 @@ export class ProductForm {
     };
   }
 
-  startPlacementDrag(event: PointerEvent, canvasElement: HTMLElement): void {
-    event.preventDefault();
-    event.stopPropagation();
-    this.placementInteraction = {
-      mode: 'drag',
-      startClientX: event.clientX,
-      startClientY: event.clientY,
-      startPlacement: this.getPlacementFromForm(),
-      canvasRect: canvasElement.getBoundingClientRect(),
+  imagePlacementStyles(): Record<string, string> {
+    const placement = this.getPlacementFromForm('image');
+
+    return {
+      left: `${placement.xPercent}%`,
+      top: `${placement.yPercent}%`,
+      width: `${placement.widthPercent}%`,
+      height: `${placement.heightPercent}%`,
     };
   }
 
-  startPlacementResize(event: PointerEvent, canvasElement: HTMLElement): void {
+  textPlacementStyles(): Record<string, string> {
+    const placement = this.getPlacementFromForm('text');
+
+    return {
+      left: `${placement.xPercent}%`,
+      top: `${placement.yPercent}%`,
+      width: `${placement.widthPercent}%`,
+      height: `${placement.heightPercent}%`,
+    };
+  }
+
+  setPlacementTarget(target: PlacementTarget): void {
+    this.activePlacementTarget.set(target);
+  }
+
+  startPlacementDrag(
+    event: PointerEvent,
+    canvasElement: HTMLElement,
+    target: PlacementTarget,
+  ): void {
     event.preventDefault();
     event.stopPropagation();
     this.placementInteraction = {
+      target,
+      mode: 'drag',
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPlacement: this.getPlacementFromForm(target),
+      canvasRect: canvasElement.getBoundingClientRect(),
+    };
+    this.activePlacementTarget.set(target);
+  }
+
+  startPlacementResize(
+    event: PointerEvent,
+    canvasElement: HTMLElement,
+    target: PlacementTarget,
+  ): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.placementInteraction = {
+      target,
       mode: 'resize',
       startClientX: event.clientX,
       startClientY: event.clientY,
-      startPlacement: this.getPlacementFromForm(),
+      startPlacement: this.getPlacementFromForm(target),
       canvasRect: canvasElement.getBoundingClientRect(),
     };
+    this.activePlacementTarget.set(target);
   }
 
   @HostListener('window:pointermove', ['$event'])
@@ -1481,7 +1562,7 @@ export class ProductForm {
         yPercent: interaction.startPlacement.yPercent + deltaYPercent,
       };
 
-      this.patchPlacementToForm(this.clampPlacement(movedPlacement));
+      this.patchPlacementToForm(interaction.target, this.clampPlacement(movedPlacement));
       return;
     }
 
@@ -1504,7 +1585,7 @@ export class ProductForm {
       heightPercent: constrainedHeight,
     };
 
-    this.patchPlacementToForm(this.clampPlacement(resizedPlacement));
+    this.patchPlacementToForm(interaction.target, this.clampPlacement(resizedPlacement));
   }
 
   @HostListener('window:pointerup')
@@ -1512,11 +1593,23 @@ export class ProductForm {
     this.placementInteraction = null;
   }
 
-  private getPlacementFromForm(): CustomImagePlacement {
+  private getPlacementFromForm(target: PlacementTarget): CustomImagePlacement {
     const rawConfig = this.productForm.get('customization_config')?.value as
       | Partial<CustomizationConfigFormValue>
       | null
       | undefined;
+
+    if (target === 'text') {
+      return this.normalizeImagePlacementForForm(
+        {
+          xPercent: rawConfig?.textPlacementXPercent,
+          yPercent: rawConfig?.textPlacementYPercent,
+          widthPercent: rawConfig?.textPlacementWidthPercent,
+          heightPercent: rawConfig?.textPlacementHeightPercent,
+        },
+        this.getDefaultTextPlacement(),
+      );
+    }
 
     return this.normalizeImagePlacementForForm(
       {
@@ -1529,12 +1622,22 @@ export class ProductForm {
     );
   }
 
-  private patchPlacementToForm(placement: CustomImagePlacement): void {
+  private patchPlacementToForm(target: PlacementTarget, placement: CustomImagePlacement): void {
     const customizationConfigGroup = this.productForm.get(
       'customization_config',
     ) as FormGroup | null;
 
     if (!customizationConfigGroup) {
+      return;
+    }
+
+    if (target === 'text') {
+      customizationConfigGroup.patchValue({
+        textPlacementXPercent: Number(placement.xPercent.toFixed(2)),
+        textPlacementYPercent: Number(placement.yPercent.toFixed(2)),
+        textPlacementWidthPercent: Number(placement.widthPercent.toFixed(2)),
+        textPlacementHeightPercent: Number(placement.heightPercent.toFixed(2)),
+      });
       return;
     }
 

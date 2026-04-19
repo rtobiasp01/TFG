@@ -73,6 +73,10 @@ export class Cart {
     return Boolean(item.customization?.uploadedImageUrl?.trim());
   }
 
+  customText(item: CartItem): string {
+    return item.customization?.customText?.trim() || '';
+  }
+
   openCustomImageModal(item: CartItem): void {
     const imageUrl = this.resolveCustomImageUrl(item.customization?.uploadedImageUrl);
 

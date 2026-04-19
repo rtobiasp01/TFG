@@ -20,6 +20,13 @@ const DEFAULT_IMAGE_PLACEMENT: CustomImagePlacement = {
   heightPercent: 56,
 };
 
+const DEFAULT_TEXT_PLACEMENT: CustomImagePlacement = {
+  xPercent: 50,
+  yPercent: 80,
+  widthPercent: 70,
+  heightPercent: 22,
+};
+
 type VariantValue = string | number;
 
 interface VariantOptionGroup {
@@ -53,8 +60,23 @@ export class ProductDetails {
   readonly galeriaActual = signal<string[]>([]);
   readonly variantesProducto = signal<VariantOptionGroup[]>([]);
   readonly selectedAttributes = signal<Record<string, VariantValue>>({});
+  readonly customTextPreview = computed(() => {
+    const rawText = this.customText();
+    const trimmed = rawText.trim();
+    return trimmed.length > 0 ? rawText : '';
+  });
   readonly customOverlayStyles = computed(() => {
     const placement = this.resolveImagePlacement();
+
+    return {
+      left: `${placement.xPercent}%`,
+      top: `${placement.yPercent}%`,
+      width: `${placement.widthPercent}%`,
+      height: `${placement.heightPercent}%`,
+    };
+  });
+  readonly customTextOverlayStyles = computed(() => {
+    const placement = this.resolveTextPlacement();
 
     return {
       left: `${placement.xPercent}%`,
@@ -578,6 +600,7 @@ export class ProductDetails {
       imageFormats: ['jpg', 'jpeg', 'png', 'webp'],
       textPlaceholder: 'Escribe un mensaje personalizado',
       imagePlacement: { ...DEFAULT_IMAGE_PLACEMENT },
+      textPlacement: { ...DEFAULT_TEXT_PLACEMENT },
     };
   }
 
@@ -617,6 +640,47 @@ export class ProductDetails {
         1,
         100,
         DEFAULT_IMAGE_PLACEMENT.heightPercent,
+      ),
+    };
+  }
+
+  private resolveTextPlacement(): CustomImagePlacement {
+    const rawPlacement =
+      this.customizationConfig()?.textPlacement ?? this.customizationConfig()?.imagePlacement;
+
+    if (!rawPlacement) {
+      return DEFAULT_TEXT_PLACEMENT;
+    }
+
+    const clampPercent = (
+      value: number | undefined,
+      min: number,
+      max: number,
+      fallback: number,
+    ): number => {
+      const parsed = Number(value);
+
+      if (!Number.isFinite(parsed)) {
+        return fallback;
+      }
+
+      return Math.min(max, Math.max(min, parsed));
+    };
+
+    return {
+      xPercent: clampPercent(rawPlacement.xPercent, 0, 100, DEFAULT_TEXT_PLACEMENT.xPercent),
+      yPercent: clampPercent(rawPlacement.yPercent, 0, 100, DEFAULT_TEXT_PLACEMENT.yPercent),
+      widthPercent: clampPercent(
+        rawPlacement.widthPercent,
+        1,
+        100,
+        DEFAULT_TEXT_PLACEMENT.widthPercent,
+      ),
+      heightPercent: clampPercent(
+        rawPlacement.heightPercent,
+        1,
+        100,
+        DEFAULT_TEXT_PLACEMENT.heightPercent,
       ),
     };
   }

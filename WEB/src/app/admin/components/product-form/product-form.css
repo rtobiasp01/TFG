@@ -340,6 +340,19 @@
   color: #5b6570;
 }
 
+.placement-target-switch {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.placement-target-switch .btn-secondary.active {
+  background: #2f8e4f;
+  border-color: #2f8e4f;
+  color: #fff;
+}
+
 .placement-editor {
   position: relative;
   width: 100%;
@@ -383,6 +396,21 @@
   box-shadow: 0 0 0 1px rgba(47, 142, 79, 0.2), 0 8px 24px rgba(15, 34, 22, 0.08);
   max-width: 92%;
   max-height: 92%;
+  opacity: 0.6;
+}
+
+.placement-zone.is-active {
+  opacity: 1;
+}
+
+.placement-zone--image {
+  border-color: #2f8e4f;
+  background: rgba(98, 188, 128, 0.16);
+}
+
+.placement-zone--text {
+  border-color: #2b6cb0;
+  background: rgba(59, 130, 246, 0.14);
 }
 
 .placement-zone:active {

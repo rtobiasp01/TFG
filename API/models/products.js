@@ -131,6 +131,12 @@ class Product {
         widthPercent: 56,
         heightPercent: 56,
       },
+      textPlacement: {
+        xPercent: 50,
+        yPercent: 80,
+        widthPercent: 70,
+        heightPercent: 22,
+      },
     };
 
     if (!rawConfig) {
@@ -150,6 +156,10 @@ class Product {
       rawConfig.imagePlacement,
       defaults.imagePlacement,
     );
+    const normalizedTextPlacement = this.normalizeImagePlacement(
+      rawConfig.textPlacement || rawConfig.imagePlacement,
+      defaults.textPlacement,
+    );
 
     return {
       allowImage:
@@ -165,6 +175,7 @@ class Product {
           ? String(rawConfig.textPlaceholder).trim()
           : defaults.textPlaceholder,
       imagePlacement: normalizedImagePlacement,
+      textPlacement: normalizedTextPlacement,
     };
   }
 

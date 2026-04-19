@@ -11,6 +11,9 @@
             <div class="cart-item-info">
               <h2>{{ item.productTitle }}</h2>
               <p>SKU: {{ item.simpleSku || item.variantSku || 'N/A' }}</p>
+              @if (customText(item)) {
+                <p class="cart-item-info__custom-text">Texto: "{{ customText(item) }}"</p>
+              }
               @if (hasCustomImage(item)) {
                 <p
                   class="cart-item-info__custom-label cart-item-info__custom-label--clickable"

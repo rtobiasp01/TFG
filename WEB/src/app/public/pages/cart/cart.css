@@ -78,6 +78,13 @@
   margin: 0.25rem 0;
 }
 
+.cart-item-info__custom-text {
+  margin-top: 0.35rem;
+  font-size: 0.86rem;
+  color: #334155;
+  line-height: 1.35;
+}
+
 .cart-item-info__custom-label {
   display: inline-flex;
   align-items: center;
