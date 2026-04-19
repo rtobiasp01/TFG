@@ -27,15 +27,59 @@ export class Products {
     });
   }
 
+  private getSelectedProductIds(): string[] {
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    const selectedIds: string[] = [];
+    const products = this.products();
+
+    checkboxes.forEach((checkbox, index) => {
+      if ((checkbox as HTMLInputElement).checked && products[index]) {
+        selectedIds.push(products[index]._id);
+      }
+    });
+
+    return selectedIds;
+  }
+
   deleteProduct(id: string) {
     this.productService.delete(id).subscribe({
       next: () => this.loadProducts(),
     });
   }
 
-  markAllAsChecked(event: any) {
+  deleteSelectedProducts(): void {
+    const selectedIds = this.getSelectedProductIds();
 
-    const chk_main = document.getElementById("chk_main") as HTMLInputElement;
+    if (selectedIds.length === 0) {
+      alert('Selecciona al menos un producto para eliminar.');
+      return;
+    }
+
+    const confirmDelete = confirm(
+      `¿Estás seguro de que deseas eliminar ${selectedIds.length} producto(s)?`,
+    );
+    if (!confirmDelete) {
+      return;
+    }
+
+    forkJoin(selectedIds.map((id) => this.productService.delete(id))).subscribe({
+      next: () => {
+        this.loadProducts();
+        alert(`${selectedIds.length} producto(s) eliminado(s) correctamente.`);
+
+        const chk_main = document.getElementById('chk_main') as HTMLInputElement;
+        if (chk_main) {
+          chk_main.checked = false;
+        }
+      },
+      error: () => {
+        alert('Error al eliminar los productos seleccionados.');
+      },
+    });
+  }
+
+  markAllAsChecked(event: any) {
+    const chk_main = document.getElementById('chk_main') as HTMLInputElement;
     const markAll = chk_main.checked;
 
     const checkboxes = document.querySelectorAll('input[type="checkbox"]');
@@ -48,8 +92,36 @@ export class Products {
       } else {
         checkbox.checked = false;
       }
-
     });
+  }
+
+  exportSelectedProductsToJson(): void {
+    const selectedIds = this.getSelectedProductIds();
+    const products = this.products();
+
+    if (selectedIds.length === 0) {
+      alert('Selecciona al menos un producto para exportar.');
+      return;
+    }
+
+    const selectedProducts = products.filter((product) => selectedIds.includes(product._id));
+
+    const exportableProducts = selectedProducts.map((product) => {
+      const { _id, ...rest } = product;
+      return rest;
+    });
+
+    const content = JSON.stringify(exportableProducts, null, 2);
+    const blob = new Blob([content], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const date = new Date().toISOString().slice(0, 10);
+
+    link.href = url;
+    link.download = `products-export-${date}.json`;
+    link.click();
+
+    URL.revokeObjectURL(url);
   }
 
   exportAllProductsToJson(): void {
@@ -107,14 +179,16 @@ export class Products {
           return;
         }
 
-        const productsToImport = parsed.map((item) => {
-          if (!item || typeof item !== 'object') {
-            return null;
-          }
+        const productsToImport = parsed
+          .map((item) => {
+            if (!item || typeof item !== 'object') {
+              return null;
+            }
 
-          const { _id, ...rest } = item as Record<string, unknown>;
-          return rest;
-        }).filter(Boolean);
+            const { _id, ...rest } = item as Record<string, unknown>;
+            return rest;
+          })
+          .filter(Boolean);
 
         if (productsToImport.length === 0) {
           alert('El archivo no contiene productos válidos para importar.');

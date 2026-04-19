@@ -19,15 +19,18 @@
     >
       {{ importingProducts() ? 'Importando...' : 'Importar JSON (todos)' }}
     </button>
-    <button type="button" class="btn-secondary" (click)="exportAllProductsToJson()">
-      Exportar JSON (todos)
+    <button type="button" class="btn-secondary" (click)="exportSelectedProductsToJson()">
+      Exportar JSON (seleccionados)
+    </button>
+    <button type="button" class="btn-secondary" (click)="deleteSelectedProducts()">
+      Eliminar seleccionados
     </button>
   </div>
 </div>
 <table>
   <thead>
     <tr>
-      <th><input type="checkbox" id="chk_main" (change)="markAllAsChecked($event)"/></th>
+      <th><input type="checkbox" id="chk_main" (change)="markAllAsChecked($event)" /></th>
       <th><a href="#">Name</a></th>
       <th><a href="#">SKU</a></th>
       <th><a href="#">Categorias</a></th>
