@@ -1,13 +1,65 @@
 const connectDB = require("../db/mongo");
 const { ObjectId } = require("mongodb");
 
+function sanitizeCartState(cartState) {
+    const rawItems = Array.isArray(cartState?.items) ? cartState.items : [];
+    const items = rawItems
+        .filter((item) => item && typeof item === "object")
+        .map((item) => ({ ...item }));
+
+    const parsedLastUpdated = Number(cartState?.lastUpdated);
+    const lastUpdated = Number.isFinite(parsedLastUpdated) ? parsedLastUpdated : Date.now();
+
+    return { items, lastUpdated };
+}
+
 async function getCartByUser(userId) {
     try {
         const db = await connectDB();
         const cart = await db.collection("carts").findOne({ userId: new ObjectId(userId) });
-        return cart || { userId, items: [] };
+        if (!cart) {
+            return { userId, items: [], lastUpdated: 0 };
+        }
+
+        const { items, lastUpdated } = sanitizeCartState(cart);
+        return {
+            userId,
+            items,
+            lastUpdated,
+        };
     } catch (error) {
         console.error("Error fetching cart:", error);
+        throw error;
+    }
+}
+
+async function saveCartByUser(userId, cartState) {
+    try {
+        const db = await connectDB();
+        const cartCollection = db.collection("carts");
+        const normalizedCart = sanitizeCartState(cartState);
+        const userObjectId = new ObjectId(userId);
+
+        await cartCollection.updateOne(
+            { userId: userObjectId },
+            {
+                $set: {
+                    userId: userObjectId,
+                    items: normalizedCart.items,
+                    lastUpdated: normalizedCart.lastUpdated,
+                    updatedAt: new Date(),
+                },
+            },
+            { upsert: true }
+        );
+
+        return {
+            userId,
+            items: normalizedCart.items,
+            lastUpdated: normalizedCart.lastUpdated,
+        };
+    } catch (error) {
+        console.error("Error saving cart:", error);
         throw error;
     }
 }
@@ -43,8 +95,7 @@ async function addItemToCart(userId, productId, quantity, price) {
 
 async function clearCart(userId) {
     try {
-        const db = await connectDB();
-        await db.collection("carts").updateOne({ userId: new ObjectId(userId) }, { $set: { items: [] } });
+        return await saveCartByUser(userId, { items: [], lastUpdated: Date.now() });
     } catch (error) {
         console.error("Error clearing cart:", error);
         throw error;
@@ -53,6 +104,7 @@ async function clearCart(userId) {
 
 module.exports = {
     getCartByUser,
+    saveCartByUser,
     addItemToCart,
     clearCart
 };

@@ -1,7 +1,36 @@
 const express = require('express');
 const cartService = require('../services/cart-service');
+const authMiddleware = require('../middlewares/authMiddleware');
 
 const router = express.Router();
+
+router.get('/me', authMiddleware, async (req, res) => {
+    try {
+        const cart = await cartService.getCartByUser(req.userId);
+        res.json(cart);
+    } catch (error) {
+        res.status(500).json({ error: 'Error fetching authenticated cart' });
+    }
+});
+
+router.put('/me', authMiddleware, async (req, res) => {
+    try {
+        const cartState = req.body ?? {};
+        const updatedCart = await cartService.saveCartByUser(req.userId, cartState);
+        res.json(updatedCart);
+    } catch (error) {
+        res.status(500).json({ error: 'Error saving authenticated cart' });
+    }
+});
+
+router.delete('/me', authMiddleware, async (req, res) => {
+    try {
+        await cartService.clearCart(req.userId);
+        res.json({ message: 'Cart cleared successfully' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error clearing authenticated cart' });
+    }
+});
 
 router.get('/:userId', async (req, res) => {
     try {

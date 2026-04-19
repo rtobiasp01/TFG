@@ -1,5 +1,9 @@
-import { Injectable, signal } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { effect, inject, Injectable, signal } from '@angular/core';
 import { ProductType, UserCustomization } from '../interfaces/customization';
+import { AuthService } from './auth-service';
+
+const CART_API_URL = 'http://localhost:3000/cart/me';
 
 export interface CartItem {
   cartItemId: string;
@@ -26,11 +30,24 @@ export interface CartState {
   providedIn: 'root',
 })
 export class CartService {
+  private readonly http = inject(HttpClient);
+  private readonly authService = inject(AuthService);
   private readonly STORAGE_KEY = 'tfg_cart';
   readonly cart = signal<CartState>({ items: [], lastUpdated: 0 });
 
   constructor() {
     this.loadFromStorage();
+
+    effect(() => {
+      const isAuthenticated = this.authService.isAuthenticated();
+
+      if (isAuthenticated) {
+        this.loadFromApi();
+        return;
+      }
+
+      this.loadFromStorage();
+    });
   }
 
   addItem(item: Omit<CartItem, 'cartItemId'>): CartItem {
@@ -41,6 +58,7 @@ export class CartService {
 
     if (existingItem) {
       this.updateQuantity(existingItem.cartItemId, existingItem.quantity + item.quantity);
+      return existingItem;
     } else {
       this.cart.update((state) => ({
         ...state,
@@ -49,7 +67,7 @@ export class CartService {
       }));
     }
 
-    this.saveToStorage();
+    this.persistCurrentState();
     this.logCart();
     return newItem;
   }
@@ -63,7 +81,7 @@ export class CartService {
       lastUpdated: Date.now(),
     }));
 
-    this.saveToStorage();
+    this.persistCurrentState();
     this.logCart();
   }
 
@@ -74,13 +92,13 @@ export class CartService {
       lastUpdated: Date.now(),
     }));
 
-    this.saveToStorage();
+    this.persistCurrentState();
     this.logCart();
   }
 
   clearCart(): void {
     this.cart.set({ items: [], lastUpdated: Date.now() });
-    this.saveToStorage();
+    this.persistCurrentState();
     this.logCart();
   }
 
@@ -168,12 +186,60 @@ export class CartService {
       const stored = localStorage.getItem(this.STORAGE_KEY);
       if (stored) {
         const state = JSON.parse(stored) as CartState;
-        this.cart.set(state);
+        this.cart.set(this.normalizeCartState(state));
+        return;
       }
+
+      this.cart.set({ items: [], lastUpdated: 0 });
     } catch (error) {
       console.error('Error loading cart from localStorage:', error);
       this.cart.set({ items: [], lastUpdated: 0 });
     }
+  }
+
+  private persistCurrentState(): void {
+    if (this.authService.isAuthenticated()) {
+      this.saveToApi();
+      return;
+    }
+
+    this.saveToStorage();
+  }
+
+  private saveToApi(): void {
+    this.http.put<CartState>(CART_API_URL, this.cart()).subscribe({
+      error: (error) => {
+        console.error('Error saving cart to API:', error);
+      },
+    });
+  }
+
+  private loadFromApi(): void {
+    this.http.get<Partial<CartState>>(CART_API_URL).subscribe({
+      next: (state) => {
+        this.cart.set(this.normalizeCartState(state));
+      },
+      error: (error) => {
+        console.error('Error loading cart from API:', error);
+        this.cart.set({ items: [], lastUpdated: 0 });
+      },
+    });
+  }
+
+  private normalizeCartState(state: Partial<CartState> | null | undefined): CartState {
+    const items = Array.isArray(state?.items)
+      ? state.items
+          .filter((item): item is CartItem => Boolean(item && typeof item === 'object'))
+          .map((item) => ({
+            ...item,
+            cartItemId: item.cartItemId || this.generateCartItemId(),
+          }))
+      : [];
+
+    const parsedLastUpdated = Number(state?.lastUpdated);
+    const lastUpdated = Number.isFinite(parsedLastUpdated) ? parsedLastUpdated : 0;
+
+    return { items, lastUpdated };
   }
 
   private logCart(): void {
