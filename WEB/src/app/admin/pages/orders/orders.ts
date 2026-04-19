@@ -1,0 +1,145 @@
+import { Component, inject, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { OrderService } from '../../../services/order-service';
+import { Order, OrderStatus, OrderItem } from '../../../interfaces/order';
+import { FormsModule } from '@angular/forms';
+
+@Component({
+  selector: 'app-admin-orders',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
+  templateUrl: './orders.html',
+  styleUrl: './orders.css',
+})
+export class AdminOrders {
+  private orderService = inject(OrderService);
+
+  orders = signal<Order[]>([]);
+  loadingOrders = signal<boolean>(true);
+  selectedOrder = signal<Order | null>(null);
+  statusFilter = signal<string>('');
+
+  readonly statusOptions: OrderStatus[] = [
+    'pendiente',
+    'confirmado',
+    'enviado',
+    'entregado',
+    'cancelado',
+  ];
+  readonly statusLabels = {
+    pendiente: 'Pendiente',
+    confirmado: 'Confirmado',
+    enviado: 'Enviado',
+    entregado: 'Entregado',
+    cancelado: 'Cancelado',
+  };
+  readonly statusColors = {
+    pendiente: '#f59e0b',
+    confirmado: '#3b82f6',
+    enviado: '#8b5cf6',
+    entregado: '#10b981',
+    cancelado: '#ef4444',
+  };
+
+  private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
+    style: 'currency',
+    currency: 'EUR',
+  });
+
+  constructor() {
+    this.loadOrders();
+  }
+
+  private loadOrders() {
+    this.loadingOrders.set(true);
+    this.orderService.getAllOrders().subscribe({
+      next: (orders) => {
+        this.orders.set(orders);
+        this.loadingOrders.set(false);
+      },
+      error: () => {
+        this.orders.set([]);
+        this.loadingOrders.set(false);
+      },
+    });
+  }
+
+  getFilteredOrders(): Order[] {
+    const filter = this.statusFilter();
+    if (!filter) return this.orders();
+    return this.orders().filter((order) => order.status === filter);
+  }
+
+  selectOrder(order: Order) {
+    this.selectedOrder.set(this.selectedOrder() === order ? null : order);
+  }
+
+  updateOrderStatus(order: Order, newStatus: OrderStatus) {
+    this.orderService.updateOrderStatus(order._id, newStatus).subscribe({
+      next: () => {
+        this.loadOrders();
+        this.selectedOrder.set(null);
+      },
+      error: () => {
+        alert('Error al actualizar el estado del pedido');
+      },
+    });
+  }
+
+  deleteOrder(orderId: string) {
+    if (confirm('¿Estás seguro de que deseas eliminar este pedido?')) {
+      this.orderService.deleteOrder(orderId).subscribe({
+        next: () => {
+          this.loadOrders();
+          this.selectedOrder.set(null);
+        },
+        error: () => {
+          alert('Error al eliminar el pedido');
+        },
+      });
+    }
+  }
+
+  getStatusColor(status: OrderStatus): string {
+    return this.statusColors[status] || '#6b7280';
+  }
+
+  getStatusLabel(status: OrderStatus): string {
+    return this.statusLabels[status] || status;
+  }
+
+  formatDate(date: any): string {
+    const d = new Date(date);
+    return d.toLocaleDateString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  }
+
+  formatPrice(value: number): string {
+    return this.currencyFormatter.format(value);
+  }
+
+  getOrderTotal(order: Order): string {
+    return this.formatPrice(order.total);
+  }
+
+  getItemPrice(item: OrderItem): string {
+    return this.formatPrice(item.price);
+  }
+
+  getItemsCount(order: Order): number {
+    return order.items.reduce((sum, item) => sum + item.quantity, 0);
+  }
+
+  hasCustomText(item: OrderItem): boolean {
+    return !!item.customization?.customText?.trim();
+  }
+
+  getCustomText(item: OrderItem): string {
+    return item.customization?.customText?.trim() || '';
+  }
+}

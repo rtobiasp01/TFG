@@ -1,0 +1,134 @@
+<div class="admin-orders-container">
+  <div class="admin-orders-header">
+    <h1>Gestión de Pedidos</h1>
+
+    <div class="filter-section">
+      <label for="status-filter">Filtrar por estado:</label>
+      <select id="status-filter" [(ngModel)]="statusFilter" class="status-filter-select">
+        <option value="">Todos los estados</option>
+        <option value="pendiente">Pendiente</option>
+        <option value="confirmado">Confirmado</option>
+        <option value="enviado">Enviado</option>
+        <option value="entregado">Entregado</option>
+        <option value="cancelado">Cancelado</option>
+      </select>
+    </div>
+  </div>
+
+  @if (loadingOrders()) {
+    <div class="loading">Cargando pedidos...</div>
+  } @else if (getFilteredOrders().length === 0) {
+    <div class="empty-state">
+      <p>No hay pedidos en esta categoría</p>
+    </div>
+  } @else {
+    <div class="orders-table-responsive">
+      <table class="orders-table">
+        <thead>
+          <tr>
+            <th>ID Pedido</th>
+            <th>Usuario</th>
+            <th>Artículos</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Fecha</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (order of getFilteredOrders(); track order._id) {
+            <tr [class.expanded]="selectedOrder() === order">
+              <td class="order-id-cell">
+                <button class="expand-btn" (click)="selectOrder(order)">
+                  {{ selectedOrder() === order ? '▼' : '▶' }}
+                </button>
+                {{ order._id.substring(0, 8) }}
+              </td>
+              <td>{{ order.user_id.substring(0, 8) }}</td>
+              <td>{{ getItemsCount(order) }}</td>
+              <td>{{ getOrderTotal(order) }}</td>
+              <td>
+                <span class="status-badge" [style.backgroundColor]="getStatusColor(order.status)">
+                  {{ getStatusLabel(order.status) }}
+                </span>
+              </td>
+              <td class="date-cell">{{ formatDate(order.createdAt) }}</td>
+              <td class="actions-cell">
+                <button class="action-btn view-btn" (click)="selectOrder(order)">
+                  {{ selectedOrder() === order ? 'Cerrar' : 'Ver' }}
+                </button>
+              </td>
+            </tr>
+
+            @if (selectedOrder() === order) {
+              <tr class="details-row">
+                <td colspan="7">
+                  <div class="order-details">
+                    <div class="details-grid">
+                      <div class="details-section">
+                        <h4>Artículos</h4>
+                        <div class="items-list">
+                          @for (item of order.items; track item.product_id) {
+                            <div class="item-detail">
+                              <div class="item-main">
+                                <strong>{{ item.productTitle || 'Producto' }}</strong>
+                                <span class="item-qty">{{ item.quantity }}x</span>
+                                <span class="item-price">
+                                  {{ getItemPrice(item) }}
+                                </span>
+                              </div>
+                              @if (hasCustomText(item)) {
+                                <p class="item-custom">📝 Texto: "{{ getCustomText(item) }}"</p>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+
+                      <div class="details-section">
+                        <h4>Estado del Pedido</h4>
+                        <div class="status-controls">
+                          @for (status of statusOptions; track status) {
+                            <button
+                              class="status-btn"
+                              [class.active]="order.status === status"
+                              [disabled]="order.status === status"
+                              (click)="updateOrderStatus(order, status)"
+                            >
+                              {{ getStatusLabel(status) }}
+                            </button>
+                          }
+                        </div>
+                      </div>
+
+                      @if (
+                        order.shippingAddress &&
+                        (order.shippingAddress.street || order.shippingAddress.city)
+                      ) {
+                        <div class="details-section">
+                          <h4>Dirección de Envío</h4>
+                          <p>{{ order.shippingAddress.street || 'No especificada' }}</p>
+                          <p>
+                            {{ order.shippingAddress.zipCode || '' }}
+                            {{ order.shippingAddress.city || '' }}
+                          </p>
+                          <p>{{ order.shippingAddress.country || 'No especificada' }}</p>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="details-actions">
+                      <button class="action-btn delete-btn" (click)="deleteOrder(order._id)">
+                        🗑️ Eliminar Pedido
+                      </button>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

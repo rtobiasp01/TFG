@@ -1,6 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { CartService } from '../../../services/cart-service';
 import { CartItem } from '../../../services/cart-service';
+import { OrderService } from '../../../services/order-service';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth-service';
 
 const REMOVE_ANIMATION_MS = 450;
 const API_BASE_URL = 'http://localhost:3000';
@@ -13,9 +16,13 @@ const API_BASE_URL = 'http://localhost:3000';
 })
 export class Cart {
   private readonly cartService = inject(CartService);
+  private readonly orderService = inject(OrderService);
+  private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   private readonly deletingItemIds = signal<Set<string>>(new Set());
   readonly selectedCustomImage = signal<string>('');
   readonly showCustomImageModal = signal<boolean>(false);
+  readonly processingCheckout = signal<boolean>(false);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
@@ -99,6 +106,33 @@ export class Cart {
 
   formatPrice(value: number): string {
     return this.currencyFormatter.format(value);
+  }
+
+  checkout(): void {
+    if (!this.authService.isAuthenticated()) {
+      alert('Debes iniciar sesión para realizar un pedido');
+      this.router.navigate(['/login']);
+      return;
+    }
+
+    if (this.items().length === 0) {
+      alert('El carrito está vacío');
+      return;
+    }
+
+    this.processingCheckout.set(true);
+    this.orderService.checkout().subscribe({
+      next: () => {
+        this.processingCheckout.set(false);
+        alert('¡Pedido realizado con éxito!');
+        this.router.navigate(['/pedidos']);
+      },
+      error: (error) => {
+        this.processingCheckout.set(false);
+        console.error('Error al realizar el pedido:', error);
+        alert('Error al realizar el pedido. Por favor intenta de nuevo.');
+      },
+    });
   }
 
   private resolveCustomImageUrl(imageUrl?: string | null): string {

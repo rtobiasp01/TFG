@@ -65,6 +65,13 @@
           <span>Total</span>
           <span>{{ formatPrice(total()) }}</span>
         </div>
+        <button
+          class="checkout-btn"
+          [disabled]="processingCheckout() || items().length === 0"
+          (click)="checkout()"
+        >
+          {{ processingCheckout() ? 'Procesando...' : 'Realizar Pedido' }}
+        </button>
       </aside>
     </div>
   } @else {

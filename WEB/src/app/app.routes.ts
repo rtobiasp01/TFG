@@ -9,8 +9,10 @@ import { Variants } from './admin/pages/variants/variants';
 import { Media } from './admin/pages/media/media';
 import { Categories } from './admin/pages/categories/categories';
 import { Settings } from './admin/pages/settings/settings';
+import { AdminOrders } from './admin/pages/orders/orders';
 import { ProductDetails } from './public/pages/product-details/product-details';
 import { Cart } from './public/pages/cart/cart';
+import { Orders } from './public/pages/orders/orders';
 import { Login } from './public/pages/login/login';
 import { Register } from './public/pages/register/register';
 import { adminGuard, publicOnlyGuard } from './guards/auth-guards';
@@ -54,6 +56,10 @@ export const routes: Routes = [
         component: Settings,
       },
       {
+        path: 'pedidos',
+        component: AdminOrders,
+      },
+      {
         path: '',
         redirectTo: 'home',
         pathMatch: 'full',
@@ -71,6 +77,10 @@ export const routes: Routes = [
       {
         path: 'productos/:sku',
         component: ProductDetails,
+      },
+      {
+        path: 'pedidos',
+        component: Orders,
       },
       {
         path: 'cart',

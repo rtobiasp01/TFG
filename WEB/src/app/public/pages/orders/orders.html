@@ -1,0 +1,115 @@
+<div class="orders-container">
+  <div class="orders-header">
+    <h1>Mis Pedidos</h1>
+    <p class="orders-description">Visualiza el estado de todos tus pedidos</p>
+  </div>
+
+  @if (loadingOrders()) {
+    <div class="loading">Cargando pedidos...</div>
+  } @else if (orders().length === 0) {
+    <div class="empty-state">
+      <p>No tienes pedidos aún</p>
+      <a routerLink="/inicio" class="btn-primary">Ir a productos</a>
+    </div>
+  } @else {
+    <div class="orders-list">
+      @for (order of orders(); track order._id) {
+        <div class="order-card">
+          <div class="order-header" (click)="selectOrder(order)">
+            <div class="order-info">
+              <h3>Pedido #{{ order._id.substring(0, 8) }}</h3>
+              <p class="order-date">{{ formatDate(order.createdAt) }}</p>
+            </div>
+            <div class="order-status">
+              <span class="status-badge" [style.backgroundColor]="getStatusColor(order.status)">
+                {{ getStatusLabel(order.status) }}
+              </span>
+            </div>
+            <div class="order-total">
+              <p class="total-label">Total</p>
+              <p class="total-amount">{{ getOrderTotal(order) }}</p>
+            </div>
+            <div class="expand-icon">
+              @if (selectedOrder() === order) {
+                <span>▼</span>
+              } @else {
+                <span>▶</span>
+              }
+            </div>
+          </div>
+
+          @if (selectedOrder() === order) {
+            <div class="order-details">
+              <div class="items-section">
+                <h4>Artículos ({{ order.items.length }})</h4>
+                <div class="items-list">
+                  @for (item of order.items; track item.product_id) {
+                    <div class="item-detail">
+                      <div class="item-info">
+                        <p class="item-name">{{ item.productTitle || 'Producto' }}</p>
+                        <p class="item-sku">ID: {{ item.product_id.substring(0, 8) }}</p>
+                        @if (hasCustomText(item)) {
+                          <p class="item-custom">📝 Texto: "{{ getCustomText(item) }}"</p>
+                        }
+                      </div>
+                      <div class="item-quantity">
+                        <span>{{ item.quantity }}x</span>
+                      </div>
+                      <div class="item-price">
+                        {{ getItemPrice(item) }}
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              @if (
+                order.shippingAddress &&
+                (order.shippingAddress.street || order.shippingAddress.city)
+              ) {
+                <div class="shipping-section">
+                  <h4>Dirección de Envío</h4>
+                  <p>{{ order.shippingAddress.street || 'No especificada' }}</p>
+                  <p>
+                    {{ order.shippingAddress.zipCode || '' }} {{ order.shippingAddress.city || '' }}
+                  </p>
+                  <p>{{ order.shippingAddress.country || 'No especificada' }}</p>
+                </div>
+              }
+
+              <div class="order-timeline">
+                <h4>Estado del Pedido</h4>
+                <div class="timeline">
+                  <div class="timeline-item" [class.completed]="order.status !== 'cancelado'">
+                    <div class="timeline-dot"></div>
+                    <p>Pedido realizado</p>
+                  </div>
+                  <div
+                    class="timeline-item"
+                    [class.completed]="
+                      ['confirmado', 'enviado', 'entregado'].includes(order.status)
+                    "
+                  >
+                    <div class="timeline-dot"></div>
+                    <p>Confirmado</p>
+                  </div>
+                  <div
+                    class="timeline-item"
+                    [class.completed]="['enviado', 'entregado'].includes(order.status)"
+                  >
+                    <div class="timeline-dot"></div>
+                    <p>Enviado</p>
+                  </div>
+                  <div class="timeline-item" [class.completed]="order.status === 'entregado'">
+                    <div class="timeline-dot"></div>
+                    <p>Entregado</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  }
+</div>

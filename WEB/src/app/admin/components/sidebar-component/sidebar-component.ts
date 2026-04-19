@@ -39,6 +39,7 @@ export class SidebarComponent {
         { icon: '🏷️', label: 'Categorías', route: '/admin/products/categories' },
       ],
     },
+    { icon: '📦', label: 'Pedidos', route: '/admin/pedidos' },
     { icon: '⚙️', label: 'Ajustes', route: '/admin/settings' },
     {
       icon: '👤',

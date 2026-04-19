@@ -7,6 +7,10 @@
         <a routerLink="/cart" routerLinkActive="active-link">Carrito ({{ cartItemCount() }})</a>
       </li>
 
+      @if (isAuthenticated()) {
+        <li><a routerLink="/pedidos" routerLinkActive="active-link">Mis Pedidos</a></li>
+      }
+
       @if (!isAuthenticated()) {
         <li><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
         <li><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
