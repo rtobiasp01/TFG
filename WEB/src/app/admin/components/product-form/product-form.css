@@ -256,6 +256,32 @@
   border: 1px solid #e8e8e8;
 }
 
+.category-manual-add {
+  display: flex;
+  gap: 0.6rem;
+  margin-bottom: 0.85rem;
+}
+
+.category-manual-add input {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  font-size: 0.92rem;
+}
+
+.category-manual-add .btn-secondary {
+  white-space: nowrap;
+}
+
+.category-input-error {
+  margin: 0 0 0.75rem;
+  color: #b42318;
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
 .categories-checkboxes .checkbox-group {
   align-items: flex-start;
   justify-content: flex-start;

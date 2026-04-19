@@ -624,6 +624,22 @@
       <div class="image-upload-container">
         <h3>Categorias</h3>
         <div class="categories-checkboxes">
+          <div class="category-manual-add">
+            <input
+              type="text"
+              [value]="manualCategoryName()"
+              (input)="onManualCategoryInput($event)"
+              placeholder="Escribe una categoría y pulsa Añadir"
+            />
+            <button type="button" class="btn-secondary" (click)="addManualCategory()">
+              Añadir
+            </button>
+          </div>
+
+          @if (categoryInputError()) {
+            <p class="category-input-error">{{ categoryInputError() }}</p>
+          }
+
           @if (categories().length === 0) {
             <p class="no-categories">
               No hay categorías disponibles.

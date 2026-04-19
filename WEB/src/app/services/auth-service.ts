@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -145,8 +145,14 @@ export class AuthService {
     }
 
     this.fetchMe().subscribe({
-      error: () => {
-        this.clearSession();
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 401 || error.status === 403) {
+          this.clearSession();
+          return;
+        }
+
+        // Keep current session on transient backend/network errors.
+        console.error('Error syncing authenticated user:', error);
       },
     });
   }

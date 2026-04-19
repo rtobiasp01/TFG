@@ -9,6 +9,7 @@ import { Variant } from '../../../interfaces/variant';
 import { Category } from '../../../interfaces/category';
 import { CommonModule } from '@angular/common';
 import { QuillModule } from 'ngx-quill';
+import { firstValueFrom } from 'rxjs';
 import { CustomImagePlacement, CustomizationConfig } from '../../../interfaces/customization';
 
 const API_BASE_URL = 'http://localhost:3000';
@@ -57,6 +58,8 @@ export class ProductForm {
   readonly activeVariantIndex = signal<number | null>(null);
   readonly collapsedVariantIndexes = signal<Set<number>>(new Set());
   readonly saveError = signal<string>('');
+  readonly manualCategoryName = signal<string>('');
+  readonly categoryInputError = signal<string>('');
   readonly descriptionModules = {
     toolbar: '#product-description-toolbar',
   };
@@ -175,11 +178,59 @@ export class ProductForm {
     return this.selectedCategories().has(categoryName);
   }
 
-  onSubmit(): void {
+  onManualCategoryInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.manualCategoryName.set(value);
+
+    if (this.categoryInputError()) {
+      this.categoryInputError.set('');
+    }
+  }
+
+  addManualCategory(): void {
+    const normalizedName = this.normalizeCategoryName(this.manualCategoryName());
+
+    if (!normalizedName) {
+      this.categoryInputError.set('Introduce un nombre de categoría válido.');
+      return;
+    }
+
+    const existingCategory = this.findCategoryByName(normalizedName);
+    const finalCategoryName = existingCategory?.name ?? normalizedName;
+
+    if (!existingCategory) {
+      this.categories.update((prev) => [
+        ...prev,
+        {
+          _id: `draft-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          name: normalizedName,
+          description: '',
+          visible: true,
+        },
+      ]);
+    }
+
+    this.selectedCategories.update((prev) => {
+      const next = new Set(prev);
+      next.add(finalCategoryName);
+      return next;
+    });
+
+    this.manualCategoryName.set('');
+    this.categoryInputError.set('');
+  }
+
+  async onSubmit(): Promise<void> {
     this.saveError.set('');
+    this.categoryInputError.set('');
 
     if (this.productForm.invalid) {
       alert('Por favor rellena los campos obligatorios');
+      return;
+    }
+
+    const categoriesReady = await this.ensureSelectedCategoriesExist();
+    if (!categoriesReady) {
       return;
     }
 
@@ -199,6 +250,92 @@ export class ProductForm {
     }
 
     this.subirGaleriaUnaPorUna();
+  }
+
+  private normalizeCategoryName(rawName: string): string {
+    return String(rawName || '')
+      .trim()
+      .replace(/\s+/g, ' ');
+  }
+
+  private categoryNameKey(name: string): string {
+    return this.normalizeCategoryName(name).toLocaleLowerCase();
+  }
+
+  private findCategoryByName(name: string): Category | undefined {
+    const key = this.categoryNameKey(name);
+    return this.categories().find((category) => this.categoryNameKey(category.name) === key);
+  }
+
+  private findPersistedCategoryByName(name: string): Category | undefined {
+    const key = this.categoryNameKey(name);
+    return this.categories().find((category) => {
+      if (!category?._id || String(category._id).startsWith('draft-')) {
+        return false;
+      }
+
+      return this.categoryNameKey(category.name) === key;
+    });
+  }
+
+  private normalizeSelectedCategoryNames(): void {
+    const normalizedSet = new Set<string>();
+
+    this.selectedCategories().forEach((name) => {
+      const normalized = this.normalizeCategoryName(name);
+      if (!normalized) {
+        return;
+      }
+
+      const existingCategory = this.findPersistedCategoryByName(normalized);
+      normalizedSet.add(existingCategory?.name ?? normalized);
+    });
+
+    this.selectedCategories.set(normalizedSet);
+  }
+
+  private async ensureSelectedCategoriesExist(): Promise<boolean> {
+    this.normalizeSelectedCategoryNames();
+
+    const selected = Array.from(this.selectedCategories());
+    const missingCategories = selected.filter((name) => !this.findPersistedCategoryByName(name));
+
+    if (missingCategories.length === 0) {
+      return true;
+    }
+
+    try {
+      await Promise.all(
+        missingCategories.map((name) =>
+          firstValueFrom(
+            this.categoryService.create({
+              name,
+              description: '',
+              visible: true,
+            }),
+          ),
+        ),
+      );
+
+      await this.refreshCategories();
+      this.normalizeSelectedCategoryNames();
+      return true;
+    } catch (error) {
+      console.error('Error al crear categorías automáticamente:', error);
+      this.saveError.set(
+        'No se pudieron crear las categorías nuevas automáticamente. Revisa los nombres e inténtalo de nuevo.',
+      );
+      return false;
+    }
+  }
+
+  private async refreshCategories(): Promise<void> {
+    try {
+      const categories = await firstValueFrom(this.categoryService.getAll());
+      this.categories.set(categories);
+    } catch (error) {
+      console.error('Error al recargar categorías:', error);
+    }
   }
 
   private subirGaleriaUnaPorUna(index = 0, uploadedPaths: string[] = []): void {
