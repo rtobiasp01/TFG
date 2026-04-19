@@ -8,6 +8,7 @@ import { Products as ProductsPublic } from './public/pages/products/products';
 import { Variants } from './admin/pages/variants/variants';
 import { Media } from './admin/pages/media/media';
 import { Categories } from './admin/pages/categories/categories';
+import { Settings } from './admin/pages/settings/settings';
 import { ProductDetails } from './public/pages/product-details/product-details';
 import { Cart } from './public/pages/cart/cart';
 import { Login } from './public/pages/login/login';
@@ -47,6 +48,10 @@ export const routes: Routes = [
       {
         path: 'media',
         component: Media,
+      },
+      {
+        path: 'settings',
+        component: Settings,
       },
       {
         path: '',

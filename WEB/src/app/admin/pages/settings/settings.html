@@ -1,0 +1,43 @@
+<section class="settings-page">
+  <header class="settings-page__header">
+    <h1>Ajustes</h1>
+    <p>Configura el nombre y el icono del sitio.</p>
+  </header>
+
+  <div class="settings-card">
+    <label for="site-name">Nombre del sitio</label>
+    <input
+      id="site-name"
+      type="text"
+      [value]="siteName()"
+      (input)="onSiteNameInput($event)"
+      placeholder="Nombre del sitio"
+    />
+
+    <label for="site-icon-url">Icono (URL o data URL)</label>
+    <input
+      id="site-icon-url"
+      type="text"
+      [value]="siteIcon()"
+      (input)="onIconUrlInput($event)"
+      placeholder="/favicon.ico o https://..."
+    />
+
+    <label for="site-icon-file">Subir icono</label>
+    <input id="site-icon-file" type="file" accept="image/*" (change)="onIconFileSelected($event)" />
+
+    <div class="settings-preview">
+      <p>Vista previa</p>
+      <div class="settings-preview__content">
+        <img [src]="siteIcon()" alt="Icono del sitio" />
+        <span>{{ siteName() }}</span>
+      </div>
+    </div>
+
+    <button type="button" class="save-button" (click)="save()">Guardar ajustes</button>
+
+    @if (saveMessage()) {
+      <p class="save-message">{{ saveMessage() }}</p>
+    }
+  </div>
+</section>

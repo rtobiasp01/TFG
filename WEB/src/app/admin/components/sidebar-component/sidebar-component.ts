@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { SiteSettingsService } from '../../../services/site-settings-service';
 
 interface MenuItem {
   icon: string;
@@ -17,7 +18,10 @@ interface MenuItem {
   styleUrls: ['./sidebar-component.css'],
 })
 export class SidebarComponent {
+  private readonly siteSettingsService = inject(SiteSettingsService);
+
   isCollapsed = signal(false);
+  readonly siteName = this.siteSettingsService.siteName;
 
   // Guardamos los labels de los menús abiertos
   openMenus = signal<Set<string>>(new Set());
