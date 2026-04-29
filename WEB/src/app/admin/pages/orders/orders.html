@@ -80,6 +80,17 @@
                               @if (hasCustomText(item)) {
                                 <p class="item-custom">📝 Texto: "{{ getCustomText(item) }}"</p>
                               }
+                              @if (hasCustomImage(item)) {
+                                <a
+                                  class="item-download-image"
+                                  [href]="getCustomImageUrl(item)"
+                                  [attr.download]="getCustomImageDownloadName(item)"
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                >
+                                  Descargar imagen personalizada
+                                </a>
+                              }
                             </div>
                           }
                         </div>

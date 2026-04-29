@@ -23,6 +23,7 @@ export interface OrderItem {
   variantAdditionalPrice?: number;
   customization?: {
     customText?: string;
+    uploadedImageUrl?: string | null;
     imagePlacement?: any;
     textPlacement?: any;
   };

@@ -4,6 +4,8 @@ import { OrderService } from '../../../services/order-service';
 import { Order, OrderStatus, OrderItem } from '../../../interfaces/order';
 import { FormsModule } from '@angular/forms';
 
+const API_BASE_URL = 'http://localhost:3000';
+
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
@@ -141,5 +143,30 @@ export class AdminOrders {
 
   getCustomText(item: OrderItem): string {
     return item.customization?.customText?.trim() || '';
+  }
+
+  hasCustomImage(item: OrderItem): boolean {
+    return Boolean(item.customization?.uploadedImageUrl?.trim());
+  }
+
+  getCustomImageUrl(item: OrderItem): string {
+    const rawImageUrl = item.customization?.uploadedImageUrl?.trim() || '';
+
+    if (!rawImageUrl) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(rawImageUrl)) {
+      return rawImageUrl;
+    }
+
+    const sanitizedPath = rawImageUrl.replace(/^\/+/, '');
+    return `${API_BASE_URL}/${sanitizedPath}`;
+  }
+
+  getCustomImageDownloadName(item: OrderItem): string {
+    const rawImageUrl = item.customization?.uploadedImageUrl?.trim() || '';
+    const fileName = rawImageUrl.split('/').pop();
+    return fileName || `personalizacion-${item.product_id}.png`;
   }
 }
