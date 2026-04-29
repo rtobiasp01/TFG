@@ -25,18 +25,9 @@ export class Cart {
   private readonly deletingItemIds = signal<Set<string>>(new Set());
   readonly selectedCustomImage = signal<string>('');
   readonly showCustomImageModal = signal<boolean>(false);
-  readonly showPaymentModal = signal<boolean>(false);
-  readonly processingCheckout = signal<boolean>(false);
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
     currency: 'EUR',
-  });
-
-  readonly paymentForm = this.formBuilder.nonNullable.group({
-    cardHolder: ['Ruben Prueba', [Validators.required]],
-    cardNumber: ['4242 4242 4242 4242', [Validators.required, Validators.pattern(/^[0-9 ]{19}$/)]],
-    expiryDate: ['12/29', [Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]],
-    cvv: ['123', [Validators.required, Validators.pattern(/^\d{3}$/)]],
   });
 
   readonly items = computed(() => this.cartService.cart().items);
@@ -131,47 +122,7 @@ export class Cart {
       return;
     }
 
-    this.resetPaymentForm();
-    this.showPaymentModal.set(true);
-  }
-
-  closePaymentModal(): void {
-    if (this.processingCheckout()) {
-      return;
-    }
-
-    this.showPaymentModal.set(false);
-    this.resetPaymentForm();
-  }
-
-  confirmPaymentAndCheckout(): void {
-    if (this.paymentForm.invalid) {
-      this.paymentForm.markAllAsTouched();
-      return;
-    }
-
-    this.processingCheckout.set(true);
-
-    this.orderService.checkout().subscribe({
-      next: () => {
-        this.processingCheckout.set(false);
-        this.showPaymentModal.set(false);
-        alert('¡Pedido realizado con éxito!');
-        this.resetPaymentForm();
-        this.router.navigate(['/pedidos']);
-      },
-      error: (error) => {
-        this.processingCheckout.set(false);
-        console.error('Error al realizar el pedido:', error);
-        alert('Error al realizar el pedido. Por favor intenta de nuevo.');
-      },
-    });
-  }
-
-  getPaymentCardPreview(): string {
-    const cardNumber = this.paymentForm.controls.cardNumber.value.replace(/\s+/g, '');
-
-    return cardNumber.length >= 4 ? cardNumber.slice(-4) : '4242';
+    this.router.navigate(['/checkout']);
   }
 
   private resolveCustomImageUrl(imageUrl?: string | null): string {
@@ -188,16 +139,5 @@ export class Cart {
     const sanitizedPath = normalizedImageUrl.replace(/^\/+/, '');
 
     return `${API_BASE_URL}/${sanitizedPath}`;
-  }
-
-  private resetPaymentForm(): void {
-    this.paymentForm.setValue({
-      cardHolder: 'Ruben Prueba',
-      cardNumber: '4242 4242 4242 4242',
-      expiryDate: '12/29',
-      cvv: '123',
-    });
-    this.paymentForm.markAsPristine();
-    this.paymentForm.markAsUntouched();
   }
 }

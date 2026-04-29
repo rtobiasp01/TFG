@@ -31,3 +31,14 @@ export const publicOnlyGuard: CanActivateFn = (): boolean | UrlTree => {
 
   return router.parseUrl(authService.defaultRouteForCurrentUser());
 };
+
+export const authGuard: CanActivateFn = (): boolean | UrlTree => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
+
+  if (authService.getToken()) {
+    return true;
+  }
+
+  return redirectToLogin(router);
+};

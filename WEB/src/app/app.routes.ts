@@ -12,10 +12,11 @@ import { Settings } from './admin/pages/settings/settings';
 import { AdminOrders } from './admin/pages/orders/orders';
 import { ProductDetails } from './public/pages/product-details/product-details';
 import { Cart } from './public/pages/cart/cart';
+import { Checkout } from './public/pages/checkout/checkout';
 import { Orders } from './public/pages/orders/orders';
 import { Login } from './public/pages/login/login';
 import { Register } from './public/pages/register/register';
-import { adminGuard, publicOnlyGuard } from './guards/auth-guards';
+import { adminGuard, authGuard, publicOnlyGuard } from './guards/auth-guards';
 
 export const routes: Routes = [
   {
@@ -85,6 +86,11 @@ export const routes: Routes = [
       {
         path: 'cart',
         component: Cart,
+      },
+      {
+        path: 'checkout',
+        component: Checkout,
+        canActivate: [authGuard],
       },
       {
         path: 'login',
