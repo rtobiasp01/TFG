@@ -12,83 +12,141 @@
   </div>
 
   @if (items().length > 0) {
-    <div class="checkout-layout">
-      <aside class="checkout-summary">
-        <h2>Resumen del pedido</h2>
+    <form class="checkout-form" [formGroup]="checkoutForm" (ngSubmit)="confirmPaymentAndCheckout()">
+      <div class="checkout-layout">
+        <aside class="checkout-summary">
+          <h2>Resumen del pedido</h2>
 
-        <div class="checkout-summary__items">
-          @for (item of items(); track item.cartItemId) {
-            <article class="checkout-summary__item">
-              <div class="checkout-summary__item-info">
-                <h3>{{ item.productTitle }}</h3>
-                <p>SKU: {{ item.simpleSku || item.variantSku || 'N/A' }}</p>
-                @if (hasCustomText(item)) {
-                  <p>Texto: "{{ getCustomText(item) }}"</p>
+          <div class="checkout-summary__items">
+            @for (item of items(); track item.cartItemId) {
+              <article class="checkout-summary__item">
+                <div class="checkout-summary__item-info">
+                  <h3>{{ item.productTitle }}</h3>
+                  <p>SKU: {{ item.simpleSku || item.variantSku || 'N/A' }}</p>
+                  @if (hasCustomText(item)) {
+                    <p>Texto: "{{ getCustomText(item) }}"</p>
+                  }
+                </div>
+
+                <div class="checkout-summary__item-meta">
+                  <span
+                    >{{ item.quantity }} x
+                    {{ formatPrice(item.basePrice + (item.variantAdditionalPrice ?? 0)) }}</span
+                  >
+                  <strong>{{ formatPrice(getItemTotal(item)) }}</strong>
+                </div>
+              </article>
+            }
+          </div>
+
+          <div class="checkout-summary__totals">
+            <div class="summary-row">
+              <span>Productos</span>
+              <span>{{ totalItems() }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span>{{ formatPrice(subtotal()) }}</span>
+            </div>
+            <div class="summary-row">
+              <span>Envio</span>
+              <span>{{ formatPrice(shipping()) }}</span>
+            </div>
+            <div class="summary-row total">
+              <span>Total</span>
+              <span>{{ formatPrice(total()) }}</span>
+            </div>
+          </div>
+
+          <section
+            class="checkout-form__section checkout-form__section--shipping"
+            formGroupName="shippingAddress"
+          >
+            <div class="checkout-form__section-header">
+              <p class="payment-modal__eyebrow">Dirección de envío</p>
+              <h2>¿Dónde quieres recibir el pedido?</h2>
+              <p class="payment-modal__description">
+                Esta dirección quedará guardada en el pedido para que puedas revisarla después.
+              </p>
+            </div>
+
+            <div class="payment-form__grid">
+              <label class="payment-field payment-field--wide">
+                <span>Dirección</span>
+                <input
+                  type="text"
+                  formControlName="street"
+                  autocomplete="shipping street-address"
+                />
+                @if (controlHasError('shippingAddress.street')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.street') }}
+                  </small>
                 }
-              </div>
+              </label>
 
-              <div class="checkout-summary__item-meta">
-                <span
-                  >{{ item.quantity }} x
-                  {{ formatPrice(item.basePrice + (item.variantAdditionalPrice ?? 0)) }}</span
-                >
-                <strong>{{ formatPrice(getItemTotal(item)) }}</strong>
-              </div>
-            </article>
+              <label class="payment-field">
+                <span>Ciudad</span>
+                <input type="text" formControlName="city" autocomplete="shipping address-level2" />
+                @if (controlHasError('shippingAddress.city')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.city') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>Código postal</span>
+                <input type="text" formControlName="zipCode" autocomplete="shipping postal-code" />
+                @if (controlHasError('shippingAddress.zipCode')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.zipCode') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field payment-field--wide">
+                <span>País</span>
+                <input type="text" formControlName="country" autocomplete="shipping country-name" />
+                @if (controlHasError('shippingAddress.country')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.country') }}
+                  </small>
+                }
+              </label>
+            </div>
+          </section>
+        </aside>
+
+        <section class="checkout-panel">
+          <div class="payment-card">
+            <span class="payment-card__chip"></span>
+            <div class="payment-card__number">**** **** **** {{ getPaymentCardPreview() }}</div>
+            <div class="payment-card__details">
+              <span>{{ checkoutForm.controls.cardHolder.value || 'Nombre en la tarjeta' }}</span>
+              <span>{{ checkoutForm.controls.expiryDate.value || 'MM/AA' }}</span>
+            </div>
+          </div>
+
+          <div class="payment-modal__header">
+            <p class="payment-modal__eyebrow">Tarjeta de prueba</p>
+            <h2>Introduce los datos de pago</h2>
+            <p class="payment-modal__description">
+              No se realiza ningun cobro real. Al confirmar, se crea el pedido con el mismo carrito.
+            </p>
+          </div>
+
+          @if (submitError()) {
+            <p class="payment-form__error">{{ submitError() }}</p>
           }
-        </div>
 
-        <div class="checkout-summary__totals">
-          <div class="summary-row">
-            <span>Productos</span>
-            <span>{{ totalItems() }}</span>
-          </div>
-          <div class="summary-row">
-            <span>Subtotal</span>
-            <span>{{ formatPrice(subtotal()) }}</span>
-          </div>
-          <div class="summary-row">
-            <span>Envio</span>
-            <span>{{ formatPrice(shipping()) }}</span>
-          </div>
-          <div class="summary-row total">
-            <span>Total</span>
-            <span>{{ formatPrice(total()) }}</span>
-          </div>
-        </div>
-      </aside>
-
-      <section class="checkout-panel">
-        <div class="payment-card">
-          <span class="payment-card__chip"></span>
-          <div class="payment-card__number">**** **** **** {{ getPaymentCardPreview() }}</div>
-          <div class="payment-card__details">
-            <span>{{ paymentForm.controls.cardHolder.value || 'Nombre en la tarjeta' }}</span>
-            <span>{{ paymentForm.controls.expiryDate.value || 'MM/AA' }}</span>
-          </div>
-        </div>
-
-        <div class="payment-modal__header">
-          <p class="payment-modal__eyebrow">Tarjeta de prueba</p>
-          <h2>Introduce los datos de pago</h2>
-          <p class="payment-modal__description">
-            No se realiza ningun cobro real. Al confirmar, se crea el pedido con el mismo carrito.
-          </p>
-        </div>
-
-        @if (submitError()) {
-          <p class="payment-form__error">{{ submitError() }}</p>
-        }
-
-        <form
-          class="payment-form"
-          [formGroup]="paymentForm"
-          (ngSubmit)="confirmPaymentAndCheckout()"
-        >
           <div class="payment-form__grid">
             <label class="payment-field">
               <span>Nombre en la tarjeta</span>
               <input type="text" formControlName="cardHolder" autocomplete="cc-name" />
+              @if (controlHasError('cardHolder')) {
+                <small class="payment-field__error">{{ controlErrorMessage('cardHolder') }}</small>
+              }
             </label>
 
             <label class="payment-field payment-field--wide">
@@ -99,6 +157,9 @@
                 autocomplete="cc-number"
                 inputmode="numeric"
               />
+              @if (controlHasError('cardNumber')) {
+                <small class="payment-field__error">{{ controlErrorMessage('cardNumber') }}</small>
+              }
             </label>
 
             <label class="payment-field">
@@ -109,6 +170,9 @@
                 placeholder="MM/AA"
                 autocomplete="cc-exp"
               />
+              @if (controlHasError('expiryDate')) {
+                <small class="payment-field__error">{{ controlErrorMessage('expiryDate') }}</small>
+              }
             </label>
 
             <label class="payment-field">
@@ -119,10 +183,15 @@
                 autocomplete="cc-csc"
                 inputmode="numeric"
               />
+              @if (controlHasError('cvv')) {
+                <small class="payment-field__error">{{ controlErrorMessage('cvv') }}</small>
+              }
             </label>
           </div>
 
           <div class="payment-form__hint">
+            Dirección de prueba: <strong>{{ shippingAddressLabel() }}</strong
+            ><br />
             Tarjeta de prueba: <strong>4242 4242 4242 4242</strong> | Fecha:
             <strong>12/29</strong> | CVV: <strong>123</strong>
           </div>
@@ -133,9 +202,9 @@
               {{ processingCheckout() ? 'Procesando pedido...' : 'Pagar y realizar pedido' }}
             </button>
           </div>
-        </form>
-      </section>
-    </div>
+        </section>
+      </div>
+    </form>
   } @else {
     <div class="checkout-empty-state">
       <h2>Tu carrito esta vacio</h2>
