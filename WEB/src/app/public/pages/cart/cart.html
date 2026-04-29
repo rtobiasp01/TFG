@@ -94,3 +94,94 @@
     </div>
   </div>
 }
+
+@if (showPaymentModal()) {
+  <div class="payment-modal-backdrop" (click)="closePaymentModal()">
+    <div class="payment-modal" (click)="$event.stopPropagation()">
+      <button
+        type="button"
+        class="payment-modal__close"
+        (click)="closePaymentModal()"
+        [disabled]="processingCheckout()"
+        aria-label="Cerrar ventana de pago"
+      >
+        ×
+      </button>
+
+      <div class="payment-modal__header">
+        <p class="payment-modal__eyebrow">Pago simulado</p>
+        <h2>Introduce tu tarjeta de prueba</h2>
+        <p class="payment-modal__description">
+          No se realiza ningún cobro real. Al confirmar, se enviará el mismo pedido que ahora.
+        </p>
+      </div>
+
+      <div class="payment-card">
+        <span class="payment-card__chip"></span>
+        <div class="payment-card__number">•••• •••• •••• {{ getPaymentCardPreview() }}</div>
+        <div class="payment-card__details">
+          <span>{{ paymentForm.controls.cardHolder.value }}</span>
+          <span>{{ paymentForm.controls.expiryDate.value }}</span>
+        </div>
+      </div>
+
+      <form class="payment-form" [formGroup]="paymentForm" (ngSubmit)="confirmPaymentAndCheckout()">
+        <div class="payment-form__grid">
+          <label class="payment-field">
+            <span>Nombre en la tarjeta</span>
+            <input type="text" formControlName="cardHolder" autocomplete="cc-name" />
+          </label>
+
+          <label class="payment-field payment-field--wide">
+            <span>Número de tarjeta</span>
+            <input
+              type="text"
+              formControlName="cardNumber"
+              autocomplete="cc-number"
+              inputmode="numeric"
+            />
+          </label>
+
+          <label class="payment-field">
+            <span>Caducidad</span>
+            <input
+              type="text"
+              formControlName="expiryDate"
+              placeholder="MM/AA"
+              autocomplete="cc-exp"
+            />
+          </label>
+
+          <label class="payment-field">
+            <span>CVV</span>
+            <input
+              type="password"
+              formControlName="cvv"
+              autocomplete="cc-csc"
+              inputmode="numeric"
+            />
+          </label>
+        </div>
+
+        <div class="payment-form__hint">
+          Tarjeta de prueba: <strong>4242 4242 4242 4242</strong> | Fecha: <strong>12/29</strong> |
+          CVV: <strong>123</strong>
+        </div>
+
+        <div class="payment-form__actions">
+          <button
+            type="button"
+            class="payment-form__secondary"
+            (click)="closePaymentModal()"
+            [disabled]="processingCheckout()"
+          >
+            Cancelar
+          </button>
+          <button type="submit" class="payment-form__primary" [disabled]="processingCheckout()">
+            {{ processingCheckout() ? 'Procesando pago...' : 'Pagar y realizar pedido' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}

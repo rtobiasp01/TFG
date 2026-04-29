@@ -12,9 +12,9 @@ const PIXIAN_API_URL = "https://api.pixian.ai/api/v2/remove-background";
 const PIXIAN_API_USER = process.env.PIXIAN_API_USER || "pxzffc9a8v32xrf";
 const PIXIAN_API_PASS = process.env.PIXIAN_API_PASS || "eqs16ta1fabonak1pjfdqndplg1d7m311vc3gpqc4np235e9m70d";
 const PIXIAN_TEST_MODE = (process.env.PIXIAN_TEST_MODE || "true").toLowerCase() === "true";
-const PIXIAN_TIMEOUT_MS = 180000; // 180 segundos como recomienda Pixian
+const PIXIAN_TIMEOUT_MS = 180000;
 const PIXIAN_MAX_RETRIES = 3;
-const PIXIAN_INITIAL_BACKOFF_MS = 5000; // 5 segundos iniciales para 429
+const PIXIAN_INITIAL_BACKOFF_MS = 5000;
 const memoryUpload = multer({ storage: multer.memoryStorage() });
 
 /**

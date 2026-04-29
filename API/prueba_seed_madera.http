@@ -1,0 +1,211 @@
+@baseUrl = http://localhost:3000
+@password = Laser1234!
+
+### Registro admin (idempotente)
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+  "email": "admin.madera@demo.com",
+  "password": "{{password}}",
+  "isAdmin": true
+}
+
+### Registro cliente (idempotente)
+POST {{baseUrl}}/users/register
+Content-Type: application/json
+
+{
+  "email": "cliente.madera@demo.com",
+  "password": "{{password}}"
+}
+
+### Login admin
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "admin.madera@demo.com",
+  "password": "{{password}}"
+}
+
+### Login cliente
+# Copia el token que devuelva este endpoint y pegalo abajo en @tokenCliente
+POST {{baseUrl}}/users/login
+Content-Type: application/json
+
+{
+  "email": "cliente.madera@demo.com",
+  "password": "{{password}}"
+}
+
+@tokenCliente = REEMPLAZA_CON_TOKEN_CLIENTE
+@tokenAdmin = REEMPLAZA_CON_TOKEN_ADMIN
+
+### Ver fotos disponibles subidas
+GET {{baseUrl}}/upload
+
+### Crear categoria - Decoracion laser
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "name": "Decoracion laser",
+  "description": "Piezas decorativas en madera natural con grabado laser de alta precision.",
+  "visible": true
+}
+
+### Crear categoria - Regalos personalizados
+POST {{baseUrl}}/categories
+Content-Type: application/json
+
+{
+  "name": "Regalos personalizados",
+  "description": "Detalles unicos en madera grabada para celebraciones y eventos especiales.",
+  "visible": true
+}
+
+### Crear producto simple usando imagen existente
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "title": "Placa Bienvenida Roble",
+  "description": "Placa de bienvenida en madera de roble con grabado laser profundo y acabado al aceite natural.",
+  "short_description": "Placa de roble grabada para entrada.",
+  "price": 39.9,
+  "sale_price": 34.9,
+  "sku": "WOOD-PLACA-ROBLE-001",
+  "stock_status": "in_stock",
+  "stock_quantity": 24,
+  "manage_stock": true,
+  "type": "simple",
+  "physical_attributes": {
+    "length": 30,
+    "width": 18,
+    "height": 0.8,
+    "weight": 0.45,
+    "material": "roble"
+  },
+  "average_rating": 4.9,
+  "categoria": ["Decoracion laser", "Senaletica en madera"],
+  "custom_slug": "placa-bienvenida-roble-grabada",
+  "image": "/uploads/1775032806491.jpg",
+  "gallery": [
+    "/uploads/1775032806491.jpg",
+    "/uploads/1775033017159.jpg",
+    "/uploads/1776006623846.JPG"
+  ],
+  "visible": true
+}
+
+### Crear producto variable de maquetas
+POST {{baseUrl}}/products
+Content-Type: application/json
+
+{
+  "title": "Pack Maqueta Ferrocarril",
+  "description": "Kit de piezas en contrachapado cortadas y grabadas a laser para maqueta de estacion ferroviaria.",
+  "short_description": "Pack de madera grabada para modelismo.",
+  "price": 64,
+  "sale_price": 59,
+  "sku": "WOOD-MAQUETA-KIT-004",
+  "stock_status": "in_stock",
+  "stock_quantity": 18,
+  "manage_stock": true,
+  "type": "variable",
+  "physical_attributes": {
+    "length": 35,
+    "width": 25,
+    "height": 4,
+    "weight": 0.9,
+    "material": "contrachapado"
+  },
+  "variantes": [
+    {
+      "escala": ["1:87", "1:72"],
+      "acabado": ["natural", "nogal"],
+      "stock_quantity": 8,
+      "precio_adicional": 0,
+      "imagenes": ["/uploads/1776536161330.png"]
+    },
+    {
+      "escala": "1:48",
+      "acabado": "nogal",
+      "stock_quantity": 4,
+      "precio_adicional": 9,
+      "imagenes": ["/uploads/1776590854696.png"]
+    }
+  ],
+  "average_rating": 4.6,
+  "categoria": ["Modelismo y maquetas", "Regalos personalizados"],
+  "custom_slug": "pack-maqueta-ferrocarril-laser",
+  "image": "/uploads/1776536161330.png",
+  "gallery": [
+    "/uploads/1776536161330.png",
+    "/uploads/1776590854696.png",
+    "/uploads/1776590836239.png"
+  ],
+  "visible": true
+}
+
+### Listar productos
+GET {{baseUrl}}/products
+
+### Ver perfil autenticado cliente
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{tokenCliente}}
+
+### Obtener carrito cliente
+GET {{baseUrl}}/cart/me
+Authorization: Bearer {{tokenCliente}}
+
+### Guardar carrito cliente con personalizacion
+PUT {{baseUrl}}/cart/me
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "items": [
+    {
+      "productTitle": "Tabla Cocina Grabada",
+      "productId": "REEMPLAZA_PRODUCT_ID",
+      "quantity": 1,
+      "price": 31,
+      "basePrice": 31,
+      "variantAdditionalPrice": 0,
+      "simpleSku": "WOOD-TABLA-BAMBU-005",
+      "image": "/uploads/1776006623846.JPG",
+      "customization": {
+        "customText": "Casa de la Familia Cerezo",
+        "uploadedImageUrl": "/uploads/1776536161330.png"
+      }
+    }
+  ],
+  "lastUpdated": 1777000000000
+}
+
+### Checkout desde carrito
+POST {{baseUrl}}/orders/checkout
+Authorization: Bearer {{tokenCliente}}
+Content-Type: application/json
+
+{
+  "shippingAddress": {
+    "fullName": "Lucia Cerezo",
+    "phone": "+34 600111222",
+    "line1": "Calle de la Madera 12",
+    "city": "Valencia",
+    "postalCode": "46001",
+    "province": "Valencia",
+    "country": "ES"
+  }
+}
+
+### Obtener pedidos del cliente autenticado
+GET {{baseUrl}}/orders/me
+Authorization: Bearer {{tokenCliente}}
+
+### Obtener todos los pedidos (actualmente solo requiere token)
+GET {{baseUrl}}/orders
+Authorization: Bearer {{tokenAdmin}}
