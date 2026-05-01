@@ -13,6 +13,7 @@ var categoriesRouter = require("./routes/categories");
 let multerRouter = require("./routes/multer");
 let cartRouter = require("./routes/cart");
 let ordersRouter = require("./routes/orders");
+let newsletterRouter = require("./routes/newsletter");
 
 var app = express();
 
@@ -36,6 +37,7 @@ app.use("/categories", categoriesRouter);
 app.use("/upload", multerRouter);
 app.use("/cart", cartRouter);
 app.use("/orders", ordersRouter);
+app.use("/newsletter", newsletterRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

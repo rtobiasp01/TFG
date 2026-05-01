@@ -6,6 +6,7 @@ import { Product } from '../../../interfaces/product';
 import { CategoryService } from '../../../services/category-service';
 import { ProductService } from '../../../services/product-service';
 import { SiteSettingsService } from '../../../services/site-settings-service';
+import { NewsletterService } from '../../../services/newsletter-service';
 import { ProductCard } from '../../components/product-card/product-card';
 
 interface LandingStat {
@@ -37,6 +38,7 @@ export class HomeLanding {
   private readonly productService = inject(ProductService);
   private readonly categoryService = inject(CategoryService);
   private readonly siteSettingsService = inject(SiteSettingsService);
+  private readonly newsletterService = inject(NewsletterService);
 
   readonly siteName = this.siteSettingsService.siteName;
   readonly products = signal<Product[]>([]);
@@ -121,10 +123,17 @@ export class HomeLanding {
       return;
     }
 
-    this.newsletterMessage.set(
-      'Gracias. Deja conectado este formulario con tu proveedor de email.',
-    );
-    this.newsletterEmail.set('');
+    this.newsletterService.subscribe(email).subscribe({
+      next: (response) => {
+        this.newsletterMessage.set(response.message || '¡Suscripción confirmada!');
+        this.newsletterEmail.set('');
+      },
+      error: (error) => {
+        this.newsletterMessage.set(
+          error.error?.error || 'Error al procesar la suscripción. Intenta de nuevo.',
+        );
+      },
+    });
   }
 
   private loadProducts(): void {
