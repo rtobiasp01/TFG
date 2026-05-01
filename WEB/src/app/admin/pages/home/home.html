@@ -1,0 +1,167 @@
+<section class="dashboard-shell">
+  <div class="dashboard-head">
+    <div>
+      <p class="eyebrow">Panel de control</p>
+      <h1>Resumen del negocio</h1>
+      <p class="subtitle">Visión rápida de pedidos, ventas e inventario en tiempo real.</p>
+    </div>
+
+    <div class="head-actions">
+      <button type="button" class="btn-refresh" [disabled]="loading()" (click)="refresh()">
+        {{ loading() ? 'Actualizando...' : 'Actualizar datos' }}
+      </button>
+
+      @if (lastUpdated()) {
+        <p class="updated-at">Última actualización: {{ formatDate(lastUpdated()!) }}</p>
+      }
+    </div>
+  </div>
+
+  @if (loadError()) {
+    <div class="error-box">
+      <p>{{ loadError() }}</p>
+      <button type="button" class="btn-refresh" (click)="refresh()">Reintentar</button>
+    </div>
+  } @else {
+    <div class="kpi-grid">
+      @for (kpi of kpis(); track kpi.label) {
+        <article class="kpi-card">
+          <p class="kpi-label">{{ kpi.label }}</p>
+          <p class="kpi-value">{{ kpi.value }}</p>
+          <p class="kpi-hint">{{ kpi.hint }}</p>
+        </article>
+      }
+    </div>
+
+    <div class="dashboard-grid">
+      <article class="panel-card">
+        <header class="panel-header">
+          <h2>Estado de pedidos</h2>
+          <a href="/admin/pedidos">Gestionar pedidos</a>
+        </header>
+
+        @if (orderStatusBars().length > 0) {
+          <div class="bar-list">
+            @for (bar of orderStatusBars(); track bar.label) {
+              <div class="bar-item">
+                <div class="bar-meta">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.value }}</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill" [style.width.%]="bar.percentage"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-card">Todavía no hay pedidos registrados.</p>
+        }
+      </article>
+
+      <article class="panel-card">
+        <header class="panel-header">
+          <h2>Categorías más activas</h2>
+          <a href="/admin/products/categories">Ver categorías</a>
+        </header>
+
+        @if (topCategoryBars().length > 0) {
+          <div class="bar-list compact">
+            @for (bar of topCategoryBars(); track bar.label) {
+              <div class="bar-item">
+                <div class="bar-meta">
+                  <span>{{ bar.label }}</span>
+                  <strong>{{ bar.value }} productos</strong>
+                </div>
+                <div class="bar-track">
+                  <div class="bar-fill alt" [style.width.%]="bar.percentage"></div>
+                </div>
+              </div>
+            }
+          </div>
+        } @else {
+          <p class="empty-card">Asigna categorías a productos para ver actividad.</p>
+        }
+      </article>
+
+      <article class="panel-card wide">
+        <header class="panel-header">
+          <h2>Ingresos últimos 6 meses</h2>
+          <a href="/admin/pedidos">Detalle de pedidos</a>
+        </header>
+
+        <div class="monthly-chart">
+          @for (point of monthlyTrend(); track point.label) {
+            <div class="month-col">
+              <div
+                class="month-bar"
+                [style.height.%]="getMonthlyBarHeight(point.revenue)"
+                [attr.title]="point.label + ': ' + formatCurrency(point.revenue)"
+              ></div>
+              <p class="month-label">{{ point.label }}</p>
+              <p class="month-value">{{ formatCurrency(point.revenue) }}</p>
+              <p class="month-orders">{{ point.orders }} pedidos</p>
+            </div>
+          }
+        </div>
+      </article>
+
+      <article class="panel-card">
+        <header class="panel-header">
+          <h2>Stock crítico</h2>
+          <a href="/admin/products">Abrir inventario</a>
+        </header>
+
+        @if (lowStockProducts().length > 0) {
+          <ul class="stock-list">
+            @for (product of lowStockProducts(); track product._id) {
+              <li>
+                <div>
+                  <p class="stock-title">{{ product.title }}</p>
+                  <p class="stock-sku">SKU: {{ product.sku }}</p>
+                </div>
+                <span class="stock-pill">{{ product.stock_quantity }} uds</span>
+              </li>
+            }
+          </ul>
+        } @else {
+          <p class="empty-card">No hay productos en situación crítica.</p>
+        }
+      </article>
+    </div>
+
+    <article class="panel-card table-panel">
+      <header class="panel-header">
+        <h2>Últimos pedidos</h2>
+        <a href="/admin/pedidos">Ver todos</a>
+      </header>
+
+      @if (recentOrders().length > 0) {
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Pedido</th>
+                <th>Fecha</th>
+                <th>Estado</th>
+                <th>Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (order of recentOrders(); track order._id) {
+                <tr>
+                  <td>#{{ order._id.slice(-6).toUpperCase() }}</td>
+                  <td>{{ formatDate(order.createdAt) }}</td>
+                  <td class="status-cell">{{ order.status }}</td>
+                  <td>{{ formatCurrency(order.total) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="empty-card">No hay pedidos recientes para mostrar.</p>
+      }
+    </article>
+  }
+</section>
