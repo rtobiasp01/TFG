@@ -129,8 +129,45 @@
           Añadir carrito
         </button>
       }
-      <!-- <div class="product-description"></div> -->
     </div>
   </div>
-  <div class="other-content"></div>
+  <section class="product-description-section">
+    <div class="section-card">
+      <p class="section-card__eyebrow">Descripción</p>
+      <h2 class="section-card__title">Detalles del producto</h2>
+      <div
+        class="product-description-content"
+        [innerHTML]="product()?.description || 'Este producto no tiene descripción disponible.'"
+      ></div>
+    </div>
+  </section>
+
+  <section class="related-products-section">
+    <div class="section-card">
+      <p class="section-card__eyebrow">Sugerencias</p>
+      <h2 class="section-card__title">Productos relacionados</h2>
+
+      @if (relatedProducts().length > 0) {
+        <div class="related-products-grid">
+          @for (relatedProduct of relatedProducts(); track relatedProduct._id) {
+            <article class="related-product-card" [routerLink]="['/productos', relatedProduct.sku]">
+              <div class="related-product-card__image-wrap">
+                <img
+                  class="related-product-card__image"
+                  [src]="relatedProduct.image"
+                  [alt]="relatedProduct.title"
+                />
+              </div>
+              <div class="related-product-card__body">
+                <p class="related-product-card__title">{{ relatedProduct.title }}</p>
+                <p class="related-product-card__price">{{ relatedProduct.price }} €</p>
+              </div>
+            </article>
+          }
+        </div>
+      } @else {
+        <p class="section-card__empty">No hay productos relacionados disponibles.</p>
+      }
+    </div>
+  </section>
 </div>

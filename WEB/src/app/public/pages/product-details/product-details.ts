@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
 import { CartService } from '../../../services/cart-service';
@@ -37,7 +37,7 @@ interface VariantOptionGroup {
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './product-details.html',
   styleUrl: './product-details.css',
 })
@@ -48,6 +48,7 @@ export class ProductDetails {
   private readonly uploadService = inject(UploadService);
 
   readonly product = signal<Product | null>(null);
+  readonly relatedProducts = signal<Product[]>([]);
   readonly selectedVariant = signal<Variant | undefined>(undefined);
   readonly customizationConfig = signal<CustomizationConfig | null>(null);
   readonly customizationErrors = signal<string[]>([]);
@@ -113,10 +114,54 @@ export class ProductDetails {
           initialVariant ? this.extractVariantAttributes(initialVariant) : {},
         );
         this.updateGallery(initialVariant);
+        this.loadRelatedProducts(product);
       },
       error: () => {
         this.product.set(null);
         this.selectedVariant.set(undefined);
+        this.relatedProducts.set([]);
+      },
+    });
+  }
+
+  private loadRelatedProducts(currentProduct: Product | null | undefined): void {
+    if (!currentProduct) {
+      this.relatedProducts.set([]);
+      return;
+    }
+
+    this.productService.getAll().subscribe({
+      next: (products) => {
+        const currentCategories = new Set(currentProduct.categoria ?? []);
+
+        const related = products
+          .filter((product) => product.sku !== currentProduct.sku)
+          .map((product) => {
+            const productCategories = product.categoria ?? [];
+            const sharedCategories = productCategories.filter((category) =>
+              currentCategories.has(category),
+            ).length;
+
+            return {
+              product,
+              sharedCategories,
+            };
+          })
+          .filter(({ sharedCategories }) => sharedCategories > 0)
+          .sort((left, right) => {
+            if (right.sharedCategories !== left.sharedCategories) {
+              return right.sharedCategories - left.sharedCategories;
+            }
+
+            return left.product.title.localeCompare(right.product.title);
+          })
+          .slice(0, 4)
+          .map(({ product }) => product);
+
+        this.relatedProducts.set(related);
+      },
+      error: () => {
+        this.relatedProducts.set([]);
       },
     });
   }
