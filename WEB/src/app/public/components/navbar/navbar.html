@@ -1,69 +1,107 @@
 <div>
   <nav class="navbar">
-    <a routerLink="/inicio" class="logo" aria-label="Ir al inicio">
-      <img class="logo-icon" [src]="siteIcon()" [alt]="siteName() + ' logo'" />
-      <span class="logo-text">{{ siteName() }}</span>
-    </a>
-    <ul class="nav-links nav-links--primary">
-      <li><a routerLink="/inicio" routerLinkActive="active-link">Home</a></li>
-      <li><a routerLink="/productos" routerLinkActive="active-link">Productos</a></li>
-      <li><a routerLink="/inicio" fragment="customize">Personaliza</a></li>
-      <li><a routerLink="/inicio" fragment="process">Cómo funciona</a></li>
-      <li><a routerLink="/inicio" fragment="contact">Contacto</a></li>
-    </ul>
+    <div class="navbar-left">
+      <a routerLink="/inicio" class="logo" aria-label="Ir al inicio">
+        <img class="logo-icon" [src]="siteIcon()" [alt]="siteName() + ' logo'" />
+        <span class="logo-text">{{ siteName() }}</span>
+      </a>
+    </div>
 
-    <ul class="nav-links nav-links--actions">
-      <li>
-        <a routerLink="/cart" routerLinkActive="active-link">Carrito ({{ cartItemCount() }})</a>
-      </li>
+    <div class="navbar-center">
+      <ul class="nav-links nav-links--primary">
+        <li><a routerLink="/inicio" routerLinkActive="active-link">Home</a></li>
+        <li><a routerLink="/productos" routerLinkActive="active-link">Productos</a></li>
+        <li><a routerLink="/inicio" fragment="customize">Personaliza</a></li>
+        <li><a routerLink="/inicio" fragment="process">Cómo funciona</a></li>
+        <li><a routerLink="/inicio" fragment="contact">Contacto</a></li>
+      </ul>
+    </div>
 
-      @if (!isAuthenticated()) {
-        <li><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
-        <li><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
-      } @else {
-        <li class="user-menu-wrapper">
-          <button
-            type="button"
-            class="user-menu-trigger"
-            (click)="toggleUserMenu()"
-            aria-label="Menú de cuenta"
+    <div class="navbar-right">
+      <div class="search-bar-container" [class.search-expanded]="searchExpanded()">
+        @if (searchExpanded()) {
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (keypress)="onSearchKeypress($event)"
+            class="search-input"
+            placeholder="Buscar productos..."
+            aria-label="Buscar productos"
+            autofocus
+          />
+        }
+        <button
+          type="button"
+          class="search-button"
+          (click)="toggleSearchBar()"
+          aria-label="Realizar búsqueda"
+        >
+          <svg
+            class="search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
           >
-            <svg
-              class="user-icon"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2"
-            >
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-          </button>
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+      </div>
 
-          @if (showUserMenu()) {
-            <ul class="user-menu-dropdown">
-              <li class="user-menu-item user-email-item">{{ currentUser()?.email }}</li>
-              <li class="user-menu-divider"></li>
-              <li class="user-menu-item">
-                <a routerLink="/pedidos" (click)="closeUserMenu()">Mis Pedidos</a>
-              </li>
-              @if (isAdmin()) {
-                <li class="user-menu-item">
-                  <a routerLink="/admin/home" class="admin-link" (click)="closeUserMenu()">
-                    Panel de admin
-                  </a>
-                </li>
-              }
-              <li class="user-menu-divider"></li>
-              <li class="user-menu-item">
-                <button type="button" class="logout-button" (click)="logout()">
-                  Cerrar sesión
-                </button>
-              </li>
-            </ul>
-          }
+      <ul class="nav-links nav-links--actions">
+        <li>
+          <a routerLink="/cart" routerLinkActive="active-link">Carrito ({{ cartItemCount() }})</a>
         </li>
-      }
-    </ul>
+
+        @if (!isAuthenticated()) {
+          <li><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
+          <li><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
+        } @else {
+          <li class="user-menu-wrapper">
+            <button
+              type="button"
+              class="user-menu-trigger"
+              (click)="toggleUserMenu()"
+              aria-label="Menú de cuenta"
+            >
+              <svg
+                class="user-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+            </button>
+
+            @if (showUserMenu()) {
+              <ul class="user-menu-dropdown">
+                <li class="user-menu-item user-email-item">{{ currentUser()?.email }}</li>
+                <li class="user-menu-divider"></li>
+                <li class="user-menu-item">
+                  <a routerLink="/pedidos" (click)="closeUserMenu()">Mis Pedidos</a>
+                </li>
+                @if (isAdmin()) {
+                  <li class="user-menu-item">
+                    <a routerLink="/admin/home" class="admin-link" (click)="closeUserMenu()">
+                      Panel de admin
+                    </a>
+                  </li>
+                }
+                <li class="user-menu-divider"></li>
+                <li class="user-menu-item">
+                  <button type="button" class="logout-button" (click)="logout()">
+                    Cerrar sesión
+                  </button>
+                </li>
+              </ul>
+            }
+          </li>
+        }
+      </ul>
+    </div>
   </nav>
 </div>
