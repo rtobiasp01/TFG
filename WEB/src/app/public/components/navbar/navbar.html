@@ -1,30 +1,67 @@
 <div>
   <nav class="navbar">
-    <a routerLink="/inicio" class="logo">{{ siteName() }}</a>
-    <ul class="nav-links">
+    <a routerLink="/inicio" class="logo" aria-label="Ir al inicio">
+      <img class="logo-icon" [src]="siteIcon()" [alt]="siteName() + ' logo'" />
+      <span class="logo-text">{{ siteName() }}</span>
+    </a>
+    <ul class="nav-links nav-links--primary">
       <li><a routerLink="/inicio" routerLinkActive="active-link">Home</a></li>
+      <li><a routerLink="/productos" routerLinkActive="active-link">Productos</a></li>
+      <li><a routerLink="/inicio" fragment="customize">Personaliza</a></li>
+      <li><a routerLink="/inicio" fragment="process">Cómo funciona</a></li>
+      <li><a routerLink="/inicio" fragment="contact">Contacto</a></li>
+    </ul>
+
+    <ul class="nav-links nav-links--actions">
       <li>
         <a routerLink="/cart" routerLinkActive="active-link">Carrito ({{ cartItemCount() }})</a>
       </li>
-
-      @if (isAuthenticated()) {
-        <li><a routerLink="/pedidos" routerLinkActive="active-link">Mis Pedidos</a></li>
-      }
 
       @if (!isAuthenticated()) {
         <li><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
         <li><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
       } @else {
-        @if (isAdmin()) {
-          <li>
-            <a routerLink="/admin/home" routerLinkActive="active-link" class="admin-link">
-              Panel de admin
-            </a>
-          </li>
-        }
-        <li class="user-email">{{ currentUser()?.email }}</li>
-        <li>
-          <button type="button" class="logout-button" (click)="logout()">Cerrar sesión</button>
+        <li class="user-menu-wrapper">
+          <button
+            type="button"
+            class="user-menu-trigger"
+            (click)="toggleUserMenu()"
+            aria-label="Menú de cuenta"
+          >
+            <svg
+              class="user-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </button>
+
+          @if (showUserMenu()) {
+            <ul class="user-menu-dropdown">
+              <li class="user-menu-item user-email-item">{{ currentUser()?.email }}</li>
+              <li class="user-menu-divider"></li>
+              <li class="user-menu-item">
+                <a routerLink="/pedidos" (click)="closeUserMenu()">Mis Pedidos</a>
+              </li>
+              @if (isAdmin()) {
+                <li class="user-menu-item">
+                  <a routerLink="/admin/home" class="admin-link" (click)="closeUserMenu()">
+                    Panel de admin
+                  </a>
+                </li>
+              }
+              <li class="user-menu-divider"></li>
+              <li class="user-menu-item">
+                <button type="button" class="logout-button" (click)="logout()">
+                  Cerrar sesión
+                </button>
+              </li>
+            </ul>
+          }
         </li>
       }
     </ul>

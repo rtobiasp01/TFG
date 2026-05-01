@@ -3,14 +3,14 @@
 :root {
   --font-body: 'Manrope', 'Segoe UI', sans-serif;
   --font-heading: 'Manrope', 'Segoe UI', sans-serif;
-  --bg: #f3f6fb;
+  --bg: #fffbf5;
   --surface: #ffffff;
-  --surface-muted: #f8fafc;
+  --surface-muted: #fef9f3;
   --text: #182230;
   --text-muted: #5b6b80;
-  --line: #dde4ef;
-  --brand: #0f6cbd;
-  --brand-strong: #0b5aa0;
+  --line: #e5dcd1;
+  --brand: #b45309;
+  --brand-strong: #78350f;
   --danger: #c9372c;
   --danger-soft: #fdebea;
   --success: #1f845a;
@@ -58,8 +58,8 @@ body {
   letter-spacing: -0.01em;
   color: var(--text);
   background:
-    radial-gradient(circle at 0% 0%, rgba(15, 108, 189, 0.08), transparent 36%),
-    radial-gradient(circle at 100% 100%, rgba(30, 132, 90, 0.08), transparent 34%),
+    radial-gradient(circle at 0% 0%, rgba(180, 83, 9, 0.08), transparent 36%),
+    radial-gradient(circle at 100% 100%, rgba(120, 53, 15, 0.08), transparent 34%),
     var(--bg);
   -webkit-font-smoothing: antialiased;
 }
@@ -100,7 +100,7 @@ body {
 .product-description-editor:focus-within .ql-toolbar.ql-snow,
 .product-description-editor:focus-within .ql-container.ql-snow {
   border-color: color-mix(in srgb, var(--brand) 45%, white);
-  box-shadow: 0 0 0 3px rgba(15, 108, 189, 0.08);
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.08);
 }
 
 img,

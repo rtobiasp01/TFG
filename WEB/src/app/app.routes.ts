@@ -4,7 +4,8 @@ import { PublicLayout } from './layouts/public-layout/index';
 import { Home } from './admin/pages/home/home';
 import { ProductForm } from './admin/components/product-form/product-form';
 import { Products } from './admin/pages/products/products';
-import { Products as ProductsPublic } from './public/pages/products/products';
+import { Products as ProductsCatalog } from './public/pages/products/products';
+import { HomeLanding } from './public/pages/home/home';
 import { Variants } from './admin/pages/variants/variants';
 import { Media } from './admin/pages/media/media';
 import { Categories } from './admin/pages/categories/categories';
@@ -73,7 +74,11 @@ export const routes: Routes = [
     children: [
       {
         path: 'inicio',
-        component: ProductsPublic,
+        component: HomeLanding,
+      },
+      {
+        path: 'productos',
+        component: ProductsCatalog,
       },
       {
         path: 'productos/:sku',

@@ -44,7 +44,7 @@
 	height: clamp(320px, calc(100dvh - 285px), 620px);
 	width: 100%;
 	position: relative;
-	background: linear-gradient(180deg, #fbfdff 0%, #f4f7fb 100%);
+	background: linear-gradient(180deg, #fffbf5 0%, #fef9f3 100%);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-md);
 	display: flex;
@@ -121,7 +121,7 @@
 
 .gallery img:hover {
 	transform: translateY(-2px);
-	border-color: color-mix(in srgb, var(--brand) 45%, var(--line));
+	border-color: color-mix(in srgb, #b45309 45%, var(--line));
 	box-shadow: 0 6px 14px rgba(16, 24, 40, 0.12);
 }
 
@@ -233,7 +233,7 @@
 	padding: 0.55rem 0.8rem;
 	border: none;
 	border-radius: 999px;
-	background: var(--brand);
+	background: #b45309;
 	color: #fff;
 	font-weight: 700;
 	cursor: pointer;
@@ -331,13 +331,13 @@
 }
 
 .variant-key:hover {
-	border-color: color-mix(in srgb, var(--brand) 52%, var(--line));
-	background: color-mix(in srgb, var(--brand) 6%, #fff);
+	border-color: color-mix(in srgb, #b45309 52%, var(--line));
+	background: color-mix(in srgb, #b45309 6%, #fff);
 }
 
 .variant-key.active {
-	background: var(--brand);
-	border-color: var(--brand);
+	background: #b45309;
+	border-color: #b45309;
 	color: #fff;
 }
 
@@ -346,19 +346,19 @@
 	width: 100%;
 	padding: 0.86rem 1.1rem;
 	border-radius: var(--radius-sm);
-	background: linear-gradient(180deg, var(--brand) 0%, var(--brand-strong) 100%);
+	background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
 	color: #fff;
 	font-weight: 700;
 	font-size: 0.96rem;
 	letter-spacing: 0.01em;
-	box-shadow: 0 8px 20px rgba(15, 108, 189, 0.24);
+	box-shadow: 0 8px 20px rgba(180, 83, 9, 0.24);
 	transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 
 .btn-cart:hover {
 	transform: translateY(-1px);
 	filter: brightness(1.02);
-	box-shadow: 0 12px 24px rgba(15, 108, 189, 0.3);
+	box-shadow: 0 12px 24px rgba(180, 83, 9, 0.3);
 }
 
 .btn-cart:active {
@@ -433,9 +433,9 @@
 
 .related-products-control:hover {
 	transform: translateY(-1px);
-	border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+	border-color: color-mix(in srgb, #b45309 40%, var(--line));
 	box-shadow: 0 8px 16px rgba(16, 24, 40, 0.12);
-	background: color-mix(in srgb, var(--brand) 6%, #fff);
+	background: color-mix(in srgb, #b45309 6%, #fff);
 }
 
 .section-card__eyebrow {

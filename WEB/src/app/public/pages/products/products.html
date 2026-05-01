@@ -1,9 +1,26 @@
-@if (productList().length > 0) {
+<section class="catalog-page">
+  <div class="catalog-header">
+    <div>
+      <p class="catalog-eyebrow">Catálogo</p>
+      <h1>{{ pageTitle() }}</h1>
+      <p class="catalog-copy">
+        Navega por todos los productos disponibles y filtra por categoría cuando quieras afinar tu
+        búsqueda.
+      </p>
+    </div>
+
+    @if (selectedCategory()) {
+      <a routerLink="/productos" class="catalog-reset">Ver todo el catálogo</a>
+    }
+  </div>
+
+  @if (filteredProducts().length > 0) {
     <section class="products">
-        @for (product of productList(); track product._id) {
-            <app-product-card [productoActual]="product" [routerLink]=""></app-product-card>
-        }
+      @for (product of filteredProducts(); track product._id) {
+        <app-product-card [productoActual]="product"></app-product-card>
+      }
     </section>
-} @else {
-    <p>No hay productos</p>
-}
+  } @else {
+    <p class="catalog-empty">No hay productos para este filtro.</p>
+  }
+</section>

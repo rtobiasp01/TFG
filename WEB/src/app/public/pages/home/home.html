@@ -1,0 +1,213 @@
+<div class="landing-page">
+  <section id="hero" class="hero-section">
+    <div class="hero-copy">
+      <p class="eyebrow">Piezas de madera personalizadas, grabadas y listas para regalar</p>
+      <h1>{{ siteName() }} convierte ideas en objetos con carácter propio</h1>
+      <p class="hero-copy__text">
+        Diseñamos decoración, regalos, señalética y detalles únicos para hogares, eventos y
+        negocios. Navega por el catálogo, filtra por categorías y crea una pieza hecha a tu medida.
+      </p>
+
+      <div class="hero-actions">
+        <a routerLink="/productos" class="btn btn--primary">Ver catálogo</a>
+        <a routerLink="/inicio" fragment="customize" class="btn btn--secondary"
+          >Personaliza tu idea</a
+        >
+      </div>
+
+      <div class="hero-stats">
+        @for (stat of heroStats(); track stat.label) {
+          <article class="hero-stat">
+            <strong>{{ stat.value }}</strong>
+            <span>{{ stat.label }}</span>
+          </article>
+        }
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      @if (heroProduct(); as product) {
+        <article class="hero-showcase">
+          <div class="hero-showcase__image-wrap">
+            <img [src]="product.image" [alt]="product.title" />
+          </div>
+          <div class="hero-showcase__body">
+            <p class="hero-showcase__label">Producto destacado</p>
+            <h2>{{ product.title }}</h2>
+            <p class="hero-showcase__text">
+              {{
+                product.short_description ||
+                  'Una pieza pensada para destacar por su acabado y personalización.'
+              }}
+            </p>
+            <div class="hero-showcase__footer">
+              <span>{{ product.price }} €</span>
+              <a [routerLink]="['/productos', product.sku]">Ver detalle</a>
+            </div>
+          </div>
+        </article>
+      } @else {
+        <article class="hero-showcase hero-showcase--empty">
+          <p class="hero-showcase__label">Catálogo en preparación</p>
+          <h2>Piezas únicas para cada proyecto</h2>
+          <p>
+            Añade productos al catálogo para que esta zona muestre el contenido destacado de forma
+            automática.
+          </p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="featured-products" class="content-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Selección destacada</p>
+        <h2>Productos que mejor representan la colección</h2>
+      </div>
+      <a routerLink="/productos" class="section-link">Ver todos los productos</a>
+    </div>
+
+    @if (featuredProducts().length > 0) {
+      <div class="products-grid">
+        @for (product of featuredProducts(); track product._id) {
+          <app-product-card [productoActual]="product"></app-product-card>
+        }
+      </div>
+    } @else {
+      <p class="empty-state">No hay productos cargados todavía.</p>
+    }
+  </section>
+
+  <section id="categories" class="content-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Explora por categoría</p>
+        <h2>Encuentra ideas según el tipo de pieza que necesitas</h2>
+      </div>
+    </div>
+
+    @if (visibleCategories().length > 0) {
+      <div class="category-grid">
+        @for (category of visibleCategories(); track category._id) {
+          <a
+            class="category-card"
+            [routerLink]="['/productos']"
+            [queryParams]="{ categoria: category.name }"
+          >
+            <span class="category-card__icon">{{ category.name.slice(0, 1) }}</span>
+            <h3>{{ category.name }}</h3>
+            <p>{{ category.description || 'Abre el catálogo filtrado por esta categoría.' }}</p>
+          </a>
+        }
+      </div>
+    } @else {
+      <p class="empty-state">No hay categorías visibles configuradas.</p>
+    }
+  </section>
+
+  <section id="customize" class="content-section content-section--split">
+    <div class="customize-copy panel-card">
+      <p class="eyebrow">Personaliza a tu medida</p>
+      <h2>Crea piezas que encajen con tu idea, no al revés</h2>
+      <p>
+        Desde textos grabados hasta combinaciones de formas y materiales, el catálogo está pensado
+        para convertir cada pedido en algo distinto.
+      </p>
+      <ul class="benefit-list">
+        <li>Grabado láser limpio y preciso.</li>
+        <li>Opciones para regalos, hogar y eventos.</li>
+        <li>Selección rápida por categorías y detalles del producto.</li>
+      </ul>
+    </div>
+
+    <div class="customize-aside panel-card">
+      <div class="info-chip">
+        <strong>Pedidos personalizados</strong>
+        <span>{{ personalizedProductsCount() }} modelos configurables</span>
+      </div>
+      <div class="info-chip">
+        <strong>Explora sin perderte</strong>
+        <span>Filtra por categoría y entra a cada ficha para ver más detalles.</span>
+      </div>
+      <div class="info-chip info-chip--accent">
+        <strong>Marca y estilo</strong>
+        <span>{{ siteName() }} se adapta al nombre e icono guardados en configuración.</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="process" class="content-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Cómo funciona</p>
+        <h2>Un recorrido simple desde la idea hasta la entrega</h2>
+      </div>
+    </div>
+
+    <div class="process-grid">
+      @for (step of processSteps; track step.number) {
+        <article class="process-card panel-card">
+          <span class="process-card__number">{{ step.number }}</span>
+          <h3>{{ step.title }}</h3>
+          <p>{{ step.description }}</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="testimonials" class="content-section">
+    <div class="section-heading">
+      <div>
+        <p class="eyebrow">Testimonios</p>
+        <h2>Opiniones de clientes sobre piezas personalizadas</h2>
+      </div>
+    </div>
+
+    <div class="testimonial-grid">
+      @for (testimonial of testimonials; track testimonial.name) {
+        <article class="testimonial-card panel-card">
+          <div class="testimonial-card__header">
+            <span class="testimonial-avatar">{{ testimonial.initials }}</span>
+            <div>
+              <h3>{{ testimonial.name }}</h3>
+              <p>{{ testimonial.role }}</p>
+            </div>
+          </div>
+          <p class="testimonial-card__quote">"{{ testimonial.quote }}"</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section id="contact" class="content-section cta-section panel-card">
+    <div class="cta-copy">
+      <p class="eyebrow">Recibe novedades</p>
+      <h2>Suscríbete para saber cuándo lanzamos nuevas piezas y colecciones</h2>
+      <p>
+        Mantén conectado este formulario con tu proveedor de email marketing cuando quieras activar
+        la captación real.
+      </p>
+      <form class="newsletter-form" (submit)="submitNewsletter($event)">
+        <input
+          type="email"
+          name="email"
+          placeholder="Tu correo electrónico"
+          [value]="newsletterEmail()"
+          (input)="newsletterEmail.set($any($event.target).value)"
+        />
+        <button type="submit">Suscribirme</button>
+      </form>
+      @if (newsletterMessage()) {
+        <p class="newsletter-message">{{ newsletterMessage() }}</p>
+      }
+    </div>
+
+    <div class="cta-benefits">
+      <div class="benefit-pill">Envíos rápidos</div>
+      <div class="benefit-pill">Garantía de calidad</div>
+      <div class="benefit-pill">Soporte cercano</div>
+      <div class="benefit-pill">Piezas personalizadas</div>
+    </div>
+  </section>
+</div>
