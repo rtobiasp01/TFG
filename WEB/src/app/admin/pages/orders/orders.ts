@@ -130,7 +130,16 @@ export class AdminOrders {
   }
 
   getItemPrice(item: OrderItem): string {
-    return this.formatPrice(item.price);
+    const price = Number(item.price);
+    const basePrice = Number(item.basePrice) || 0;
+    const variantAdditionalPrice = Number(item.variantAdditionalPrice) || 0;
+    const fallbackPrice = basePrice + variantAdditionalPrice;
+
+    if (price === 0 && fallbackPrice > 0) {
+      return this.formatPrice(fallbackPrice);
+    }
+
+    return this.formatPrice(Number.isFinite(price) ? price : fallbackPrice);
   }
 
   getItemsCount(order: Order): number {

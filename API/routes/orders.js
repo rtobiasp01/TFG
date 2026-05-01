@@ -19,17 +19,23 @@ router.post('/checkout', authMiddleware, async (req, res) => {
     }
 
     // Normalize cart items for order
-    const normalizedItems = cart.items.map(item => ({
-      product_id: item.productId || item.product_id,
-      productTitle: item.productTitle || item.title || 'Producto',
-      quantity: Number(item.quantity) || 1,
-      price: Number(item.price) || 0,
-      basePrice: Number(item.basePrice) || Number(item.price) || 0,
-      variantAdditionalPrice: item.variantAdditionalPrice || 0,
-      variantSku: item.variantSku,
-      simpleSku: item.simpleSku,
-      customization: item.customization || {},
-    }));
+    const normalizedItems = cart.items.map(item => {
+      const basePrice = Number(item.basePrice) || Number(item.price) || 0;
+      const variantAdditionalPrice = Number(item.variantAdditionalPrice) || 0;
+      const unitPrice = basePrice + variantAdditionalPrice;
+
+      return {
+        product_id: item.productId || item.product_id,
+        productTitle: item.productTitle || item.title || 'Producto',
+        quantity: Number(item.quantity) || 1,
+        price: unitPrice,
+        basePrice,
+        variantAdditionalPrice,
+        variantSku: item.variantSku,
+        simpleSku: item.simpleSku,
+        customization: item.customization || {},
+      };
+    });
 
     // Calculate total
     const total = normalizedItems.reduce((sum, item) => {

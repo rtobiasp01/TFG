@@ -41,14 +41,6 @@ export class SidebarComponent {
     },
     { icon: '📦', label: 'Pedidos', route: '/admin/pedidos' },
     { icon: '⚙️', label: 'Ajustes', route: '/admin/settings' },
-    {
-      icon: '👤',
-      label: 'Perfil',
-      children: [
-        { icon: '📝', label: 'Mis datos', route: '/admin/profile/edit' },
-        { icon: '🔒', label: 'Seguridad', route: '/admin/profile/security' },
-      ],
-    },
   ];
 
   toggleSidebar() {
