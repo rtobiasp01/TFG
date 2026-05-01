@@ -402,6 +402,42 @@
 	gap: 0.9rem;
 }
 
+.related-products-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.related-products-controls {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.related-products-control {
+	width: 2.7rem;
+	height: 2.7rem;
+	border-radius: 999px;
+	border: 1px solid var(--line);
+	background: #fff;
+	color: var(--text);
+	font-size: 1.5rem;
+	font-weight: 700;
+	line-height: 1;
+	box-shadow: 0 4px 10px rgba(16, 24, 40, 0.08);
+	cursor: pointer;
+	transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease,
+		background-color 0.2s ease;
+}
+
+.related-products-control:hover {
+	transform: translateY(-1px);
+	border-color: color-mix(in srgb, var(--brand) 40%, var(--line));
+	box-shadow: 0 8px 16px rgba(16, 24, 40, 0.12);
+	background: color-mix(in srgb, var(--brand) 6%, #fff);
+}
+
 .section-card__eyebrow {
 	font-size: 0.72rem;
 	font-weight: 700;
@@ -435,20 +471,31 @@
 	padding-left: 1.2rem;
 }
 
-.related-products-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+.related-products-slider {
+	display: flex;
 	gap: 0.9rem;
+	overflow-x: auto;
+	scroll-snap-type: x mandatory;
+	scroll-behavior: smooth;
+	padding-bottom: 0.25rem;
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+.related-products-slider::-webkit-scrollbar {
+	display: none;
 }
 
 .related-product-card {
 	display: flex;
 	flex-direction: column;
+	flex: 0 0 calc((100% - 1.8rem) / 3);
 	border: 1px solid var(--line);
 	border-radius: var(--radius-md);
 	overflow: hidden;
 	background: #fff;
 	cursor: pointer;
+	scroll-snap-align: start;
 	transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
@@ -557,7 +604,11 @@
 	}
 
 	.related-products-grid {
-		grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+		gap: 0.75rem;
+	}
+
+	.related-product-card {
+		flex-basis: calc((100% - 0.75rem) / 2);
 	}
 
 	.variant-group-row {
@@ -567,5 +618,14 @@
 
 	.variant-group-title {
 		padding-top: 0;
+	}
+
+	.related-product-card {
+		flex-basis: 100%;
+	}
+
+	.related-products-header {
+		align-items: flex-start;
+		flex-direction: column;
 	}
 }

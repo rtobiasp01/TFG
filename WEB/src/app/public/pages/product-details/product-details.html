@@ -133,7 +133,6 @@
   </div>
   <section class="product-description-section">
     <div class="section-card">
-      <p class="section-card__eyebrow">Descripción</p>
       <h2 class="section-card__title">Detalles del producto</h2>
       <div
         class="product-description-content"
@@ -144,11 +143,32 @@
 
   <section class="related-products-section">
     <div class="section-card">
-      <p class="section-card__eyebrow">Sugerencias</p>
-      <h2 class="section-card__title">Productos relacionados</h2>
+      <div class="related-products-header">
+        <h2 class="section-card__title">Productos relacionados</h2>
+        @if (relatedProducts().length > 3) {
+          <div class="related-products-controls">
+            <button
+              type="button"
+              class="related-products-control"
+              (click)="scrollRelatedProducts('previous')"
+              aria-label="Ver productos relacionados anteriores"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              class="related-products-control"
+              (click)="scrollRelatedProducts('next')"
+              aria-label="Ver más productos relacionados"
+            >
+              ›
+            </button>
+          </div>
+        }
+      </div>
 
       @if (relatedProducts().length > 0) {
-        <div class="related-products-grid">
+        <div #relatedProductsViewport class="related-products-slider">
           @for (relatedProduct of relatedProducts(); track relatedProduct._id) {
             <article class="related-product-card" [routerLink]="['/productos', relatedProduct.sku]">
               <div class="related-product-card__image-wrap">

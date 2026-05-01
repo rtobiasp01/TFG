@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
@@ -61,6 +61,8 @@ export class ProductDetails {
   readonly galeriaActual = signal<string[]>([]);
   readonly variantesProducto = signal<VariantOptionGroup[]>([]);
   readonly selectedAttributes = signal<Record<string, VariantValue>>({});
+  @ViewChild('relatedProductsViewport')
+  private relatedProductsViewport?: ElementRef<HTMLDivElement>;
   readonly customTextPreview = computed(() => {
     const rawText = this.customText();
     const trimmed = rawText.trim();
@@ -163,6 +165,22 @@ export class ProductDetails {
       error: () => {
         this.relatedProducts.set([]);
       },
+    });
+  }
+
+  scrollRelatedProducts(direction: 'previous' | 'next'): void {
+    const viewport = this.relatedProductsViewport?.nativeElement;
+
+    if (!viewport) {
+      return;
+    }
+
+    const slideWidth = viewport.clientWidth / 3;
+    const scrollDistance = direction === 'next' ? slideWidth : -slideWidth;
+
+    viewport.scrollBy({
+      left: scrollDistance,
+      behavior: 'smooth',
     });
   }
 
