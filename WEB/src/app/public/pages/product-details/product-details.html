@@ -119,15 +119,19 @@
           }
         </div>
       }
-      @if (stockAvailability()) {
-        <button
-          type="button"
-          class="btn-cart"
-          [disabled]="isUploadingCustomization()"
-          (click)="addToCart()"
-        >
-          Añadir carrito
-        </button>
+      <button
+        type="button"
+        class="btn-cart"
+        [disabled]="isUploadingCustomization() || !stockAvailability()"
+        (click)="addToCart()"
+      >
+        Añadir carrito
+      </button>
+
+      @if (!stockAvailability()) {
+        <p class="product-stock-status product-stock-status--empty">
+          No hay stock disponible para este producto.
+        </p>
       }
     </div>
   </div>

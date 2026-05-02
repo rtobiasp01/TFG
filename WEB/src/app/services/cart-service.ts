@@ -60,20 +60,60 @@ export class CartService {
 
   addItem(item: Omit<CartItem, 'cartItemId'>): CartItem {
     const cartItemId = this.generateCartItemId();
-    const newItem: CartItem = { ...item, cartItemId };
+    const availableStock = this.normalizeAvailableStock(item.availableStock);
+    const newItem: CartItem = { ...item, cartItemId, availableStock };
 
     const existingItem = this.findDuplicateItem(newItem);
 
     if (existingItem) {
-      this.updateQuantity(existingItem.cartItemId, existingItem.quantity + item.quantity);
-      return existingItem;
-    } else {
+      const stockLimit = Math.max(
+        0,
+        Math.min(
+          existingItem.availableStock || 0,
+          availableStock || existingItem.availableStock || 0,
+        ),
+      );
+
       this.cart.update((state) => ({
         ...state,
-        items: [...state.items, newItem],
+        items: state.items.map((currentItem) => {
+          if (currentItem.cartItemId !== existingItem.cartItemId) {
+            return currentItem;
+          }
+
+          if (stockLimit <= 0) {
+            return {
+              ...currentItem,
+              availableStock: 0,
+            };
+          }
+
+          return {
+            ...currentItem,
+            quantity: Math.min(currentItem.quantity + item.quantity, stockLimit),
+            availableStock: stockLimit,
+          };
+        }),
         lastUpdated: Date.now(),
       }));
+
+      this.persistCurrentState();
+      this.logCart();
+      return existingItem;
     }
+
+    if (availableStock <= 0) {
+      return newItem;
+    }
+
+    this.cart.update((state) => ({
+      ...state,
+      items: [
+        ...state.items,
+        { ...newItem, quantity: Math.min(Math.max(1, item.quantity), availableStock) },
+      ],
+      lastUpdated: Date.now(),
+    }));
 
     this.persistCurrentState();
     this.logCart();
@@ -83,9 +123,37 @@ export class CartService {
   updateQuantity(cartItemId: string, quantity: number): void {
     this.cart.update((state) => ({
       ...state,
-      items: state.items.map((item) =>
-        item.cartItemId === cartItemId ? { ...item, quantity: Math.max(1, quantity) } : item,
-      ),
+      items: state.items.map((item) => {
+        if (item.cartItemId !== cartItemId) {
+          return item;
+        }
+
+        const availableStock = this.normalizeAvailableStock(item.availableStock);
+
+        if (availableStock <= 0) {
+          return item;
+        }
+
+        return {
+          ...item,
+          quantity: Math.min(Math.max(1, quantity), availableStock),
+          availableStock,
+        };
+      }),
+      lastUpdated: Date.now(),
+    }));
+
+    this.persistCurrentState();
+    this.logCart();
+  }
+
+  syncAvailableStock(resolveAvailableStock: (item: CartItem) => number): void {
+    this.cart.update((state) => ({
+      ...state,
+      items: state.items.map((item) => ({
+        ...item,
+        availableStock: this.normalizeAvailableStock(resolveAvailableStock(item)),
+      })),
       lastUpdated: Date.now(),
     }));
 
@@ -179,6 +247,11 @@ export class CartService {
 
   private generateCartItemId(): string {
     return `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+  }
+
+  private normalizeAvailableStock(value: number | undefined): number {
+    const parsedValue = Number(value);
+    return Number.isFinite(parsedValue) ? Math.max(0, parsedValue) : 0;
   }
 
   private saveToStorage(): void {

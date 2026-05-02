@@ -81,6 +81,28 @@
   padding: 1rem;
 }
 
+.cart-item--unavailable {
+  border-color: #fca5a5;
+  background: #fef2f2;
+  opacity: 0.8;
+}
+
+.cart-item--unavailable .cart-item-image {
+  filter: grayscale(0.85);
+}
+
+.cart-item--unavailable .cart-item-info h2,
+.cart-item--unavailable .cart-item-info p {
+  color: #7f1d1d;
+}
+
+.cart-item-info__stock-warning {
+  margin-top: 0.5rem;
+  color: #b91c1c;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
 .cart-item-info {
   flex: 1;
 }

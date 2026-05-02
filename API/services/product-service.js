@@ -68,6 +68,28 @@ function getVariantAttributes(variant) {
   return normalizedAttributes;
 }
 
+function getVariantStockFieldName(variant) {
+  if (variant && Object.prototype.hasOwnProperty.call(variant, "stock_quantity")) {
+    return "stock_quantity";
+  }
+
+  if (variant && Object.prototype.hasOwnProperty.call(variant, "stock")) {
+    return "stock";
+  }
+
+  return "stock_quantity";
+}
+
+function getVariantStockValue(variant) {
+  const quantityStock = Number.parseInt(variant?.stock_quantity, 10);
+  if (Number.isFinite(quantityStock)) {
+    return quantityStock;
+  }
+
+  const legacyStock = Number.parseInt(variant?.stock, 10);
+  return Number.isFinite(legacyStock) ? legacyStock : 0;
+}
+
 // Obtener todos los productos
 async function getAllProducts() {
   try {
@@ -256,6 +278,16 @@ async function findProductAndVariantForStockLookup({
 
   if (variantSku) {
     variantIndex = variants.findIndex((variant) => variant.sku === variantSku);
+
+    if (variantIndex < 0) {
+      variantIndex = variants.findIndex((variant) =>
+        variantMatchesSelection(variant, {
+          ...selection,
+          ...(color !== undefined ? { color } : {}),
+          ...(talla !== undefined ? { talla } : {}),
+        }),
+      );
+    }
   } else {
     variantIndex = variants.findIndex((variant) =>
       variantMatchesSelection(variant, {
@@ -311,7 +343,7 @@ async function validateVariantStock({
   }
 
   const requestedQuantity = Number.parseInt(quantity, 10) || 1;
-  const availableStock = Number.parseInt(lookup.variant.stock_quantity, 10) || 0;
+  const availableStock = getVariantStockValue(lookup.variant);
 
   return {
     ok: availableStock >= requestedQuantity,
@@ -349,16 +381,26 @@ async function decrementVariantStock({
   const db = await connectDB();
   const collection = db.collection("products");
   const requestedQuantity = Number.parseInt(quantity, 10) || 1;
+  const variantPath = lookup.variantIndex >= 0 ? `variantes.${lookup.variantIndex}` : null;
+
+  if (!variantPath) {
+    return {
+      ok: false,
+      reason: "VARIANT_NOT_FOUND",
+      productId: validation.productId,
+    };
+  }
+
+  const variantStockField = getVariantStockFieldName(lookup.variant);
 
   const filter = {
     _id: new ObjectId(validation.productId),
-    "variantes.sku": validation.variantSku,
-    "variantes.stock_quantity": { $gte: requestedQuantity },
+    [`${variantPath}.${variantStockField}`]: { $gte: requestedQuantity },
   };
 
   const update = {
     $inc: {
-      "variantes.$.stock_quantity": -requestedQuantity,
+      [`${variantPath}.${variantStockField}`]: -requestedQuantity,
     },
   };
 
@@ -373,22 +415,241 @@ async function decrementVariantStock({
   }
 
   const refreshed = await collection.findOne(
-    { _id: new ObjectId(validation.productId), "variantes.sku": validation.variantSku },
-    {
-      projection: {
-        "variantes.$": 1,
-      },
-    },
+    { _id: new ObjectId(validation.productId) },
+    { projection: { variantes: 1 } },
   );
 
-  const remainingStock = Number.parseInt(
-    refreshed?.variantes?.[0]?.stock_quantity,
-    10,
-  ) || 0;
+  const remainingStock = getVariantStockValue(refreshed?.variantes?.[lookup.variantIndex]);
 
   return {
     ok: true,
     variantSku: validation.variantSku,
+    remainingStock,
+  };
+}
+
+async function decrementOrderItemStock({
+  productId,
+  productSku,
+  variantSku,
+  selection = {},
+  color,
+  talla,
+  quantity = 1,
+}) {
+  const lookup = await findProductAndVariantForStockLookup({
+    productId,
+    productSku,
+    variantSku,
+    selection,
+    color,
+    talla,
+  });
+
+  if (!lookup || !lookup.product) {
+    return {
+      ok: false,
+      reason: "PRODUCT_NOT_FOUND",
+    };
+  }
+
+  const requestedQuantity = Number.parseInt(quantity, 10) || 1;
+  const variantPath = lookup.variantIndex >= 0 ? `variantes.${lookup.variantIndex}` : null;
+  const db = await connectDB();
+  const collection = db.collection("products");
+
+  if (variantSku) {
+    if (!lookup.variant) {
+      return {
+        ok: false,
+        reason: "VARIANT_NOT_FOUND",
+        productId: lookup.product._id,
+      };
+    }
+
+    if (!variantPath) {
+      return {
+        ok: false,
+        reason: "VARIANT_NOT_FOUND",
+        productId: lookup.product._id,
+      };
+    }
+
+    const variantStockField = getVariantStockFieldName(lookup.variant);
+
+    const filter = {
+      _id: new ObjectId(lookup.product._id),
+      [`${variantPath}.${variantStockField}`]: { $gte: requestedQuantity },
+    };
+
+    const update = {
+      $inc: {
+        [`${variantPath}.${variantStockField}`]: -requestedQuantity,
+      },
+    };
+
+    const result = await collection.updateOne(filter, update);
+
+    if (result.modifiedCount === 0) {
+      return {
+        ok: false,
+        reason: "INSUFFICIENT_STOCK",
+        variantSku: lookup.variant.sku,
+      };
+    }
+
+    const refreshed = await collection.findOne(
+      { _id: new ObjectId(lookup.product._id) },
+      { projection: { variantes: 1 } },
+    );
+
+    const remainingStock = getVariantStockValue(refreshed?.variantes?.[lookup.variantIndex]);
+
+    return {
+      ok: true,
+      productId: lookup.product._id,
+      variantSku: lookup.variant.sku,
+      remainingStock,
+    };
+  }
+
+  const filter = {
+    _id: new ObjectId(lookup.product._id),
+    stock_quantity: { $gte: requestedQuantity },
+  };
+
+  const update = {
+    $inc: {
+      stock_quantity: -requestedQuantity,
+    },
+  };
+
+  const result = await collection.updateOne(filter, update);
+
+  if (result.modifiedCount === 0) {
+    return {
+      ok: false,
+      reason: "INSUFFICIENT_STOCK",
+      productId: lookup.product._id,
+    };
+  }
+
+  const refreshed = await collection.findOne(
+    { _id: new ObjectId(lookup.product._id) },
+    {
+      projection: {
+        stock_quantity: 1,
+      },
+    },
+  );
+
+  const remainingStock = Number.parseInt(refreshed?.stock_quantity, 10) || 0;
+
+  return {
+    ok: true,
+    productId: lookup.product._id,
+    remainingStock,
+  };
+}
+
+async function incrementOrderItemStock({
+  productId,
+  productSku,
+  variantSku,
+  selection = {},
+  color,
+  talla,
+  quantity = 1,
+}) {
+  const lookup = await findProductAndVariantForStockLookup({
+    productId,
+    productSku,
+    variantSku,
+    selection,
+    color,
+    talla,
+  });
+
+  if (!lookup || !lookup.product) {
+    return {
+      ok: false,
+      reason: "PRODUCT_NOT_FOUND",
+    };
+  }
+
+  const requestedQuantity = Number.parseInt(quantity, 10) || 1;
+  const variantPath = lookup.variantIndex >= 0 ? `variantes.${lookup.variantIndex}` : null;
+  const db = await connectDB();
+  const collection = db.collection("products");
+
+  if (variantSku) {
+    if (!lookup.variant) {
+      return {
+        ok: false,
+        reason: "VARIANT_NOT_FOUND",
+        productId: lookup.product._id,
+      };
+    }
+
+    if (!variantPath) {
+      return {
+        ok: false,
+        reason: "VARIANT_NOT_FOUND",
+        productId: lookup.product._id,
+      };
+    }
+
+    const variantStockField = getVariantStockFieldName(lookup.variant);
+
+    await collection.updateOne(
+      {
+        _id: new ObjectId(lookup.product._id),
+      },
+      {
+        $inc: {
+          [`${variantPath}.${variantStockField}`]: requestedQuantity,
+        },
+      },
+    );
+
+    const refreshed = await collection.findOne(
+      { _id: new ObjectId(lookup.product._id) },
+      { projection: { variantes: 1 } },
+    );
+
+    const remainingStock = getVariantStockValue(refreshed?.variantes?.[lookup.variantIndex]);
+
+    return {
+      ok: true,
+      productId: lookup.product._id,
+      variantSku: lookup.variant.sku,
+      remainingStock,
+    };
+  }
+
+  await collection.updateOne(
+    { _id: new ObjectId(lookup.product._id) },
+    {
+      $inc: {
+        stock_quantity: requestedQuantity,
+      },
+    },
+  );
+
+  const refreshed = await collection.findOne(
+    { _id: new ObjectId(lookup.product._id) },
+    {
+      projection: {
+        stock_quantity: 1,
+      },
+    },
+  );
+
+  const remainingStock = Number.parseInt(refreshed?.stock_quantity, 10) || 0;
+
+  return {
+    ok: true,
+    productId: lookup.product._id,
     remainingStock,
   };
 }
@@ -477,5 +738,7 @@ module.exports = {
   updateProduct,
   validateVariantStock,
   decrementVariantStock,
+  decrementOrderItemStock,
+  incrementOrderItemStock,
   validateProductCustomization,
 };

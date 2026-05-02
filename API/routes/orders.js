@@ -2,6 +2,7 @@ const express = require('express');
 const orderService = require('../services/order-service');
 const cartService = require('../services/cart-service');
 const authMiddleware = require('../middlewares/authMiddleware');
+const productService = require('../services/product-service');
 
 const router = express.Router();
 
@@ -33,6 +34,7 @@ router.post('/checkout', authMiddleware, async (req, res) => {
         variantAdditionalPrice,
         variantSku: item.variantSku,
         simpleSku: item.simpleSku,
+        selection: item.selection || item.variantAttributes || {},
         customization: item.customization || {},
       };
     });
@@ -47,13 +49,59 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       return res.status(400).json({ error: 'Invalid cart total' });
     }
 
-    // Create order
-    const order = await orderService.createOrder(userId, normalizedItems, total, shippingAddress || {});
+    const appliedStockChanges = [];
 
-    // Clear user's cart
-    await cartService.clearCart(userId);
+    const rollbackAppliedStockChanges = async () => {
+      for (const item of appliedStockChanges.reverse()) {
+        try {
+          await productService.incrementOrderItemStock({
+            productId: item.product_id,
+            productSku: item.simpleSku || item.productSku,
+            variantSku: item.variantSku,
+            selection: item.selection || {},
+            quantity: item.quantity,
+          });
+        } catch (rollbackError) {
+          console.error('Error restoring stock after failed checkout:', rollbackError);
+        }
+      }
+    };
 
-    res.status(201).json(order);
+    for (const item of normalizedItems) {
+      const stockResult = await productService.decrementOrderItemStock({
+        productId: item.product_id,
+        productSku: item.simpleSku || item.productSku,
+        variantSku: item.variantSku,
+        selection: item.selection || {},
+        quantity: item.quantity,
+      });
+
+      if (!stockResult.ok) {
+        await rollbackAppliedStockChanges();
+
+        return res.status(409).json({
+          error: 'INSUFFICIENT_STOCK',
+          reason: stockResult.reason,
+          productId: stockResult.productId,
+          variantSku: stockResult.variantSku,
+        });
+      }
+
+      appliedStockChanges.push(item);
+    }
+
+    try {
+      // Create order
+      const order = await orderService.createOrder(userId, normalizedItems, total, shippingAddress || {});
+
+      // Clear user's cart
+      await cartService.clearCart(userId);
+
+      res.status(201).json(order);
+    } catch (orderCreationError) {
+      await rollbackAppliedStockChanges();
+      throw orderCreationError;
+    }
   } catch (error) {
     console.error('Checkout error:', error);
     res.status(500).json({ error: 'Error creating order: ' + error.message });
