@@ -114,13 +114,20 @@
 
         @if (lowStockProducts().length > 0) {
           <ul class="stock-list">
-            @for (product of lowStockProducts(); track product._id) {
+            @for (
+              item of lowStockProducts();
+              track item.variant ? item.product._id + '-' + item.variantLabel : item.product._id
+            ) {
               <li>
                 <div>
-                  <p class="stock-title">{{ product.title }}</p>
-                  <p class="stock-sku">SKU: {{ product.sku }}</p>
+                  <p class="stock-title">{{ item.product.title }}</p>
+                  @if (item.variant) {
+                    <p class="stock-sku">{{ item.variantLabel }}</p>
+                  } @else {
+                    <p class="stock-sku">SKU: {{ item.product.sku }}</p>
+                  }
                 </div>
-                <span class="stock-pill">{{ product.stock_quantity }} uds</span>
+                <span class="stock-pill">{{ item.stock }} uds</span>
               </li>
             }
           </ul>

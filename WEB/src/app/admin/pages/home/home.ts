@@ -4,6 +4,7 @@ import { forkJoin } from 'rxjs';
 import { Category } from '../../../interfaces/category';
 import { Order, OrderStatus } from '../../../interfaces/order';
 import { Product } from '../../../interfaces/product';
+import { Variant } from '../../../interfaces/variant';
 import { CategoryService } from '../../../services/category-service';
 import { OrderService } from '../../../services/order-service';
 import { ProductService } from '../../../services/product-service';
@@ -24,6 +25,13 @@ interface KpiCard {
   label: string;
   value: string;
   hint: string;
+}
+
+interface LowStockItem {
+  product: Product;
+  stock: number;
+  variant?: Variant;
+  variantLabel?: string;
 }
 
 @Component({
@@ -230,11 +238,38 @@ export class Home {
     return this.monthlyTrend().reduce((max, point) => Math.max(max, point.revenue), 0);
   });
 
-  lowStockProducts = computed<Product[]>(() => {
-    return this.products()
-      .filter((product) => product.stock_quantity <= 5)
-      .sort((a, b) => a.stock_quantity - b.stock_quantity)
-      .slice(0, 6);
+  lowStockProducts = computed<LowStockItem[]>(() => {
+    const lowStockItems: LowStockItem[] = [];
+
+    for (const product of this.products()) {
+      const productStock = Number(product.stock_quantity) || 0;
+
+      if (product.manage_stock) {
+        if (productStock <= 5) {
+          lowStockItems.push({
+            product,
+            stock: productStock,
+          });
+        }
+
+        continue;
+      }
+
+      for (const variant of product.variantes ?? []) {
+        const variantStock = Number(variant.stock_quantity) || 0;
+
+        if (variantStock <= 5) {
+          lowStockItems.push({
+            product,
+            stock: variantStock,
+            variant,
+            variantLabel: this.getVariantLabel(variant),
+          });
+        }
+      }
+    }
+
+    return lowStockItems.sort((a, b) => a.stock - b.stock).slice(0, 6);
   });
 
   recentOrders = computed<Order[]>(() => {
@@ -271,5 +306,40 @@ export class Home {
 
   getTotalStock(products: Product[]): number {
     return products.reduce((sum, product) => sum + (product.stock_quantity || 0), 0);
+  }
+
+  private getVariantLabel(variant: Variant): string {
+    const attributes = variant.attributes;
+
+    if (attributes && typeof attributes === 'object' && !Array.isArray(attributes)) {
+      const formattedAttributes = Object.entries(attributes)
+        .map(([key, value]) => this.formatVariantAttribute(key, value))
+        .filter((value): value is string => value.length > 0);
+
+      if (formattedAttributes.length > 0) {
+        return formattedAttributes.join(' · ');
+      }
+    }
+
+    if (variant.sku) {
+      return `SKU: ${variant.sku}`;
+    }
+
+    return 'Variante';
+  }
+
+  private formatVariantAttribute(key: string, value: unknown): string {
+    const normalizedValue = Array.isArray(value)
+      ? value.find((item) => typeof item === 'string' || typeof item === 'number')
+      : value;
+
+    if (typeof normalizedValue !== 'string' && typeof normalizedValue !== 'number') {
+      return '';
+    }
+
+    const normalizedKey = key.replace(/[_-]+/g, ' ').trim();
+    const label = normalizedKey.charAt(0).toUpperCase() + normalizedKey.slice(1);
+
+    return `${label}: ${normalizedValue}`;
   }
 }
