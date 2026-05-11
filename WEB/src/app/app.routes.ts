@@ -12,6 +12,7 @@ import { Categories } from './admin/pages/categories/categories';
 import { Settings } from './admin/pages/settings/settings';
 import { AdminOrders } from './admin/pages/orders/orders';
 import { AdminReviews } from './admin/pages/reviews/reviews';
+import { AdminCoupons } from './admin/pages/coupons/coupons';
 import { ProductDetails } from './public/pages/product-details/product-details';
 import { Cart } from './public/pages/cart/cart';
 import { Checkout } from './public/pages/checkout/checkout';
@@ -65,6 +66,10 @@ export const routes: Routes = [
       {
         path: 'resenas',
         component: AdminReviews,
+      },
+      {
+        path: 'cupones',
+        component: AdminCoupons,
       },
       {
         path: '',

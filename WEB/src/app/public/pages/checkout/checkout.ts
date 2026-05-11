@@ -1,14 +1,21 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  FormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CartItem, CartService } from '../../../services/cart-service';
 import { OrderService } from '../../../services/order-service';
+import { CouponService, Coupon } from '../../../services/coupon-service';
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
 })
@@ -16,10 +23,17 @@ export class Checkout {
   private readonly formBuilder = inject(FormBuilder);
   private readonly cartService = inject(CartService);
   private readonly orderService = inject(OrderService);
+  private readonly couponService = inject(CouponService);
   private readonly router = inject(Router);
 
   readonly processingCheckout = signal(false);
   readonly submitError = signal('');
+
+  // Coupon related
+  readonly couponCode = signal<string>('');
+  readonly appliedCoupon = signal<Coupon | null>(null);
+  readonly couponError = signal<string>('');
+  readonly couponLoading = signal<boolean>(false);
 
   readonly checkoutForm = this.formBuilder.nonNullable.group({
     shippingAddress: this.formBuilder.nonNullable.group({
@@ -48,7 +62,23 @@ export class Checkout {
     }, 0),
   );
   readonly shipping = computed(() => (this.items().length > 0 ? 0 : 0));
-  readonly total = computed(() => this.subtotal() + this.shipping());
+
+  readonly discountAmount = computed(() => {
+    const coupon = this.appliedCoupon();
+    if (!coupon) return 0;
+
+    const baseAmount = this.subtotal() + this.shipping();
+    if (coupon.discountType === 'percentage') {
+      return Math.round(((baseAmount * coupon.discountValue) / 100) * 100) / 100;
+    } else {
+      return Math.min(coupon.discountValue, baseAmount);
+    }
+  });
+
+  readonly total = computed(() => {
+    const baseTotal = this.subtotal() + this.shipping();
+    return Math.max(0, baseTotal - this.discountAmount());
+  });
 
   private readonly currencyFormatter = new Intl.NumberFormat('es-ES', {
     style: 'currency',
@@ -137,6 +167,37 @@ export class Checkout {
     return this.checkoutForm.get(path);
   }
 
+  applyCoupon(): void {
+    const code = this.couponCode().trim();
+
+    if (!code) {
+      this.couponError.set('Introduce un código de cupón');
+      return;
+    }
+
+    this.couponLoading.set(true);
+    this.couponError.set('');
+
+    this.couponService.validateCoupon(code).subscribe({
+      next: (response) => {
+        this.appliedCoupon.set(response.data);
+        this.couponError.set('');
+        this.couponLoading.set(false);
+      },
+      error: (error) => {
+        this.couponError.set(error.error?.error || 'Cupón no válido');
+        this.appliedCoupon.set(null);
+        this.couponLoading.set(false);
+      },
+    });
+  }
+
+  removeCoupon(): void {
+    this.appliedCoupon.set(null);
+    this.couponCode.set('');
+    this.couponError.set('');
+  }
+
   confirmPaymentAndCheckout(): void {
     if (this.processingCheckout()) {
       return;
@@ -154,9 +215,19 @@ export class Checkout {
     this.submitError.set('');
 
     const shippingAddress = this.checkoutForm.controls.shippingAddress.getRawValue();
+    const couponCode = this.appliedCoupon()?.code || null;
 
-    this.orderService.checkout(shippingAddress).subscribe({
+    this.orderService.checkout(shippingAddress, couponCode).subscribe({
       next: () => {
+        // Registrar el uso del cupón si se aplicó
+        if (couponCode) {
+          this.couponService.incrementCouponUse(couponCode).subscribe({
+            error: (error) => {
+              console.error('Error incrementing coupon use:', error);
+            },
+          });
+        }
+
         this.cartService.clearCart();
         this.processingCheckout.set(false);
         alert('Pedido realizado con exito');

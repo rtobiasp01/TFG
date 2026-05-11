@@ -1,0 +1,183 @@
+<div class="coupons-container">
+  <div class="coupons-header">
+    <h1>Gestión de Cupones</h1>
+    <button class="btn-add-coupon" (click)="toggleForm()" [class.active]="showForm()">
+      {{ showForm() ? 'Cancelar' : 'Crear Cupón' }}
+    </button>
+  </div>
+
+  <!-- Messages -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Add/Edit Coupon Form -->
+  @if (showForm()) {
+    <div class="coupon-form-container">
+      <h2>{{ editingId() ? 'Editar Cupón' : 'Crear Nuevo Cupón' }}</h2>
+      <form (ngSubmit)="onSubmitCoupon()" #couponForm="ngForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="code">Código del Cupón *</label>
+            <input
+              type="text"
+              id="code"
+              [(ngModel)]="newCoupon().code"
+              name="code"
+              required
+              placeholder="SUMMER2026"
+              [disabled]="editingId() !== null"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="description">Descripción *</label>
+            <input
+              type="text"
+              id="description"
+              [(ngModel)]="newCoupon().description"
+              name="description"
+              required
+              placeholder="Descuento de verano"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="discountType">Tipo de Descuento *</label>
+            <select
+              id="discountType"
+              [(ngModel)]="newCoupon().discountType"
+              name="discountType"
+              required
+            >
+              <option value="percentage">Porcentaje (%)</option>
+              <option value="fixed">Cantidad Fija (€)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="discountValue">Valor del Descuento *</label>
+            <input
+              type="number"
+              id="discountValue"
+              [(ngModel)]="newCoupon().discountValue"
+              name="discountValue"
+              required
+              min="0"
+              placeholder="10"
+            />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="maxUses">Número Máximo de Usos (vacío = ilimitados)</label>
+            <input
+              type="number"
+              id="maxUses"
+              [(ngModel)]="newCoupon().maxUses"
+              name="maxUses"
+              min="1"
+              placeholder="100"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="expiryDate">Fecha de Expiración (opcional)</label>
+            <input
+              type="date"
+              id="expiryDate"
+              [(ngModel)]="newCoupon().expiryDate"
+              name="expiryDate"
+            />
+          </div>
+        </div>
+
+        <div class="form-group checkbox">
+          <label for="isActive">
+            <input
+              type="checkbox"
+              id="isActive"
+              [(ngModel)]="newCoupon().isActive"
+              name="isActive"
+            />
+            Cupón Activo
+          </label>
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Enviando...' : editingId() ? 'Actualizar Cupón' : 'Crear Cupón' }}
+        </button>
+      </form>
+    </div>
+  }
+
+  <!-- Coupons List -->
+  <div class="coupons-list-container">
+    @if (isLoading()) {
+      <div class="loading">
+        <p>Cargando cupones...</p>
+      </div>
+    } @else if (coupons().length === 0) {
+      <div class="no-coupons">
+        <p>No hay cupones disponibles. ¡Crea uno!</p>
+      </div>
+    } @else {
+      <div class="coupons-table">
+        <div class="table-header">
+          <div class="col-code">Código</div>
+          <div class="col-description">Descripción</div>
+          <div class="col-discount">Descuento</div>
+          <div class="col-uses">Usos</div>
+          <div class="col-expiry">Vencimiento</div>
+          <div class="col-status">Estado</div>
+          <div class="col-actions">Acciones</div>
+        </div>
+
+        @for (coupon of coupons(); track coupon._id) {
+          <div class="table-row" [class.expired]="isExpired(coupon)">
+            <div class="col-code">
+              <span class="coupon-code">{{ coupon.code }}</span>
+            </div>
+            <div class="col-description">{{ coupon.description }}</div>
+            <div class="col-discount">
+              <span class="discount-badge">{{ getDiscountDisplay(coupon) }}</span>
+            </div>
+            <div class="col-uses">{{ getRemainingUses(coupon) }}</div>
+            <div class="col-expiry">
+              @if (coupon.expiryDate) {
+                <span [class.expired]="isExpired(coupon)">
+                  {{ coupon.expiryDate | date: 'short' }}
+                </span>
+              } @else {
+                <span class="text-muted">Sin vencimiento</span>
+              }
+            </div>
+            <div class="col-status">
+              <button
+                class="btn-toggle-status"
+                [class.active]="coupon.isActive"
+                (click)="toggleActive(coupon)"
+              >
+                {{ coupon.isActive ? 'Activo' : 'Inactivo' }}
+              </button>
+            </div>
+            <div class="col-actions">
+              <button class="btn-edit" (click)="onEditCoupon(coupon)">Editar</button>
+              <button class="btn-delete" (click)="onDeleteCoupon(coupon._id)">Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

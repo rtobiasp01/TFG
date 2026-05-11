@@ -41,6 +41,7 @@ export class SidebarComponent {
     },
     { icon: '📦', label: 'Pedidos', route: '/admin/pedidos' },
     { icon: '⭐', label: 'Reseñas', route: '/admin/resenas' },
+    { icon: '🎟️', label: 'Cupones', route: '/admin/cupones' },
     { icon: '⚙️', label: 'Ajustes', route: '/admin/settings' },
   ];
 

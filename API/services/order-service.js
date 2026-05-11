@@ -3,10 +3,18 @@ const { ObjectId } = require('mongodb');
 const Order = require('../models/order');
 
 class OrderService {
-  async createOrder(userId, items, total, shippingAddress = {}) {
+  async createOrder(userId, items, total, shippingAddress = {}, couponCode = null, discount = 0) {
     try {
       const db = await connectDB();
-      const order = new Order(new ObjectId(userId), items, total, 'pendiente', shippingAddress);
+      const order = new Order(
+        new ObjectId(userId),
+        items,
+        total,
+        'pendiente',
+        shippingAddress,
+        couponCode,
+        discount
+      );
       
       const collection = db.collection('orders');
       const result = await collection.insertOne(order);

@@ -40,6 +40,39 @@
           </div>
 
           <div class="checkout-summary__totals">
+            <!-- Coupon Section -->
+            @if (!appliedCoupon()) {
+              <div class="coupon-input-section">
+                <input
+                  type="text"
+                  [value]="couponCode()"
+                  (input)="couponCode.set($event.target.value)"
+                  (keyup.enter)="applyCoupon()"
+                  placeholder="Código de cupón"
+                  class="coupon-input"
+                />
+                <button
+                  type="button"
+                  (click)="applyCoupon()"
+                  [disabled]="couponLoading() || !couponCode().trim()"
+                  class="coupon-btn"
+                >
+                  {{ couponLoading() ? 'Validando...' : 'Aplicar' }}
+                </button>
+              </div>
+              @if (couponError()) {
+                <div class="coupon-error">{{ couponError() }}</div>
+              }
+            } @else {
+              <div class="coupon-applied">
+                <div class="coupon-applied__badge">
+                  <span class="coupon-code">{{ appliedCoupon()!.code }}</span>
+                  <span class="coupon-desc">{{ appliedCoupon()!.description }}</span>
+                </div>
+                <button type="button" (click)="removeCoupon()" class="coupon-remove">✕</button>
+              </div>
+            }
+
             <div class="summary-row">
               <span>Productos</span>
               <span>{{ totalItems() }}</span>
@@ -52,6 +85,12 @@
               <span>Envio</span>
               <span>{{ formatPrice(shipping()) }}</span>
             </div>
+            @if (discountAmount() > 0) {
+              <div class="summary-row discount">
+                <span>Descuento</span>
+                <span>-{{ formatPrice(discountAmount()) }}</span>
+              </div>
+            }
             <div class="summary-row total">
               <span>Total</span>
               <span>{{ formatPrice(total()) }}</span>

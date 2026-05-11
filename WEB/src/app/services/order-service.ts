@@ -10,9 +10,10 @@ export class OrderService {
   private http = inject(HttpClient);
   private apiUrl = 'http://localhost:3000/orders';
 
-  checkout(shippingAddress?: any): Observable<Order> {
+  checkout(shippingAddress?: any, couponCode?: string | null): Observable<Order> {
     return this.http.post<Order>(`${this.apiUrl}/checkout`, {
       shippingAddress: shippingAddress || {},
+      couponCode: couponCode || null,
     });
   }
 

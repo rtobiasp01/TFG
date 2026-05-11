@@ -3,6 +3,7 @@ const orderService = require('../services/order-service');
 const cartService = require('../services/cart-service');
 const authMiddleware = require('../middlewares/authMiddleware');
 const productService = require('../services/product-service');
+const couponService = require('../services/coupon-service');
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ const router = express.Router();
 router.post('/checkout', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
-    const { shippingAddress } = req.body;
+    const { shippingAddress, couponCode } = req.body;
 
     // Get user's cart
     const cart = await cartService.getCartByUser(userId);
@@ -39,15 +40,40 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       };
     });
 
-    // Calculate total
-    const total = normalizedItems.reduce((sum, item) => {
+    // Calculate subtotal
+    const subtotal = normalizedItems.reduce((sum, item) => {
       const unitPrice = (item.basePrice || 0) + (item.variantAdditionalPrice || 0);
       return sum + (item.quantity * unitPrice);
     }, 0);
 
-    if (total <= 0) {
+    if (subtotal <= 0) {
       return res.status(400).json({ error: 'Invalid cart total' });
     }
+
+    // Validate and calculate discount from coupon
+    let discount = 0;
+    let validatedCoupon = null;
+    
+    if (couponCode) {
+      try {
+        validatedCoupon = await couponService.getCouponByCode(couponCode);
+        
+        if (!validatedCoupon) {
+          return res.status(400).json({ error: 'Invalid coupon code' });
+        }
+
+        // Calculate discount
+        if (validatedCoupon.discountType === 'percentage') {
+          discount = Math.round((subtotal * validatedCoupon.discountValue) / 100 * 100) / 100;
+        } else {
+          discount = Math.min(validatedCoupon.discountValue, subtotal);
+        }
+      } catch (couponError) {
+        return res.status(400).json({ error: 'Error validating coupon: ' + couponError.message });
+      }
+    }
+
+    const total = Math.max(0, subtotal - discount);
 
     const appliedStockChanges = [];
 
@@ -91,8 +117,15 @@ router.post('/checkout', authMiddleware, async (req, res) => {
     }
 
     try {
-      // Create order
-      const order = await orderService.createOrder(userId, normalizedItems, total, shippingAddress || {});
+      // Create order with coupon info
+      const order = await orderService.createOrder(
+        userId,
+        normalizedItems,
+        subtotal,
+        shippingAddress || {},
+        couponCode || null,
+        discount
+      );
 
       // Clear user's cart
       await cartService.clearCart(userId);
