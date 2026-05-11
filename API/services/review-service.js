@@ -86,8 +86,29 @@ async function getReviewsByProductId(productId) {
   }
 }
 
+async function deleteReview(reviewId) {
+  try {
+    if (!ObjectId.isValid(reviewId)) {
+      throw new Error("Invalid review ID");
+    }
+
+    const db = await connectDB();
+    const collection = db.collection("reviews");
+    const result = await collection.deleteOne({ _id: new ObjectId(reviewId) });
+
+    if (result.deletedCount === 0) {
+      throw new Error("Review not found");
+    }
+
+    return { message: "Review deleted successfully" };
+  } catch (error) {
+    throw new Error(`Error deleting review: ${error.message}`);
+  }
+}
+
 module.exports = {
   createReview,
   getAllReviews,
   getReviewsByProductId,
+  deleteReview,
 };

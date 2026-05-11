@@ -42,4 +42,23 @@ router.get("/product/:productId", async (req, res) => {
   }
 });
 
+router.delete("/:reviewId", async (req, res) => {
+  try {
+    const { reviewId } = req.params;
+    const result = await reviewService.deleteReview(reviewId);
+
+    res.json({
+      success: true,
+      message: "Reseña eliminada correctamente",
+      data: result,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: "Error al eliminar la reseña",
+      error: error.message,
+    });
+  }
+});
+
 module.exports = router;
