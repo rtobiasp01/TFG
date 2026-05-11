@@ -1,0 +1,53 @@
+### Test Email Notifications for Orders
+### Archivo para probar la funcionalidad de notificaciones de email cuando cambia el estado de una orden
+
+@base_url = http://localhost:3000
+
+### Variables
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzhhMjk4MzI5ZTY5YTAwMTIzNDU2NzgiLCJlbWFpbCI6ImFkbWluLm1hZGVyYUBkZW1vLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTczNDc4NzE1Nn0.r7r8uvh3GH-P-aeNvWlw6JTpKZQPcfCmHbVS-h-cXhE
+
+###
+### Get all orders (para obtener los IDs de las órdenes)
+###
+GET {{base_url}}/orders
+Authorization: Bearer {{user_token}}
+
+###
+### Update order status and trigger email notification
+### El email se enviará automáticamente al cambiar el estado
+### Estados válidos: pendiente, confirmado, enviado, entregado, cancelado
+###
+PUT {{base_url}}/orders/67a123456789012345678abc/status
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "status": "confirmado"
+}
+
+### Cambiar a enviado
+PUT {{base_url}}/orders/67a123456789012345678abc/status
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "status": "enviado"
+}
+
+### Cambiar a entregado
+PUT {{base_url}}/orders/67a123456789012345678abc/status
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "status": "entregado"
+}
+
+### Cambiar a cancelado
+PUT {{base_url}}/orders/67a123456789012345678abc/status
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "status": "cancelado"
+}

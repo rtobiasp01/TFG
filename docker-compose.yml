@@ -24,6 +24,9 @@ services:
       MONGO_URI: "mongodb://admin:admin1234@tfg-mongo:27017"
       DATABASE_NAME: mydatabase
       JWT_SECRET: "macarrones_con_queso"
+      EMAIL_USER: "rtpfm19@gmail.com"
+      EMAIL_PASS: "bxzz wtpb rfyu tsbm"
+      SITE_NAME: "Mi Tienda"
     ports:
       - "3000:3000"
     volumes:

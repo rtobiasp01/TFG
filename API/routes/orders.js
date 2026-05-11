@@ -4,6 +4,8 @@ const cartService = require('../services/cart-service');
 const authMiddleware = require('../middlewares/authMiddleware');
 const productService = require('../services/product-service');
 const couponService = require('../services/coupon-service');
+const emailService = require('../services/email-service');
+const userService = require('../services/user-service');
 
 const router = express.Router();
 
@@ -130,6 +132,21 @@ router.post('/checkout', authMiddleware, async (req, res) => {
       // Clear user's cart
       await cartService.clearCart(userId);
 
+      // Send confirmation email to user
+      try {
+        const user = await userService.findUserById(userId);
+        if (user && user.email) {
+          await emailService.sendOrderConfirmationEmail({
+            recipientEmail: user.email,
+            order: order,
+            userName: user.email.split('@')[0], // Use email prefix as name if not available
+          });
+        }
+      } catch (emailError) {
+        // Log the error but don't fail the checkout
+        console.error('Error sending confirmation email:', emailError);
+      }
+
       res.status(201).json(order);
     } catch (orderCreationError) {
       await rollbackAppliedStockChanges();
@@ -189,6 +206,23 @@ router.put('/:orderId/status', authMiddleware, async (req, res) => {
     }
 
     const updatedOrder = await orderService.updateOrderStatus(orderId, status);
+    
+    // Obtener datos del usuario para enviar el email
+    try {
+      const user = await userService.findUserById(updatedOrder.user_id.toString());
+      if (user && user.email) {
+        // Enviar email de notificación al usuario
+        await emailService.sendOrderStatusEmail({
+          recipientEmail: user.email,
+          order: updatedOrder,
+          newStatus: status,
+        });
+      }
+    } catch (emailError) {
+      // Log del error pero no falla la operación
+      console.error('Error sending order status email:', emailError);
+    }
+
     res.json(updatedOrder);
   } catch (error) {
     res.status(500).json({ error: 'Error updating order: ' + error.message });
