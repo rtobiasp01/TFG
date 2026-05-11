@@ -19,7 +19,7 @@ GET http://localhost:3000/reviews
 ### =====================================
 ### GET REVIEWS BY PRODUCT - Por producto
 ### =====================================
-GET http://localhost:3000/reviews/product/000000000000000000000000
+GET http://localhost:3000/reviews/product/69f25255ba677375cce87c89
 
 ### =========================
 ### DELETE REVIEW - Eliminar reseña

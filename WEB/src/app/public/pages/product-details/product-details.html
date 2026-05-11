@@ -145,6 +145,116 @@
     </div>
   </section>
 
+  <!-- Reviews Section -->
+  <section class="reviews-section">
+    <div class="section-card">
+      <div class="reviews-header">
+        <h2 class="section-card__title">Reseñas</h2>
+        @if (isAuthenticated()) {
+          <button
+            type="button"
+            class="btn-add-review"
+            (click)="toggleReviewForm()"
+            [class.active]="showReviewForm()"
+          >
+            {{ showReviewForm() ? 'Cancelar' : 'Agregar Reseña' }}
+          </button>
+        }
+      </div>
+
+      <!-- Messages -->
+      @if (reviewSuccessMessage()) {
+        <div class="alert alert-success">
+          {{ reviewSuccessMessage() }}
+        </div>
+      }
+      @if (reviewErrorMessage()) {
+        <div class="alert alert-error">
+          {{ reviewErrorMessage() }}
+        </div>
+      }
+
+      <!-- Add Review Form -->
+      @if (showReviewForm() && isAuthenticated()) {
+        <div class="review-form-container">
+          <h3>Crear Nueva Reseña</h3>
+          <form (ngSubmit)="onSubmitReview()" #reviewForm="ngForm">
+            <div class="form-group">
+              <label for="rating">Calificación (1-5) *</label>
+              <div class="rating-selector">
+                <div class="star-display">
+                  @for (star of getRatingStars(5); track star) {
+                    <span class="star" [class.filled]="isStarFilled(star, newReview().rating)">
+                      ★
+                    </span>
+                  }
+                </div>
+                <select id="rating" [(ngModel)]="newReview().rating" name="rating" required>
+                  <option value="1">1 - Muy Malo</option>
+                  <option value="2">2 - Malo</option>
+                  <option value="3">3 - Normal</option>
+                  <option value="4">4 - Bueno</option>
+                  <option value="5">5 - Excelente</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="message">Mensaje de Reseña *</label>
+              <textarea
+                id="message"
+                [(ngModel)]="newReview().message"
+                name="message"
+                required
+                placeholder="Comparte tu experiencia con este producto..."
+                rows="4"
+              ></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" [disabled]="isSubmittingReview()">
+              {{ isSubmittingReview() ? 'Enviando...' : 'Enviar Reseña' }}
+            </button>
+          </form>
+        </div>
+      }
+
+      <!-- Reviews List -->
+      @if (isLoadingReviews()) {
+        <div class="loading">
+          <p>Cargando reseñas...</p>
+        </div>
+      } @else if (reviews().length === 0) {
+        <div class="no-reviews">
+          <p>No hay reseñas disponibles. ¡Sé el primero en dejar una!</p>
+        </div>
+      } @else {
+        <div class="reviews-list">
+          @for (review of reviews(); track review._id) {
+            <div class="review-item">
+              <div class="review-header">
+                <div class="review-meta">
+                  <p class="review-email">{{ review.email }}</p>
+                  <p class="review-date">
+                    {{
+                      review.createdAt ? (review.createdAt | date: 'short') : 'Fecha no disponible'
+                    }}
+                  </p>
+                </div>
+                <div class="review-rating">
+                  @for (star of getRatingStars(5); track star) {
+                    <span class="star" [class.filled]="isStarFilled(star, review.rating)"> ★ </span>
+                  }
+                </div>
+              </div>
+
+              <p class="review-message">{{ review.message }}</p>
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
   <section class="related-products-section">
     <div class="section-card">
       <div class="related-products-header">

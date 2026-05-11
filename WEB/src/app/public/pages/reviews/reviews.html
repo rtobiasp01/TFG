@@ -1,0 +1,132 @@
+<div class="reviews-container">
+  <div class="reviews-header">
+    <h1>Reseñas de Productos</h1>
+    <button class="btn-add-review" (click)="toggleForm()" [class.active]="showForm()">
+      {{ showForm() ? 'Cancelar' : 'Agregar Reseña' }}
+    </button>
+  </div>
+
+  <!-- Messages -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Add Review Form -->
+  @if (showForm()) {
+    <div class="review-form-container">
+      <h2>Crear Nueva Reseña</h2>
+      <form (ngSubmit)="onSubmitReview()" #reviewForm="ngForm">
+        <div class="form-group">
+          <label for="email">Correo Electrónico *</label>
+          <input
+            type="email"
+            id="email"
+            [(ngModel)]="newReview().email"
+            name="email"
+            required
+            placeholder="tu@correo.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="productId">ID del Producto *</label>
+          <input
+            type="text"
+            id="productId"
+            [(ngModel)]="newReview().product_id"
+            name="product_id"
+            required
+            placeholder="ID del producto"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="rating">Calificación (1-5) *</label>
+          <div class="rating-selector">
+            <div class="star-display">
+              @for (star of getRatingStars(5); track star) {
+                <span class="star" [class.filled]="isStarFilled(star, newReview().rating)">
+                  ★
+                </span>
+              }
+            </div>
+            <select id="rating" [(ngModel)]="newReview().rating" name="rating" required>
+              <option value="1">1 - Muy Malo</option>
+              <option value="2">2 - Malo</option>
+              <option value="3">3 - Normal</option>
+              <option value="4">4 - Bueno</option>
+              <option value="5">5 - Excelente</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="message">Mensaje de Reseña *</label>
+          <textarea
+            id="message"
+            [(ngModel)]="newReview().message"
+            name="message"
+            required
+            placeholder="Comparte tu experiencia con este producto..."
+            rows="5"
+          ></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit" [disabled]="isSubmitting()">
+          {{ isSubmitting() ? 'Enviando...' : 'Enviar Reseña' }}
+        </button>
+      </form>
+    </div>
+  }
+
+  <!-- Reviews List -->
+  <div class="reviews-list">
+    <h2>Todas las Reseñas</h2>
+
+    @if (isLoading()) {
+      <div class="loading">
+        <p>Cargando reseñas...</p>
+      </div>
+    } @else if (reviews().length === 0) {
+      <div class="no-reviews">
+        <p>No hay reseñas disponibles. ¡Sé el primero en dejar una!</p>
+      </div>
+    } @else {
+      <div class="reviews-grid">
+        @for (review of reviews(); track review._id) {
+          <div class="review-card">
+            <div class="review-header">
+              <div class="review-meta">
+                <p class="review-email">{{ review.email }}</p>
+                <p class="review-date">
+                  {{
+                    review.createdAt ? (review.createdAt | date: 'short') : 'Fecha no disponible'
+                  }}
+                </p>
+              </div>
+              <div class="review-rating">
+                @for (star of getRatingStars(5); track star) {
+                  <span class="star" [class.filled]="isStarFilled(star, review.rating)"> ★ </span>
+                }
+              </div>
+            </div>
+
+            <p class="review-message">{{ review.message }}</p>
+
+            <div class="review-footer">
+              <p class="review-product-id">Producto ID: {{ review.product_id }}</p>
+              <button class="btn-delete" (click)="onDeleteReview(review._id)">Eliminar</button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

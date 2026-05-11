@@ -10,10 +10,10 @@
         <p class="auth-error">Introduce un email valido.</p>
       }
 
-      <label for="login-password">Contrasena</label>
+      <label for="login-password">contraseña</label>
       <input id="login-password" type="password" formControlName="password" />
       @if (form.controls.password.touched && form.controls.password.invalid) {
-        <p class="auth-error">La contrasena debe tener al menos 4 caracteres.</p>
+        <p class="auth-error">La contraseña debe tener al menos 4 caracteres.</p>
       }
 
       @if (errorMessage()) {

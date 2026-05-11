@@ -1,0 +1,159 @@
+<div class="reviews-container">
+  <div class="reviews-header">
+    <h1>Gestión de Reseñas</h1>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="stats-container">
+    <div class="stat-card">
+      <div class="stat-number">{{ getTotalReviews() }}</div>
+      <div class="stat-label">Reseñas Totales</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-rating">
+        <div class="stat-stars">
+          @for (star of getRatingStars(5); track star) {
+            <span class="star" [class.filled]="isStarFilled(star, getTotalReviews() > 0 ? 5 : 0)">
+              ★
+            </span>
+          }
+        </div>
+        <div class="stat-number">{{ getAverageRating() }}</div>
+      </div>
+      <div class="stat-label">Calificación Promedio</div>
+    </div>
+  </div>
+
+  <!-- Rating Distribution -->
+  @if (getTotalReviews() > 0) {
+    <div class="rating-distribution">
+      <h2>Distribución de Calificaciones</h2>
+      <div class="distribution-list">
+        @for (dist of getRatingDistribution(); track dist.rating) {
+          <div class="distribution-item">
+            <div class="distribution-label">
+              <span class="distribution-stars">
+                @for (star of getRatingStars(5); track star) {
+                  <span class="star" [class.filled]="isStarFilled(star, dist.rating)"> ★ </span>
+                }
+              </span>
+            </div>
+            <div class="distribution-bar">
+              <div
+                class="distribution-bar-fill"
+                [style.width.%]="getTotalReviews() > 0 ? (dist.count / getTotalReviews()) * 100 : 0"
+              ></div>
+            </div>
+            <div class="distribution-count">{{ dist.count }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Messages -->
+  @if (successMessage()) {
+    <div class="alert alert-success">
+      {{ successMessage() }}
+    </div>
+  }
+  @if (errorMessage()) {
+    <div class="alert alert-error">
+      {{ errorMessage() }}
+    </div>
+  }
+
+  <!-- Controls -->
+  <div class="controls-section">
+    <div class="filter-group">
+      <label for="filter-rating">Filtrar por calificación:</label>
+      <select
+        id="filter-rating"
+        [ngModel]="filterByRating()"
+        (ngModelChange)="updateFilter($event)"
+      >
+        <option [ngValue]="null">Todas</option>
+        <option [ngValue]="5">5 Estrellas</option>
+        <option [ngValue]="4">4 Estrellas</option>
+        <option [ngValue]="3">3 Estrellas</option>
+        <option [ngValue]="2">2 Estrellas</option>
+        <option [ngValue]="1">1 Estrella</option>
+      </select>
+    </div>
+
+    <div class="sort-controls">
+      <button class="sort-btn" [class.active]="sortBy() === 'date'" (click)="changeSortBy('date')">
+        Ordenar por Fecha {{ sortBy() === 'date' ? (sortOrder() === 'desc' ? '↓' : '↑') : '' }}
+      </button>
+      <button
+        class="sort-btn"
+        [class.active]="sortBy() === 'rating'"
+        (click)="changeSortBy('rating')"
+      >
+        Ordenar por Calificación
+        {{ sortBy() === 'rating' ? (sortOrder() === 'desc' ? '↓' : '↑') : '' }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Reviews List -->
+  <div class="reviews-list-container">
+    @if (isLoading()) {
+      <div class="loading">
+        <p>Cargando reseñas...</p>
+      </div>
+    } @else if (getSortedAndFilteredReviews().length === 0) {
+      <div class="no-reviews">
+        <p>No hay reseñas disponibles.</p>
+      </div>
+    } @else {
+      <div class="reviews-table">
+        <div class="reviews-table-header">
+          <div class="table-cell email">Correo</div>
+          <div class="table-cell product">Producto</div>
+          <div class="table-cell rating">Calificación</div>
+          <div class="table-cell message">Mensaje</div>
+          <div class="table-cell date">Fecha</div>
+          <div class="table-cell action">Acción</div>
+        </div>
+
+        @for (review of getSortedAndFilteredReviews(); track review._id) {
+          <div class="reviews-table-row">
+            <div class="table-cell email">{{ review.email }}</div>
+            <div class="table-cell product">
+              {{ getProductName(review.product_id) }}
+            </div>
+            <div class="table-cell rating">
+              <div class="rating-stars">
+                @for (star of getRatingStars(5); track star) {
+                  <span class="star" [class.filled]="isStarFilled(star, review.rating)"> ★ </span>
+                }
+              </div>
+            </div>
+            <div class="table-cell message">
+              <span class="message-text" [title]="review.message">
+                {{
+                  review.message.length > 50
+                    ? review.message.substring(0, 50) + '...'
+                    : review.message
+                }}
+              </span>
+            </div>
+            <div class="table-cell date">
+              {{ review.createdAt ? (review.createdAt | date: 'short') : 'N/A' }}
+            </div>
+            <div class="table-cell action">
+              <button
+                class="btn-delete"
+                (click)="onDeleteReview(review._id)"
+                title="Eliminar reseña"
+              >
+                Eliminar
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

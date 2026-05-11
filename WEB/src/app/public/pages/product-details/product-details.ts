@@ -1,10 +1,14 @@
 import { CommonModule } from '@angular/common';
 import { Component, ElementRef, ViewChild, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { Product } from '../../../interfaces/product';
 import { ProductService } from '../../../services/product-service';
 import { CartService } from '../../../services/cart-service';
+import { AuthService } from '../../../services/auth-service';
+import { ReviewService } from '../../../services/review-service';
 import { Variant } from '../../../interfaces/variant';
+import { Review } from '../../../interfaces/review';
 import { UploadService } from '../../../services/upload-service';
 import {
   CustomImagePlacement,
@@ -37,7 +41,7 @@ interface VariantOptionGroup {
 @Component({
   selector: 'app-product-details',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './product-details.html',
   styleUrl: './product-details.css',
 })
@@ -46,6 +50,8 @@ export class ProductDetails {
   private readonly productService = inject(ProductService);
   private readonly cartService = inject(CartService);
   private readonly uploadService = inject(UploadService);
+  private readonly authService = inject(AuthService);
+  private readonly reviewService = inject(ReviewService);
 
   readonly product = signal<Product | null>(null);
   readonly relatedProducts = signal<Product[]>([]);
@@ -61,6 +67,20 @@ export class ProductDetails {
   readonly galeriaActual = signal<string[]>([]);
   readonly variantesProducto = signal<VariantOptionGroup[]>([]);
   readonly selectedAttributes = signal<Record<string, VariantValue>>({});
+
+  // Reviews signals
+  readonly reviews = signal<Review[]>([]);
+  readonly isLoadingReviews = signal<boolean>(false);
+  readonly reviewErrorMessage = signal<string>('');
+  readonly reviewSuccessMessage = signal<string>('');
+  readonly newReview = signal<Review>({
+    email: '',
+    product_id: '',
+    message: '',
+    rating: 5,
+  });
+  readonly showReviewForm = signal<boolean>(false);
+  readonly isSubmittingReview = signal<boolean>(false);
   @ViewChild('relatedProductsViewport')
   private relatedProductsViewport?: ElementRef<HTMLDivElement>;
   readonly customTextPreview = computed(() => {
@@ -104,6 +124,12 @@ export class ProductDetails {
     this.productService.getBySku(sku).subscribe({
       next: (product) => {
         this.product.set(product);
+        this.newReview.set({
+          email: this.authService.currentUser()?.email || '',
+          product_id: product._id,
+          message: '',
+          rating: 5,
+        });
         this.customizationConfig.set(
           product?.customization_config ?? this.getDefaultCustomizationConfig(),
         );
@@ -117,6 +143,7 @@ export class ProductDetails {
         );
         this.updateGallery(initialVariant);
         this.loadRelatedProducts(product);
+        this.loadProductReviews(product._id);
       },
       error: () => {
         this.product.set(null);
@@ -751,5 +778,113 @@ export class ProductDetails {
   private isBackgroundRemovalEnabled(): boolean {
     const config = this.customizationConfig();
     return config?.enableBackgroundRemoval !== false;
+  }
+
+  // Reviews Methods
+  private loadProductReviews(productId: string): void {
+    this.isLoadingReviews.set(true);
+    this.reviewErrorMessage.set('');
+
+    this.reviewService.getReviewsByProductId(productId).subscribe({
+      next: (reviews) => {
+        this.reviews.set(reviews);
+        this.isLoadingReviews.set(false);
+      },
+      error: (error) => {
+        this.reviewErrorMessage.set('Error al cargar las reseñas');
+        this.isLoadingReviews.set(false);
+        console.error('Error loading reviews:', error);
+      },
+    });
+  }
+
+  onSubmitReview(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.reviewErrorMessage.set('Debes iniciar sesión para dejar una reseña');
+      return;
+    }
+
+    this.isSubmittingReview.set(true);
+    this.reviewErrorMessage.set('');
+    this.reviewSuccessMessage.set('');
+
+    this.reviewService.createReview(this.newReview()).subscribe({
+      next: (response) => {
+        this.reviewSuccessMessage.set('Reseña creada exitosamente');
+        this.resetReviewForm();
+        const productId = this.product()?._id;
+        if (productId) {
+          this.loadProductReviews(productId);
+        }
+        this.isSubmittingReview.set(false);
+
+        // Limpiar mensaje de éxito después de 3 segundos
+        setTimeout(() => this.reviewSuccessMessage.set(''), 3000);
+      },
+      error: (error) => {
+        this.reviewErrorMessage.set(
+          error.error?.error || 'Error al crear la reseña. Intenta de nuevo.',
+        );
+        this.isSubmittingReview.set(false);
+        console.error('Error creating review:', error);
+      },
+    });
+  }
+
+  onDeleteReview(reviewId: string | undefined): void {
+    if (!reviewId) return;
+
+    if (confirm('¿Estás seguro de que deseas eliminar esta reseña?')) {
+      this.reviewService.deleteReview(reviewId).subscribe({
+        next: () => {
+          this.reviewSuccessMessage.set('Reseña eliminada exitosamente');
+          const productId = this.product()?._id;
+          if (productId) {
+            this.loadProductReviews(productId);
+          }
+
+          // Limpiar mensaje de éxito después de 3 segundos
+          setTimeout(() => this.reviewSuccessMessage.set(''), 3000);
+        },
+        error: (error) => {
+          this.reviewErrorMessage.set('Error al eliminar la reseña');
+          console.error('Error deleting review:', error);
+        },
+      });
+    }
+  }
+
+  toggleReviewForm(): void {
+    if (!this.authService.isAuthenticated()) {
+      this.reviewErrorMessage.set('Debes iniciar sesión para dejar una reseña');
+      return;
+    }
+
+    this.showReviewForm.set(!this.showReviewForm());
+    if (!this.showReviewForm()) {
+      this.resetReviewForm();
+    }
+  }
+
+  private resetReviewForm(): void {
+    this.newReview.set({
+      email: this.authService.currentUser()?.email || '',
+      product_id: this.product()?._id || '',
+      message: '',
+      rating: 5,
+    });
+    this.showReviewForm.set(false);
+  }
+
+  getRatingStars(rating: number): number[] {
+    return Array.from({ length: 5 }, (_, i) => i + 1);
+  }
+
+  isStarFilled(star: number, rating: number): boolean {
+    return star <= rating;
+  }
+
+  isAuthenticated(): boolean {
+    return this.authService.isAuthenticated();
   }
 }
