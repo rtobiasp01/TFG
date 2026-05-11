@@ -1,0 +1,22 @@
+### =========================
+### CREATE REVIEW - Crear reseña
+### =========================
+POST http://localhost:3000/reviews
+Content-Type: application/json
+
+{
+  "email": "cliente@test.com",
+  "product_id": "000000000000000000000000",
+  "message": "El producto cumple con lo esperado y la calidad es buena.",
+  "rating": 5
+}
+
+### =========================
+### GET ALL REVIEWS - Obtener reseñas
+### =========================
+GET http://localhost:3000/reviews
+
+### =====================================
+### GET REVIEWS BY PRODUCT - Por producto
+### =====================================
+GET http://localhost:3000/reviews/product/000000000000000000000000
