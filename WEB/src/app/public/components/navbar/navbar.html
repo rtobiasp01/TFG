@@ -51,7 +51,9 @@
 
       <ul class="nav-links nav-links--actions">
         <li>
-          <a routerLink="/cart" routerLinkActive="active-link">Carrito ({{ cartItemCount() }})</a>
+          <a id="app-cart-link" routerLink="/cart" routerLinkActive="active-link"
+            >Carrito ({{ cartItemCount() }})</a
+          >
         </li>
 
         @if (!isAuthenticated()) {

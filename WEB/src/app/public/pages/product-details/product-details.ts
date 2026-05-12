@@ -62,6 +62,8 @@ export class ProductDetails {
   readonly customImagePreview = signal<string>('');
   readonly customImageFile = signal<File | null>(null);
   readonly isUploadingCustomization = signal<boolean>(false);
+  readonly isAddingToCart = signal<boolean>(false);
+  readonly addCartMessage = signal<string>('');
 
   readonly imagenPrincipal = signal<string | undefined>('');
   readonly galeriaActual = signal<string[]>([]);
@@ -407,31 +409,107 @@ export class ProductDetails {
     const productImage = product.image;
     const additionalPrice = selectedVariant?.precio_adicional ?? 0;
 
-    if (isSimple) {
-      this.cartService.addItem({
-        productId: product._id,
-        productTitle: product.title,
-        productType: 'simple',
-        productImage,
-        basePrice,
-        simpleSku: product.sku,
-        quantity: 1,
-        availableStock: product.stock_quantity,
-      });
-    } else {
-      this.cartService.addItem({
-        productId: product._id,
-        productTitle: product.title,
-        productType: 'variable',
-        productImage,
-        basePrice,
-        variantSku: selectedVariant?.sku,
-        variantAttributes: this.selectedAttributes(),
-        variantAdditionalPrice: additionalPrice,
-        quantity: 1,
-        availableStock: selectedVariant?.stock_quantity ?? 0,
-      });
+    // Provide visual feedback when adding to cart
+    this.isAddingToCart.set(true);
+
+    // Trigger fly-to-cart animation (best-effort)
+    const imageSrc = this.imagenPrincipal() || product.image || '';
+    const animatePromise = this.flyToCart(imageSrc);
+
+    try {
+      if (isSimple) {
+        this.cartService.addItem({
+          productId: product._id,
+          productTitle: product.title,
+          productType: 'simple',
+          productImage,
+          basePrice,
+          simpleSku: product.sku,
+          quantity: 1,
+          availableStock: product.stock_quantity,
+        });
+      } else {
+        this.cartService.addItem({
+          productId: product._id,
+          productTitle: product.title,
+          productType: 'variable',
+          productImage,
+          basePrice,
+          variantSku: selectedVariant?.sku,
+          variantAttributes: this.selectedAttributes(),
+          variantAdditionalPrice: additionalPrice,
+          quantity: 1,
+          availableStock: selectedVariant?.stock_quantity ?? 0,
+        });
+      }
+
+      this.addCartMessage.set('Añadido al carrito');
+      setTimeout(() => this.addCartMessage.set(''), 1800);
+      // Wait for animation to finish (max 1s) before hiding spinner
+      animatePromise.finally(() => setTimeout(() => this.isAddingToCart.set(false), 120));
+    } finally {
+      // nothing here
     }
+  }
+
+  private flyToCart(imageSrc: string): Promise<void> {
+    return new Promise((resolve) => {
+      try {
+        const cartEl = document.getElementById('app-cart-link');
+        const srcImgEl = document.querySelector('.img-principal__image') as HTMLImageElement | null;
+
+        if (!cartEl || !srcImgEl) {
+          resolve();
+          return;
+        }
+
+        const srcRect = srcImgEl.getBoundingClientRect();
+        const destRect = cartEl.getBoundingClientRect();
+
+        const flyImg = document.createElement('img');
+        flyImg.src = imageSrc;
+        flyImg.style.position = 'fixed';
+        flyImg.style.left = `${srcRect.left}px`;
+        flyImg.style.top = `${srcRect.top}px`;
+        flyImg.style.width = `${srcRect.width}px`;
+        flyImg.style.height = `${srcRect.height}px`;
+        flyImg.style.transition = 'transform 650ms cubic-bezier(.2,.9,.2,1), opacity 600ms ease';
+        flyImg.style.zIndex = '9999';
+        flyImg.style.pointerEvents = 'none';
+        flyImg.style.borderRadius = '8px';
+        flyImg.style.boxShadow = '0 10px 30px rgba(2,6,23,0.18)';
+
+        document.body.appendChild(flyImg);
+
+        // Calculate transform
+        const translateX = destRect.left + destRect.width / 2 - (srcRect.left + srcRect.width / 2);
+        const translateY = destRect.top + destRect.height / 2 - (srcRect.top + srcRect.height / 2);
+        const scale = Math.max(0.18, Math.min(0.45, destRect.width / srcRect.width));
+
+        // Force reflow then apply transform
+        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+        flyImg.getBoundingClientRect();
+
+        requestAnimationFrame(() => {
+          flyImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+          flyImg.style.opacity = '0.0';
+        });
+
+        const cleanup = () => {
+          try {
+            document.body.removeChild(flyImg);
+          } catch (e) {}
+          resolve();
+        };
+
+        flyImg.addEventListener('transitionend', cleanup, { once: true });
+
+        // Safety timeout
+        setTimeout(cleanup, 1000);
+      } catch (e) {
+        resolve();
+      }
+    });
   }
 
   isCustomPersonalizedProduct(): boolean {

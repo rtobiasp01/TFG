@@ -122,11 +122,21 @@
       <button
         type="button"
         class="btn-cart"
-        [disabled]="isUploadingCustomization() || !stockAvailability()"
+        [disabled]="isUploadingCustomization() || !stockAvailability() || isAddingToCart()"
         (click)="addToCart()"
       >
-        Añadir carrito
+        @if (isAddingToCart()) {
+          <span class="btn-spinner" aria-hidden></span>
+          Añadiendo...
+        } @else {
+          Añadir carrito
+        }
       </button>
+
+      <!-- Toast feedback -->
+      @if (addCartMessage()) {
+        <div class="cart-toast" role="status">{{ addCartMessage() }}</div>
+      }
 
       @if (!stockAvailability()) {
         <p class="product-stock-status product-stock-status--empty">
