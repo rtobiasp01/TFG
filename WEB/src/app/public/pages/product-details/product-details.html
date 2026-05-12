@@ -119,6 +119,10 @@
           }
         </div>
       }
+      @if (addCartInlineMessage()) {
+        <div class="product-inline-message">{{ addCartInlineMessage() }}</div>
+      }
+
       <button
         type="button"
         class="btn-cart"

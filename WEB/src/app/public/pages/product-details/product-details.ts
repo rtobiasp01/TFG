@@ -64,6 +64,7 @@ export class ProductDetails {
   readonly isUploadingCustomization = signal<boolean>(false);
   readonly isAddingToCart = signal<boolean>(false);
   readonly addCartMessage = signal<string>('');
+  readonly addCartInlineMessage = signal<string>('');
 
   readonly imagenPrincipal = signal<string | undefined>('');
   readonly galeriaActual = signal<string[]>([]);
@@ -412,6 +413,25 @@ export class ProductDetails {
     // Provide visual feedback when adding to cart
     this.isAddingToCart.set(true);
 
+    // Check stock before attempting to add
+    const willExceedStock = this.willExceedStockForAdd({
+      productId: product._id,
+      productType: isSimple ? 'simple' : 'variable',
+      simpleSku: isSimple ? product.sku : undefined,
+      variantSku: !isSimple ? selectedVariant?.sku : undefined,
+      variantAttributes: !isSimple ? this.selectedAttributes() : undefined,
+      availableStock: isSimple ? product.stock_quantity : (selectedVariant?.stock_quantity ?? 0),
+      quantityToAdd: 1,
+    });
+
+    if (willExceedStock) {
+      this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
+      setTimeout(() => this.addCartInlineMessage.set(''), 3500);
+      // stop spinner
+      this.isAddingToCart.set(false);
+      return;
+    }
+
     // Trigger fly-to-cart animation (best-effort)
     const imageSrc = this.imagenPrincipal() || product.image || '';
     const animatePromise = this.flyToCart(imageSrc);
@@ -449,6 +469,53 @@ export class ProductDetails {
       animatePromise.finally(() => setTimeout(() => this.isAddingToCart.set(false), 120));
     } finally {
       // nothing here
+    }
+  }
+
+  private willExceedStockForAdd(opts: {
+    productId: string;
+    productType: 'simple' | 'variable' | 'custom-personalized';
+    simpleSku?: string;
+    variantSku?: string | undefined;
+    variantAttributes?: Record<string, string | number> | undefined;
+    availableStock: number | undefined;
+    quantityToAdd: number;
+  }): boolean {
+    try {
+      const cart = this.cartService.cart();
+      const normalize = (v: number | undefined) =>
+        Number.isFinite(Number(v)) ? Math.max(0, Number(v)) : 0;
+      const targetStock = normalize(opts.availableStock);
+
+      const matches = cart.items.find((item) => {
+        if (item.productId !== opts.productId) return false;
+        if (item.productType !== opts.productType) return false;
+
+        if (opts.productType === 'simple') {
+          return item.simpleSku === opts.simpleSku;
+        }
+
+        // variable or custom-personalized: match variantSku + attributes
+        if (opts.variantSku && item.variantSku !== opts.variantSku) return false;
+
+        const left = item.variantAttributes ?? {};
+        const right = opts.variantAttributes ?? {};
+
+        try {
+          return (
+            JSON.stringify(left, Object.keys(left).sort()) ===
+            JSON.stringify(right, Object.keys(right).sort())
+          );
+        } catch (e) {
+          return false;
+        }
+      });
+
+      const existingQty = matches ? matches.quantity : 0;
+
+      return existingQty + opts.quantityToAdd > targetStock;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -498,6 +565,21 @@ export class ProductDetails {
         const cleanup = () => {
           try {
             document.body.removeChild(flyImg);
+            // Trigger cart bounce on destination element
+            try {
+              if (cartEl) {
+                cartEl.classList.add('cart-bounce');
+                const removeBounce = () => {
+                  try {
+                    cartEl.classList.remove('cart-bounce');
+                  } catch (e) {}
+                };
+
+                cartEl.addEventListener('animationend', removeBounce, { once: true });
+                // Safety remove in case animationend doesn't fire
+                setTimeout(removeBounce, 800);
+              }
+            } catch (e) {}
           } catch (e) {}
           resolve();
         };
@@ -721,6 +803,20 @@ export class ProductDetails {
     const customization = this.buildCustomizationPayload(uploadedImageUrl);
 
     if (isSimple) {
+      const willExceed = this.willExceedStockForAdd({
+        productId: product._id,
+        productType: 'custom-personalized',
+        simpleSku: product.sku,
+        availableStock: product.stock_quantity,
+        quantityToAdd: 1,
+      });
+
+      if (willExceed) {
+        this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
+        setTimeout(() => this.addCartInlineMessage.set(''), 3500);
+        return;
+      }
+
       this.cartService.addItem({
         productId: product._id,
         productTitle: product.title,
@@ -732,6 +828,21 @@ export class ProductDetails {
         availableStock: product.stock_quantity,
         customization,
       });
+      return;
+    }
+
+    const willExceed = this.willExceedStockForAdd({
+      productId: product._id,
+      productType: 'custom-personalized',
+      variantSku: selectedVariant?.sku,
+      variantAttributes: this.selectedAttributes(),
+      availableStock: selectedVariant?.stock_quantity ?? 0,
+      quantityToAdd: 1,
+    });
+
+    if (willExceed) {
+      this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
+      setTimeout(() => this.addCartInlineMessage.set(''), 3500);
       return;
     }
 

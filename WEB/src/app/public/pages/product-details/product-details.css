@@ -404,6 +404,18 @@
 	animation: toastIn 0.28s ease-out, toastOut 0.28s ease-in 1.6s forwards;
 }
 
+/* Inline message shown above Add to cart button when stock insufficient */
+.product-inline-message {
+	margin-bottom: 0.5rem;
+	padding: 0.5rem 0.75rem;
+	background: #fff7ed;
+	border: 1px solid #f3d1b0;
+	color: #7a2f00;
+	border-radius: 8px;
+	font-weight: 700;
+	font-size: 0.95rem;
+}
+
 @keyframes toastIn {
 	from { opacity: 0; transform: translateY(-8px) scale(0.98); }
 	to { opacity: 1; transform: translateY(0) scale(1); }

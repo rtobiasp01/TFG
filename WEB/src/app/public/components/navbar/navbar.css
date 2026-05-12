@@ -363,3 +363,15 @@
         min-width: unset;
     }
 }
+
+/* Bounce animation applied to cart link when an item is added */
+.cart-bounce {
+    animation: cartBounce 560ms cubic-bezier(.2,.9,.2,1);
+}
+
+@keyframes cartBounce {
+    0% { transform: translateY(0) scale(1); }
+    30% { transform: translateY(-8px) scale(1.06); }
+    60% { transform: translateY(0) scale(0.98); }
+    100% { transform: translateY(0) scale(1); }
+}
