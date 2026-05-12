@@ -43,6 +43,23 @@ export class Orders {
     this.loadOrders();
   }
 
+  cancelOrder(order: Order) {
+    if (!order || !order._id) return;
+
+    const ok = window.confirm('¿Deseas cancelar este pedido? Esta acción no se puede deshacer.');
+    if (!ok) return;
+
+    this.orderService.cancelOrder(order._id).subscribe({
+      next: () => {
+        this.loadOrders();
+      },
+      error: (err) => {
+        console.error('Error cancelling order', err);
+        alert('No se pudo cancelar el pedido.');
+      },
+    });
+  }
+
   private loadOrders() {
     this.loadingOrders.set(true);
     this.orderService.getUserOrders().subscribe({
