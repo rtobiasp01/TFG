@@ -106,6 +106,12 @@
                   </div>
                 </div>
               </div>
+
+              @if (order.status === 'pendiente') {
+                <div class="order-actions">
+                  <button class="btn-danger" (click)="cancelOrder(order)">Cancelar pedido</button>
+                </div>
+              }
             </div>
           }
         </div>

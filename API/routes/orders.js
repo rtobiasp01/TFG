@@ -240,4 +240,40 @@ router.delete('/:orderId', authMiddleware, async (req, res) => {
   }
 });
 
+// Cancel order (user) - only if pending
+router.post('/:orderId/cancel', authMiddleware, async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    const userId = req.userId;
+
+    const cancelled = await orderService.cancelOrder(orderId, userId);
+
+    // Send notification email
+    try {
+      const user = await userService.findUserById(userId);
+      if (user && user.email) {
+        await emailService.sendOrderStatusEmail({
+          recipientEmail: user.email,
+          order: cancelled,
+          newStatus: 'cancelado',
+        });
+      }
+    } catch (emailErr) {
+      console.error('Error sending cancellation email:', emailErr);
+    }
+
+    res.json(cancelled);
+  } catch (error) {
+    if (error.message && error.message.includes('Unauthorized')) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+
+    if (error.message && error.message.includes('Only pending orders')) {
+      return res.status(400).json({ error: 'Order cannot be cancelled' });
+    }
+
+    res.status(500).json({ error: 'Error cancelling order: ' + error.message });
+  }
+});
+
 module.exports = router;

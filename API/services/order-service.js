@@ -1,6 +1,7 @@
 const connectDB = require('../db/mongo');
 const { ObjectId } = require('mongodb');
 const Order = require('../models/order');
+const productService = require('./product-service');
 
 class OrderService {
   async createOrder(userId, items, total, shippingAddress = {}, couponCode = null, discount = 0) {
@@ -80,6 +81,60 @@ class OrderService {
       return await this.getOrderById(orderId);
     } catch (error) {
       throw new Error(`Error updating order status: ${error.message}`);
+    }
+  }
+
+  async cancelOrder(orderId, userId) {
+    try {
+      const db = await connectDB();
+      const collection = db.collection('orders');
+
+      const order = await collection.findOne({ _id: new ObjectId(orderId) });
+
+      if (!order) {
+        throw new Error('Order not found');
+      }
+
+      // Verify ownership
+      if (order.user_id && order.user_id.toString() !== new ObjectId(userId).toString()) {
+        throw new Error('Unauthorized');
+      }
+
+      // Only allow cancel if currently pendiente
+      if (order.status !== 'pendiente') {
+        throw new Error('Only pending orders can be cancelled');
+      }
+
+      // Restore stock for each item
+      if (Array.isArray(order.items)) {
+        for (const item of order.items) {
+          try {
+            const productIdValue = item.product_id && typeof item.product_id.toString === 'function'
+              ? item.product_id.toString()
+              : item.product_id;
+
+            await productService.incrementOrderItemStock({
+              productId: productIdValue,
+              productSku: item.simpleSku || item.productSku,
+              variantSku: item.variantSku,
+              selection: item.selection || {},
+              quantity: item.quantity || 1,
+            });
+          } catch (err) {
+            console.error('Error restoring stock for cancelled order item:', err);
+          }
+        }
+      }
+
+      // Update order status to cancelado
+      await collection.updateOne(
+        { _id: new ObjectId(orderId) },
+        { $set: { status: 'cancelado', updatedAt: new Date() } }
+      );
+
+      return await this.getOrderById(orderId);
+    } catch (error) {
+      throw new Error(`Error cancelling order: ${error.message}`);
     }
   }
 
