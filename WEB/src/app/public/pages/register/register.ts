@@ -1,8 +1,25 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  AbstractControl,
+  FormBuilder,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+} from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth-service';
+
+function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
+  const password = control.get('password')?.value;
+  const confirmPassword = control.get('confirmPassword')?.value;
+
+  if (!password || !confirmPassword) {
+    return null;
+  }
+
+  return password === confirmPassword ? null : { passwordsMismatch: true };
+}
 
 @Component({
   selector: 'app-register',
@@ -20,10 +37,14 @@ export class Register {
   readonly errorMessage = signal('');
   readonly successMessage = signal('');
 
-  readonly form = this.formBuilder.nonNullable.group({
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(4)]],
-  });
+  readonly form = this.formBuilder.nonNullable.group(
+    {
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(4)]],
+      confirmPassword: ['', [Validators.required]],
+    },
+    { validators: passwordsMatchValidator },
+  );
 
   onSubmit(): void {
     this.errorMessage.set('');
@@ -31,10 +52,21 @@ export class Register {
 
     if (this.form.invalid) {
       this.form.markAllAsTouched();
+
+      if (this.form.errors?.['passwordsMismatch']) {
+        this.errorMessage.set('Las contraseñas no coinciden.');
+      }
+
       return;
     }
 
-    const { email, password } = this.form.getRawValue();
+    const { email, password, confirmPassword } = this.form.getRawValue();
+
+    if (password !== confirmPassword) {
+      this.form.controls.confirmPassword.setErrors({ passwordsMismatch: true });
+      this.form.markAllAsTouched();
+      return;
+    }
 
     this.isSubmitting.set(true);
 

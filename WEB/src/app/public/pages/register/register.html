@@ -3,17 +3,39 @@
     <h1>Registro</h1>
     <p class="auth-subtitle">Crea tu cuenta para comprar en la tienda.</p>
 
-    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate>
+    <form [formGroup]="form" (ngSubmit)="onSubmit()" novalidate autocomplete="off">
       <label for="register-email">Email</label>
-      <input id="register-email" type="email" formControlName="email" />
+      <input id="register-email" type="email" formControlName="email" autocomplete="off" />
       @if (form.controls.email.touched && form.controls.email.invalid) {
         <p class="auth-error">Introduce un email valido.</p>
       }
 
-      <label for="register-password">Contrasena</label>
-      <input id="register-password" type="password" formControlName="password" />
+      <label for="register-password">Contraseña</label>
+      <input
+        id="register-password"
+        type="password"
+        formControlName="password"
+        autocomplete="new-password"
+      />
       @if (form.controls.password.touched && form.controls.password.invalid) {
-        <p class="auth-error">La contrasena debe tener al menos 4 caracteres.</p>
+        <p class="auth-error">La Contraseña debe tener al menos 4 caracteres.</p>
+      }
+
+      <label for="register-confirm-password">Confirmar contraseña</label>
+      <input
+        id="register-confirm-password"
+        type="password"
+        formControlName="confirmPassword"
+        autocomplete="new-password"
+      />
+      @if (form.controls.confirmPassword.touched && form.controls.confirmPassword.invalid) {
+        <p class="auth-error">
+          @if (form.controls.confirmPassword.errors?.['required']) {
+            Confirma tu contraseña.
+          } @else if (form.errors?.['passwordsMismatch']) {
+            Las contraseñas no coinciden.
+          }
+        </p>
       }
 
       @if (errorMessage()) {
