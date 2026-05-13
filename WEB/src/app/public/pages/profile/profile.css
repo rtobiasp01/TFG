@@ -1,0 +1,153 @@
+.profile-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.profile-page__header {
+  margin-bottom: 1.5rem;
+}
+
+.profile-page__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.profile-page__header h1 {
+  margin: 0.2rem 0 0.5rem;
+  font-size: clamp(1.6rem, 2.8vw, 2.2rem);
+  color: #1f2937;
+}
+
+.profile-page__subtitle {
+  margin: 0;
+  color: #4b5563;
+}
+
+.profile-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 1.25rem;
+  display: grid;
+  gap: 1rem;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+}
+
+.profile-section {
+  border: 1px solid #f1f5f9;
+  border-radius: 0.75rem;
+  background: #f8fafc;
+  padding: 1rem;
+}
+
+.profile-section h2 {
+  margin: 0 0 0.8rem;
+  font-size: 1.05rem;
+  color: #1f2937;
+}
+
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 0.8rem;
+}
+
+.profile-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.profile-field--wide {
+  grid-column: 1 / -1;
+}
+
+.profile-field span {
+  font-size: 0.9rem;
+  color: #334155;
+  font-weight: 600;
+}
+
+.profile-field input {
+  width: 100%;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  padding: 0.6rem 0.7rem;
+  font-size: 0.95rem;
+  background: #ffffff;
+}
+
+.profile-field input:focus {
+  outline: none;
+  border-color: #b45309;
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.15);
+}
+
+.profile-field small {
+  color: #b91c1c;
+  font-size: 0.78rem;
+}
+
+.profile-message {
+  margin: 0;
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.8rem;
+  font-size: 0.9rem;
+}
+
+.profile-message--error {
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.profile-message--success {
+  color: #166534;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+}
+
+.profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.profile-save {
+  border: 0;
+  border-radius: 999px;
+  background: #b45309;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.65rem 1.1rem;
+}
+
+.profile-save:hover:not(:disabled) {
+  background: #92400e;
+}
+
+.profile-save:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.profile-state {
+  margin: 0;
+  padding: 1rem;
+  border-radius: 0.8rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+.profile-state--error {
+  background: #fef2f2;
+  border-color: #fecaca;
+  color: #b91c1c;
+}

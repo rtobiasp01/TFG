@@ -19,6 +19,7 @@ import { Checkout } from './public/pages/checkout/checkout';
 import { Orders } from './public/pages/orders/orders';
 import { Login } from './public/pages/login/login';
 import { Register } from './public/pages/register/register';
+import { Profile } from './public/pages/profile/profile';
 import { adminGuard, authGuard, publicOnlyGuard } from './guards/auth-guards';
 
 export const routes: Routes = [
@@ -97,6 +98,11 @@ export const routes: Routes = [
       {
         path: 'pedidos',
         component: Orders,
+      },
+      {
+        path: 'mi-perfil',
+        component: Profile,
+        canActivate: [authGuard],
       },
       {
         path: 'cart',

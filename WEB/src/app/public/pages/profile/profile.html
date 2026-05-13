@@ -1,0 +1,115 @@
+<section class="profile-page">
+  <header class="profile-page__header">
+    <p class="profile-page__eyebrow">Mi cuenta</p>
+    <h1>Mi perfil</h1>
+    <p class="profile-page__subtitle">
+      Edita tus datos personales y direccion de envio para autocompletar futuros pedidos.
+    </p>
+  </header>
+
+  @if (loadingProfile()) {
+    <p class="profile-state">Cargando datos de perfil...</p>
+  } @else if (loadError()) {
+    <p class="profile-state profile-state--error">{{ loadError() }}</p>
+  } @else {
+    <form class="profile-card" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate>
+      <div class="profile-section" formGroupName="personalData">
+        <h2>Datos personales</h2>
+
+        <div class="profile-grid">
+          <label class="profile-field">
+            <span>Nombre</span>
+            <input type="text" formControlName="firstName" autocomplete="given-name" />
+            @if (controlHasError('personalData.firstName')) {
+              <small>{{ controlErrorMessage('personalData.firstName') }}</small>
+            }
+          </label>
+
+          <label class="profile-field">
+            <span>Apellidos</span>
+            <input type="text" formControlName="lastName" autocomplete="family-name" />
+            @if (controlHasError('personalData.lastName')) {
+              <small>{{ controlErrorMessage('personalData.lastName') }}</small>
+            }
+          </label>
+
+          <label class="profile-field">
+            <span>Correo electronico</span>
+            <input type="email" formControlName="email" autocomplete="email" />
+            @if (controlHasError('personalData.email')) {
+              <small>{{ controlErrorMessage('personalData.email') }}</small>
+            }
+          </label>
+
+          <label class="profile-field">
+            <span>Telefono</span>
+            <input type="tel" formControlName="phone" autocomplete="tel" />
+            @if (controlHasError('personalData.phone')) {
+              <small>{{ controlErrorMessage('personalData.phone') }}</small>
+            }
+          </label>
+
+          <label class="profile-field profile-field--wide">
+            <span>DNI/NIE</span>
+            <input type="text" formControlName="documentId" autocomplete="off" />
+            @if (controlHasError('personalData.documentId')) {
+              <small>{{ controlErrorMessage('personalData.documentId') }}</small>
+            }
+          </label>
+        </div>
+      </div>
+
+      <div class="profile-section" formGroupName="shippingAddress">
+        <h2>Direccion de envio</h2>
+
+        <div class="profile-grid">
+          <label class="profile-field profile-field--wide">
+            <span>Calle y numero</span>
+            <input type="text" formControlName="street" autocomplete="shipping street-address" />
+            @if (controlHasError('shippingAddress.street')) {
+              <small>{{ controlErrorMessage('shippingAddress.street') }}</small>
+            }
+          </label>
+
+          <label class="profile-field">
+            <span>Ciudad</span>
+            <input type="text" formControlName="city" autocomplete="shipping address-level2" />
+            @if (controlHasError('shippingAddress.city')) {
+              <small>{{ controlErrorMessage('shippingAddress.city') }}</small>
+            }
+          </label>
+
+          <label class="profile-field">
+            <span>Codigo postal</span>
+            <input type="text" formControlName="zipCode" autocomplete="shipping postal-code" />
+            @if (controlHasError('shippingAddress.zipCode')) {
+              <small>{{ controlErrorMessage('shippingAddress.zipCode') }}</small>
+            }
+          </label>
+
+          <label class="profile-field profile-field--wide">
+            <span>Pais</span>
+            <input type="text" formControlName="country" autocomplete="shipping country-name" />
+            @if (controlHasError('shippingAddress.country')) {
+              <small>{{ controlErrorMessage('shippingAddress.country') }}</small>
+            }
+          </label>
+        </div>
+      </div>
+
+      @if (submitError()) {
+        <p class="profile-message profile-message--error">{{ submitError() }}</p>
+      }
+
+      @if (submitSuccess()) {
+        <p class="profile-message profile-message--success">{{ submitSuccess() }}</p>
+      }
+
+      <div class="profile-actions">
+        <button type="submit" class="profile-save" [disabled]="savingProfile()">
+          {{ savingProfile() ? 'Guardando...' : 'Guardar perfil' }}
+        </button>
+      </div>
+    </form>
+  }
+</section>
