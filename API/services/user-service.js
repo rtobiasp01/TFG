@@ -102,6 +102,22 @@ async function updateUserProfileData(userId, updates = {}) {
   }
 }
 
+async function deleteUserById(userId) {
+  try {
+    if (!ObjectId.isValid(userId)) {
+      throw new Error("Invalid user id");
+    }
+
+    const db = await connectDB();
+    const result = await db.collection("users").deleteOne({ _id: new ObjectId(userId) });
+
+    return result.deletedCount > 0;
+  } catch (error) {
+    console.error(`Error al eliminar usuario: ${userId}`, error);
+    throw new Error("No se pudo eliminar el usuario.");
+  }
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -109,4 +125,5 @@ module.exports = {
   setUserAdminByEmail,
   getAllUsers,
   updateUserProfileData,
+  deleteUserById,
 };

@@ -180,4 +180,18 @@ router.put("/me", middlewareAuth, async (req, res) => {
   }
 });
 
+router.delete("/me", middlewareAuth, async (req, res) => {
+  try {
+    const deleted = await userService.deleteUserById(req.userId);
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json({ message: "Cuenta eliminada correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al eliminar la cuenta" });
+  }
+});
+
 module.exports = router;

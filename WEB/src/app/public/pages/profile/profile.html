@@ -106,8 +106,20 @@
       }
 
       <div class="profile-actions">
-        <button type="submit" class="profile-save" [disabled]="savingProfile()">
+        <button
+          type="submit"
+          class="profile-save"
+          [disabled]="savingProfile() || deletingAccount()"
+        >
           {{ savingProfile() ? 'Guardando...' : 'Guardar perfil' }}
+        </button>
+        <button
+          type="button"
+          class="profile-delete"
+          [disabled]="deletingAccount() || savingProfile()"
+          (click)="deleteAccount()"
+        >
+          {{ deletingAccount() ? 'Borrando cuenta...' : 'Borrar cuenta' }}
         </button>
       </div>
     </form>

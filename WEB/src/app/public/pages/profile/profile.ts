@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { AbstractControl, FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth-service';
 
 @Component({
@@ -13,9 +14,11 @@ import { AuthService } from '../../../services/auth-service';
 export class Profile implements OnInit {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
 
   readonly loadingProfile = signal(true);
   readonly savingProfile = signal(false);
+  readonly deletingAccount = signal(false);
   readonly loadError = signal('');
   readonly submitError = signal('');
   readonly submitSuccess = signal('');
@@ -137,6 +140,36 @@ export class Profile implements OnInit {
       error: () => {
         this.savingProfile.set(false);
         this.submitError.set('No se pudo guardar el perfil. Intentalo de nuevo.');
+      },
+    });
+  }
+
+  deleteAccount(): void {
+    this.submitError.set('');
+    this.submitSuccess.set('');
+
+    if (this.deletingAccount() || this.savingProfile()) {
+      return;
+    }
+
+    const confirmed = window.confirm(
+      '¿Seguro que quieres borrar tu cuenta? Esta accion no se puede deshacer.',
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    this.deletingAccount.set(true);
+
+    this.authService.deleteMyAccount().subscribe({
+      next: () => {
+        this.deletingAccount.set(false);
+        this.router.navigate(['/inicio']);
+      },
+      error: () => {
+        this.deletingAccount.set(false);
+        this.submitError.set('No se pudo borrar la cuenta. Intentalo de nuevo.');
       },
     });
   }

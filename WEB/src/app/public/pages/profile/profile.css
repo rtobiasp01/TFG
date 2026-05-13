@@ -137,6 +137,25 @@
   cursor: not-allowed;
 }
 
+.profile-delete {
+  border: 1px solid #ef4444;
+  border-radius: 999px;
+  background: #fff;
+  color: #b91c1c;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.62rem 1.05rem;
+}
+
+.profile-delete:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.profile-delete:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .profile-state {
   margin: 0;
   padding: 1rem;

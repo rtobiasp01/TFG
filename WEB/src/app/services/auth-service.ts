@@ -38,6 +38,10 @@ interface UpdateProfileResponse {
   user: AuthUser;
 }
 
+interface DeleteAccountResponse {
+  message: string;
+}
+
 interface JwtPayload {
   userId?: string;
   email?: string;
@@ -92,6 +96,14 @@ export class AuthService {
       tap((response) => {
         this.currentUser.set(response.user);
         this.persistUser(response.user);
+      }),
+    );
+  }
+
+  deleteMyAccount(): Observable<DeleteAccountResponse> {
+    return this.http.delete<DeleteAccountResponse>(`${API_BASE_URL}/me`).pipe(
+      tap(() => {
+        this.clearSession();
       }),
     );
   }
