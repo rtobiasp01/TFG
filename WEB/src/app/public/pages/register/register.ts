@@ -7,7 +7,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../../services/auth-service';
 
 function passwordsMatchValidator(control: AbstractControl): ValidationErrors | null {
@@ -31,7 +31,6 @@ function passwordsMatchValidator(control: AbstractControl): ValidationErrors | n
 export class Register {
   private readonly formBuilder = inject(FormBuilder);
   private readonly authService = inject(AuthService);
-  private readonly router = inject(Router);
 
   readonly isSubmitting = signal(false);
   readonly errorMessage = signal('');
@@ -73,9 +72,8 @@ export class Register {
     this.authService.register(email, password).subscribe({
       next: () => {
         this.isSubmitting.set(false);
-        this.successMessage.set('Cuenta creada correctamente. Ya puedes iniciar sesion.');
+        this.successMessage.set('Cuenta creada correctamente.');
         this.form.reset();
-        this.router.navigate(['/login']);
       },
       error: (error) => {
         this.isSubmitting.set(false);

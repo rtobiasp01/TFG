@@ -3,6 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const middlewareAuth = require("../middlewares/authMiddleware");
 const userService = require("../services/user-service");
+const emailService = require("../services/email-service");
 
 const router = express.Router();
 
@@ -29,6 +30,15 @@ router.post("/register", async (req, res) => {
       password: hash,
       isAdmin: wantsAdmin,
     });
+
+    try {
+      await emailService.sendWelcomeEmail({
+        recipientEmail: email,
+        userName: email.split('@')[0],
+      });
+    } catch (emailError) {
+      console.error('Error sending welcome email:', emailError);
+    }
 
     res.status(201).json({ message: "Usuario creado" });
   } catch (err) {

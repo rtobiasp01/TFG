@@ -43,7 +43,10 @@
       }
 
       @if (successMessage()) {
-        <p class="auth-success">{{ successMessage() }}</p>
+        <div class="auth-success">
+          <p>{{ successMessage() }}</p>
+          <a routerLink="/login" class="auth-success-link">Inicia sesión</a>
+        </div>
       }
 
       <button type="submit" [disabled]="isSubmitting()">

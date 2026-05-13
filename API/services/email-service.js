@@ -11,6 +11,69 @@ const transporter = nodemailer.createTransport({
 
 class EmailService {
   /**
+   * Enviar email de bienvenida a un nuevo usuario.
+   * @param {Object} options - Opciones del email
+   * @param {string} options.recipientEmail - Email del destinatario
+   * @param {string} [options.userName] - Nombre visible del usuario (opcional)
+   */
+  async sendWelcomeEmail(options) {
+    try {
+      const { recipientEmail, userName } = options;
+
+      const htmlContent = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; background: #f9fafb; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: linear-gradient(135deg, #78350f 0%, #92400e 55%, #b45309 100%); color: white; padding: 30px; border-radius: 12px; text-align: center; }
+              .header h1 { margin: 0; font-size: 28px; }
+              .content { padding: 24px; background-color: #ffffff; border-radius: 12px; margin-top: 16px; box-shadow: 0 10px 28px rgba(15, 23, 42, 0.08); }
+              .cta { display: inline-block; margin-top: 18px; padding: 12px 18px; background: #b45309; color: white; text-decoration: none; border-radius: 10px; font-weight: bold; }
+              .footer { text-align: center; padding: 18px; color: #666; font-size: 12px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>¡Bienvenido a la tienda!</h1>
+              </div>
+
+              <div class="content">
+                <p>Hola${userName ? ` ${userName}` : ''},</p>
+                <p>Tu cuenta se ha creado correctamente. Ya puedes empezar a explorar el catálogo, guardar tus favoritos y realizar pedidos.</p>
+                <p style="margin: 0;">Si quieres acceder a tu cuenta, entra en el siguiente enlace:</p>
+                <a class="cta" href="${process.env.SITE_URL || 'http://localhost:4200'}/login">Iniciar sesión</a>
+              </div>
+
+              <div class="footer">
+                <p>Este es un email automático. Por favor no respondas a este correo.</p>
+                <p>&copy; ${new Date().getFullYear()} ${process.env.SITE_NAME || 'Mi Tienda'}. Todos los derechos reservados.</p>
+              </div>
+            </div>
+          </body>
+        </html>
+      `;
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: recipientEmail,
+        subject: '¡Bienvenido a la tienda!',
+        html: htmlContent,
+      };
+
+      await transporter.sendMail(mailOptions);
+      return { success: true, message: 'Welcome email sent successfully' };
+    } catch (error) {
+      console.error('Error sending welcome email:', error);
+      throw new Error(`Error sending welcome email: ${error.message}`);
+    }
+  }
+
+  /**
    * Enviar email de notificación de cambio de estado de orden
    * @param {Object} options - Opciones del email
    * @param {string} options.recipientEmail - Email del destinatario
