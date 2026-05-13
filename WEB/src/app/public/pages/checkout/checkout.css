@@ -509,6 +509,130 @@
   background: #92400e;
 }
 
+.checkout-success-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.checkout-success-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.58);
+  backdrop-filter: blur(3px);
+}
+
+.checkout-success-modal__card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 520px);
+  padding: 1.5rem;
+  border-radius: 1.25rem;
+  background: #ffffff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.28);
+  border: 1px solid #dbe4ef;
+}
+
+.checkout-success-modal__close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #0f172a;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.checkout-success-modal__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #166534;
+}
+
+.checkout-success-modal__card h2 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.55rem;
+}
+
+.checkout-success-modal__message {
+  margin: 0.8rem 0 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.checkout-success-modal__actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.35rem;
+  flex-wrap: wrap;
+}
+
+.checkout-success-modal__primary,
+.checkout-success-modal__secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.9rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.8rem;
+  border: 1px solid transparent;
+  font-size: 0.98rem;
+  font-weight: 700;
+  text-decoration: none;
+  transition: transform 0.15s ease, background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.checkout-success-modal__primary {
+  background: #b45309;
+  color: #ffffff;
+}
+
+.checkout-success-modal__secondary {
+  background: #ffffff;
+  border-color: #cbd5e1;
+  color: #334155;
+}
+
+.checkout-success-modal__primary:hover,
+.checkout-success-modal__secondary:hover {
+  transform: translateY(-1px);
+}
+
+.checkout-success-modal__primary:hover {
+  background: #92400e;
+}
+
+.checkout-success-modal__secondary:hover {
+  background: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .checkout-success-modal__card {
+    padding: 1.2rem;
+  }
+
+  .checkout-success-modal__actions {
+    flex-direction: column;
+  }
+
+  .checkout-success-modal__primary,
+  .checkout-success-modal__secondary {
+    width: 100%;
+  }
+}
+
 @media (max-width: 920px) {
   .checkout-layout {
     grid-template-columns: 1fr;

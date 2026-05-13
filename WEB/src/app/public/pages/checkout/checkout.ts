@@ -49,6 +49,7 @@ export class Checkout {
 
   readonly processingCheckout = signal(false);
   readonly submitError = signal('');
+  readonly showSuccessModal = signal(false);
 
   // Coupon related
   readonly couponCode = signal<string>('');
@@ -310,8 +311,7 @@ export class Checkout {
 
         this.cartService.clearCart();
         this.processingCheckout.set(false);
-        alert('Pedido realizado con exito');
-        this.router.navigate(['/pedidos']);
+        this.showSuccessModal.set(true);
       },
       error: (error) => {
         console.error('Checkout error:', error);
@@ -319,5 +319,9 @@ export class Checkout {
         this.submitError.set('No se pudo completar el pedido. Intentalo de nuevo.');
       },
     });
+  }
+
+  closeSuccessModal(): void {
+    this.showSuccessModal.set(false);
   }
 }

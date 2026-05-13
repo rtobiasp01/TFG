@@ -310,4 +310,44 @@
       <a routerLink="/inicio" class="checkout-empty-state__button">Ir a productos</a>
     </div>
   }
+
+  @if (showSuccessModal()) {
+    <div
+      class="checkout-success-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="checkout-success-title"
+    >
+      <div class="checkout-success-modal__backdrop" (click)="closeSuccessModal()"></div>
+
+      <div class="checkout-success-modal__card">
+        <button
+          type="button"
+          class="checkout-success-modal__close"
+          aria-label="Cerrar mensaje de éxito"
+          (click)="closeSuccessModal()"
+        >
+          ×
+        </button>
+
+        <p class="checkout-success-modal__eyebrow">Pedido completado</p>
+        <h2 id="checkout-success-title">Tu pedido se ha realizado correctamente</h2>
+        <p class="checkout-success-modal__message">
+          Hemos recibido tu pedido y ya lo estamos procesando. Puedes revisar su estado en tus
+          pedidos o seguir comprando cuando quieras.
+        </p>
+
+        <div class="checkout-success-modal__actions">
+          <a routerLink="/pedidos" class="checkout-success-modal__primary">Ir a mis pedidos</a>
+          <a
+            routerLink="/inicio"
+            class="checkout-success-modal__secondary"
+            (click)="closeSuccessModal()"
+          >
+            Seguir comprando
+          </a>
+        </div>
+      </div>
+    </div>
+  }
 </section>
