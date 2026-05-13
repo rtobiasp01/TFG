@@ -78,6 +78,16 @@
                 }
               </label>
             </div>
+
+            <label class="checkout-save-option">
+              <input
+                type="checkbox"
+                [ngModel]="savePersonalDataForFuture()"
+                (ngModelChange)="savePersonalDataForFuture.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <span>Guardar mis datos personales para futuras compras</span>
+            </label>
           </section>
 
           <section class="checkout-form__section" formGroupName="shippingAddress">
@@ -134,6 +144,16 @@
                 }
               </label>
             </div>
+
+            <label class="checkout-save-option">
+              <input
+                type="checkbox"
+                [ngModel]="saveShippingAddressForFuture()"
+                (ngModelChange)="saveShippingAddressForFuture.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <span>Guardar mi dirección de envío para futuras compras</span>
+            </label>
           </section>
 
           <section class="checkout-form__section">

@@ -17,6 +17,27 @@ interface AuthProfileResponse {
   user: AuthUser;
 }
 
+interface UpdateProfilePayload {
+  personalData?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    documentId?: string;
+  };
+  shippingAddress?: {
+    street?: string;
+    city?: string;
+    zipCode?: string;
+    country?: string;
+  };
+}
+
+interface UpdateProfileResponse {
+  message: string;
+  user: AuthUser;
+}
+
 interface JwtPayload {
   userId?: string;
   email?: string;
@@ -59,6 +80,15 @@ export class AuthService {
 
   fetchMe(): Observable<AuthProfileResponse> {
     return this.http.get<AuthProfileResponse>(`${API_BASE_URL}/me`).pipe(
+      tap((response) => {
+        this.currentUser.set(response.user);
+        this.persistUser(response.user);
+      }),
+    );
+  }
+
+  updateProfileData(payload: UpdateProfilePayload): Observable<UpdateProfileResponse> {
+    return this.http.put<UpdateProfileResponse>(`${API_BASE_URL}/me`, payload).pipe(
       tap((response) => {
         this.currentUser.set(response.user);
         this.persistUser(response.user);

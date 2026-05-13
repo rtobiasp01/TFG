@@ -414,6 +414,21 @@
   line-height: 1.35;
 }
 
+.checkout-save-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 0.25rem;
+  color: #334155;
+  font-size: 0.9rem;
+}
+
+.checkout-save-option input[type='checkbox'] {
+  width: 1rem;
+  height: 1rem;
+  accent-color: #b45309;
+}
+
 .payment-form__hint {
   padding: 0.85rem 0.95rem;
   border-radius: 0.85rem;

@@ -63,10 +63,50 @@ async function getAllUsers() {
   }
 }
 
+async function updateUserProfileData(userId, updates = {}) {
+  try {
+    if (!ObjectId.isValid(userId)) {
+      throw new Error("Invalid user id");
+    }
+
+    const db = await connectDB();
+    const setPayload = {};
+
+    if (updates.personalData && typeof updates.personalData === "object") {
+      Object.entries(updates.personalData).forEach(([key, value]) => {
+        setPayload[`personalData.${key}`] = value;
+      });
+    }
+
+    if (updates.shippingAddress && typeof updates.shippingAddress === "object") {
+      Object.entries(updates.shippingAddress).forEach(([key, value]) => {
+        setPayload[`shippingAddress.${key}`] = value;
+      });
+    }
+
+    if (Object.keys(setPayload).length === 0) {
+      return await db.collection("users").findOne({ _id: new ObjectId(userId) });
+    }
+
+    await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $set: setPayload,
+      },
+    );
+
+    return await db.collection("users").findOne({ _id: new ObjectId(userId) });
+  } catch (error) {
+    console.error(`Error al actualizar datos del usuario: ${userId}`, error);
+    throw new Error("No se pudieron actualizar los datos del usuario.");
+  }
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
   createUser,
   setUserAdminByEmail,
   getAllUsers,
+  updateUserProfileData,
 };

@@ -4,13 +4,33 @@ const jwt = require("jsonwebtoken");
 const middlewareAuth = require("../middlewares/authMiddleware");
 const userService = require("../services/user-service");
 const emailService = require("../services/email-service");
+const User = require("../models/user");
 
 const router = express.Router();
+
+function normalizePersonalData(personalData = {}) {
+  return {
+    firstName: String(personalData.firstName || '').trim(),
+    lastName: String(personalData.lastName || '').trim(),
+    email: String(personalData.email || '').trim().toLowerCase(),
+    phone: String(personalData.phone || '').trim(),
+    documentId: String(personalData.documentId || '').trim().toUpperCase(),
+  };
+}
+
+function normalizeShippingAddress(shippingAddress = {}) {
+  return {
+    street: String(shippingAddress.street || '').trim(),
+    city: String(shippingAddress.city || '').trim(),
+    zipCode: String(shippingAddress.zipCode || '').trim(),
+    country: String(shippingAddress.country || '').trim(),
+  };
+}
 
 // POST /api/auth/register
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, isAdmin } = req.body;
+    const { email, password, isAdmin, personalData, shippingAddress } = req.body;
     const wantsAdmin = Boolean(isAdmin);
 
     const existingUser = await userService.findUserByEmail(email);
@@ -25,11 +45,9 @@ router.post("/register", async (req, res) => {
 
     const hash = await bcrypt.hash(password, 10);
 
-    await userService.createUser({
-      email,
-      password: hash,
-      isAdmin: wantsAdmin,
-    });
+    const userDocument = new User(hash, email, wantsAdmin, personalData, shippingAddress);
+
+    await userService.createUser(userDocument);
 
     try {
       await emailService.sendWelcomeEmail({
@@ -76,6 +94,8 @@ router.post("/login", async (req, res) => {
         _id: user._id,
         email: user.email,
         isAdmin,
+        personalData: user.personalData || {},
+        shippingAddress: user.shippingAddress || {},
       },
     });
   } catch (err) {
@@ -96,6 +116,8 @@ router.get("/profile", middlewareAuth, async (req, res) => {
         _id: user._id,
         email: user.email,
         isAdmin: Boolean(user.isAdmin),
+        personalData: user.personalData || {},
+        shippingAddress: user.shippingAddress || {},
       },
     });
   } catch (err) {
@@ -116,10 +138,45 @@ router.get("/me", middlewareAuth, async (req, res) => {
         _id: user._id,
         email: user.email,
         isAdmin: Boolean(user.isAdmin),
+        personalData: user.personalData || {},
+        shippingAddress: user.shippingAddress || {},
       },
     });
   } catch (err) {
     res.status(500).json({ error: "Error al obtener usuario autenticado" });
+  }
+});
+
+router.put("/me", middlewareAuth, async (req, res) => {
+  try {
+    const payload = {};
+
+    if (req.body.personalData && typeof req.body.personalData === 'object') {
+      payload.personalData = normalizePersonalData(req.body.personalData);
+    }
+
+    if (req.body.shippingAddress && typeof req.body.shippingAddress === 'object') {
+      payload.shippingAddress = normalizeShippingAddress(req.body.shippingAddress);
+    }
+
+    const updatedUser = await userService.updateUserProfileData(req.userId, payload);
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+
+    res.json({
+      message: "Datos de usuario actualizados",
+      user: {
+        _id: updatedUser._id,
+        email: updatedUser.email,
+        isAdmin: Boolean(updatedUser.isAdmin),
+        personalData: updatedUser.personalData || {},
+        shippingAddress: updatedUser.shippingAddress || {},
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Error al actualizar datos del usuario" });
   }
 });
 

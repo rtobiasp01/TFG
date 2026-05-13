@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
@@ -11,6 +11,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CartItem, CartService } from '../../../services/cart-service';
 import { OrderService } from '../../../services/order-service';
 import { CouponService, Coupon } from '../../../services/coupon-service';
+import { AuthService } from '../../../services/auth-service';
 
 const CARDHOLDER_NAME_REGEX = /^[A-Za-zÀ-ÿ' -]{2,60}$/;
 
@@ -45,11 +46,14 @@ export class Checkout {
   private readonly cartService = inject(CartService);
   private readonly orderService = inject(OrderService);
   private readonly couponService = inject(CouponService);
+  private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
   readonly processingCheckout = signal(false);
   readonly submitError = signal('');
   readonly showSuccessModal = signal(false);
+  readonly savePersonalDataForFuture = signal(false);
+  readonly saveShippingAddressForFuture = signal(false);
 
   // Coupon related
   readonly couponCode = signal<string>('');
@@ -83,10 +87,10 @@ export class Checkout {
       ],
     }),
     shippingAddress: this.formBuilder.nonNullable.group({
-      street: ['Calle Mayor 123', [Validators.required, Validators.minLength(5)]],
-      city: ['Madrid', [Validators.required, Validators.minLength(2)]],
-      zipCode: ['28013', [Validators.required, Validators.pattern(/^\d{5}$/)]],
-      country: ['España', [Validators.required, Validators.minLength(2)]],
+      street: ['', [Validators.required, Validators.minLength(5)]],
+      city: ['', [Validators.required, Validators.minLength(2)]],
+      zipCode: ['', [Validators.required, Validators.pattern(/^\d{5}$/)]],
+      country: ['', [Validators.required, Validators.minLength(2)]],
     }),
     cardHolder: [
       'Ruben Prueba',
@@ -247,6 +251,26 @@ export class Checkout {
     return this.checkoutForm.get(path);
   }
 
+  ngOnInit(): void {
+    this.authService.fetchMe().subscribe({
+      next: (response) => {
+        this.prefillCheckoutData(
+          response.user?.personalData || {},
+          response.user?.shippingAddress || {},
+        );
+      },
+      error: () => {
+        const currentUser = this.authService.currentUser();
+        if (currentUser) {
+          this.prefillCheckoutData(
+            currentUser.personalData || {},
+            currentUser.shippingAddress || {},
+          );
+        }
+      },
+    });
+  }
+
   applyCoupon(): void {
     const code = this.couponCode().trim();
 
@@ -311,6 +335,28 @@ export class Checkout {
 
         this.cartService.clearCart();
         this.processingCheckout.set(false);
+
+        if (this.savePersonalDataForFuture() || this.saveShippingAddressForFuture()) {
+          const updatePayload: {
+            personalData?: typeof personalData;
+            shippingAddress?: typeof shippingAddress;
+          } = {};
+
+          if (this.savePersonalDataForFuture()) {
+            updatePayload.personalData = personalData;
+          }
+
+          if (this.saveShippingAddressForFuture()) {
+            updatePayload.shippingAddress = shippingAddress;
+          }
+
+          this.authService.updateProfileData(updatePayload).subscribe({
+            error: (profileUpdateError) => {
+              console.error('Error saving checkout data to user profile:', profileUpdateError);
+            },
+          });
+        }
+
         this.showSuccessModal.set(true);
       },
       error: (error) => {
@@ -323,5 +369,43 @@ export class Checkout {
 
   closeSuccessModal(): void {
     this.showSuccessModal.set(false);
+  }
+
+  private prefillCheckoutData(
+    personalData: {
+      firstName?: string;
+      lastName?: string;
+      email?: string;
+      phone?: string;
+      documentId?: string;
+    },
+    shippingAddress: {
+      street?: string;
+      city?: string;
+      zipCode?: string;
+      country?: string;
+    },
+  ): void {
+    const personalForm = this.checkoutForm.controls.personalData;
+    const shippingForm = this.checkoutForm.controls.shippingAddress;
+
+    if (personalData && Object.keys(personalData).length > 0) {
+      personalForm.patchValue({
+        firstName: personalData.firstName || personalForm.controls.firstName.value,
+        lastName: personalData.lastName || personalForm.controls.lastName.value,
+        email: personalData.email || personalForm.controls.email.value,
+        phone: personalData.phone || personalForm.controls.phone.value,
+        documentId: personalData.documentId || personalForm.controls.documentId.value,
+      });
+    }
+
+    if (shippingAddress && Object.keys(shippingAddress).length > 0) {
+      shippingForm.patchValue({
+        street: shippingAddress.street || shippingForm.controls.street.value,
+        city: shippingAddress.city || shippingForm.controls.city.value,
+        zipCode: shippingAddress.zipCode || shippingForm.controls.zipCode.value,
+        country: shippingAddress.country || shippingForm.controls.country.value,
+      });
+    }
   }
 }
