@@ -74,6 +74,18 @@
                     {{ order.shippingAddress.zipCode || '' }} {{ order.shippingAddress.city || '' }}
                   </p>
                   <p>{{ order.shippingAddress.country || 'No especificada' }}</p>
+
+                  @if (order.personalData) {
+                    <div class="order-data-separator"></div>
+                    <h4>Datos personales</h4>
+                    <p>
+                      {{ order.personalData.firstName || 'Sin nombre' }}
+                      {{ order.personalData.lastName || '' }}
+                    </p>
+                    <p>Email: {{ order.personalData.email || 'No especificado' }}</p>
+                    <p>Telefono: {{ order.personalData.phone || 'No especificado' }}</p>
+                    <p>DNI/NIE: {{ order.personalData.documentId || 'No especificado' }}</p>
+                  }
                 </div>
               }
 

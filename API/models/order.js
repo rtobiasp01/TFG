@@ -1,5 +1,14 @@
 class Order {
-  constructor(user_id, items = [], total = 0, status = 'pendiente', shippingAddress = {}, couponCode = null, discount = 0) {
+  constructor(
+    user_id,
+    items = [],
+    total = 0,
+    status = 'pendiente',
+    personalData = {},
+    shippingAddress = {},
+    couponCode = null,
+    discount = 0
+  ) {
     this.user_id = user_id;
     this.items = items; // Array de items del carrito
     this.subtotal = total;
@@ -7,6 +16,7 @@ class Order {
     this.total = total - discount;
     this.couponCode = couponCode || null;
     this.status = status; // pendiente, confirmado, enviado, entregado, cancelado
+    this.personalData = personalData;
     this.shippingAddress = shippingAddress;
     this.createdAt = new Date();
     this.updatedAt = new Date();
@@ -30,6 +40,7 @@ class Order {
       discount: this.discount,
       total: this.total,
       couponCode: this.couponCode,
+      personalData: this.personalData,
       status: this.status,
       createdAt: this.createdAt,
     };

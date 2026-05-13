@@ -4,7 +4,15 @@ const Order = require('../models/order');
 const productService = require('./product-service');
 
 class OrderService {
-  async createOrder(userId, items, total, shippingAddress = {}, couponCode = null, discount = 0) {
+  async createOrder(
+    userId,
+    items,
+    total,
+    personalData = {},
+    shippingAddress = {},
+    couponCode = null,
+    discount = 0
+  ) {
     try {
       const db = await connectDB();
       const order = new Order(
@@ -12,6 +20,7 @@ class OrderService {
         items,
         total,
         'pendiente',
+        personalData,
         shippingAddress,
         couponCode,
         discount

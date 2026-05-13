@@ -230,6 +230,13 @@
   margin-top: 0;
 }
 
+.order-data-separator {
+  height: 1px;
+  width: 100%;
+  margin: 0.85rem 0;
+  background: #e5e7eb;
+}
+
 .order-timeline {
   padding: 1rem;
   background: white;

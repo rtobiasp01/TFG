@@ -36,6 +36,30 @@ export class Checkout {
   readonly couponLoading = signal<boolean>(false);
 
   readonly checkoutForm = this.formBuilder.nonNullable.group({
+    personalData: this.formBuilder.nonNullable.group({
+      firstName: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.pattern(/^[A-Za-zÀ-ÿ' -]{2,60}$/),
+        ],
+      ],
+      lastName: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(2),
+          Validators.pattern(/^[A-Za-zÀ-ÿ' -]{2,60}$/),
+        ],
+      ],
+      email: ['', [Validators.required, Validators.email]],
+      phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{9,15}$/)]],
+      documentId: [
+        '',
+        [Validators.required, Validators.pattern(/^([XYZxyz]\d{7}[A-Za-z]|\d{8}[A-Za-z])$/)],
+      ],
+    }),
     shippingAddress: this.formBuilder.nonNullable.group({
       street: ['Calle Mayor 123', [Validators.required, Validators.minLength(5)]],
       city: ['Madrid', [Validators.required, Validators.minLength(2)]],
@@ -111,6 +135,18 @@ export class Checkout {
     }
 
     if (control.errors['pattern']) {
+      if (path === 'personalData.firstName' || path === 'personalData.lastName') {
+        return 'Solo se permiten letras, espacios, apostrofes y guiones.';
+      }
+
+      if (path === 'personalData.phone') {
+        return 'Introduce un telefono valido (9 a 15 digitos).';
+      }
+
+      if (path === 'personalData.documentId') {
+        return 'Introduce un DNI o NIE valido (ejemplo: 12345678Z).';
+      }
+
       if (path === 'shippingAddress.zipCode') {
         return 'Introduce un código postal válido de 5 dígitos.';
       }
@@ -126,6 +162,10 @@ export class Checkout {
       if (path === 'cvv') {
         return 'El CVV debe tener 3 dígitos.';
       }
+    }
+
+    if (control.errors['email']) {
+      return 'Introduce un correo electronico valido.';
     }
 
     return 'Valor no válido.';
@@ -206,7 +246,7 @@ export class Checkout {
     if (this.checkoutForm.invalid) {
       this.checkoutForm.markAllAsTouched();
       this.submitError.set(
-        'Revisa la dirección de envío y los datos de la tarjeta antes de continuar.',
+        'Revisa los datos personales, la direccion de envio y los datos de la tarjeta antes de continuar.',
       );
       return;
     }
@@ -214,10 +254,11 @@ export class Checkout {
     this.processingCheckout.set(true);
     this.submitError.set('');
 
+    const personalData = this.checkoutForm.controls.personalData.getRawValue();
     const shippingAddress = this.checkoutForm.controls.shippingAddress.getRawValue();
     const couponCode = this.appliedCoupon()?.code || null;
 
-    this.orderService.checkout(shippingAddress, couponCode).subscribe({
+    this.orderService.checkout(personalData, shippingAddress, couponCode).subscribe({
       next: () => {
         // Registrar el uso del cupón si se aplicó
         if (couponCode) {

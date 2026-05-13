@@ -9,11 +9,57 @@ const userService = require('../services/user-service');
 
 const router = express.Router();
 
+const PERSONAL_NAME_REGEX = /^[A-Za-zÀ-ÿ' -]{2,60}$/;
+const PERSONAL_PHONE_REGEX = /^\+?[0-9]{9,15}$/;
+const PERSONAL_DOCUMENT_REGEX = /^([XYZxyz]\d{7}[A-Za-z]|\d{8}[A-Za-z])$/;
+const PERSONAL_EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function validatePersonalData(personalData) {
+  if (!personalData || typeof personalData !== 'object') {
+    return { valid: false, error: 'Personal data is required' };
+  }
+
+  const normalized = {
+    firstName: String(personalData.firstName || '').trim(),
+    lastName: String(personalData.lastName || '').trim(),
+    email: String(personalData.email || '').trim().toLowerCase(),
+    phone: String(personalData.phone || '').replace(/\s+/g, ''),
+    documentId: String(personalData.documentId || '').trim().toUpperCase(),
+  };
+
+  if (!PERSONAL_NAME_REGEX.test(normalized.firstName)) {
+    return { valid: false, error: 'Invalid firstName' };
+  }
+
+  if (!PERSONAL_NAME_REGEX.test(normalized.lastName)) {
+    return { valid: false, error: 'Invalid lastName' };
+  }
+
+  if (!PERSONAL_EMAIL_REGEX.test(normalized.email)) {
+    return { valid: false, error: 'Invalid email' };
+  }
+
+  if (!PERSONAL_PHONE_REGEX.test(normalized.phone)) {
+    return { valid: false, error: 'Invalid phone' };
+  }
+
+  if (!PERSONAL_DOCUMENT_REGEX.test(normalized.documentId)) {
+    return { valid: false, error: 'Invalid documentId' };
+  }
+
+  return { valid: true, data: normalized };
+}
+
 // Create order from cart (authenticated user)
 router.post('/checkout', authMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
-    const { shippingAddress, couponCode } = req.body;
+    const { shippingAddress, couponCode, personalData } = req.body;
+
+    const validatedPersonalData = validatePersonalData(personalData);
+    if (!validatedPersonalData.valid) {
+      return res.status(400).json({ error: validatedPersonalData.error });
+    }
 
     // Get user's cart
     const cart = await cartService.getCartByUser(userId);
@@ -124,6 +170,7 @@ router.post('/checkout', authMiddleware, async (req, res) => {
         userId,
         normalizedItems,
         subtotal,
+        validatedPersonalData.data,
         shippingAddress || {},
         couponCode || null,
         discount
@@ -139,7 +186,7 @@ router.post('/checkout', authMiddleware, async (req, res) => {
           await emailService.sendOrderConfirmationEmail({
             recipientEmail: user.email,
             order: order,
-            userName: user.email.split('@')[0], // Use email prefix as name if not available
+            userName: validatedPersonalData.data.firstName || user.email.split('@')[0],
           });
         }
       } catch (emailError) {

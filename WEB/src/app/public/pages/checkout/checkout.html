@@ -1,7 +1,6 @@
 <section class="checkout-page">
   <div class="checkout-header">
     <div>
-      <p class="checkout-eyebrow">Pago simulado</p>
       <h1>Finalizar pedido</h1>
       <p class="checkout-description">
         Revisa el resumen y completa la tarjeta de prueba para confirmar el pedido.
@@ -14,6 +13,205 @@
   @if (items().length > 0) {
     <form class="checkout-form" [formGroup]="checkoutForm" (ngSubmit)="confirmPaymentAndCheckout()">
       <div class="checkout-layout">
+        <section class="checkout-panel">
+          @if (submitError()) {
+            <p class="payment-form__error">{{ submitError() }}</p>
+          }
+
+          <section class="checkout-form__section" formGroupName="personalData">
+            <div class="checkout-form__section-header">
+              <p class="payment-modal__eyebrow">Datos personales</p>
+              <h2>Completa tus datos personales</h2>
+              <p class="payment-modal__description">
+                Estos datos se guardaran junto al pedido para identificar al comprador.
+              </p>
+            </div>
+
+            <div class="payment-form__grid">
+              <label class="payment-field">
+                <span>Nombre</span>
+                <input type="text" formControlName="firstName" autocomplete="given-name" />
+                @if (controlHasError('personalData.firstName')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('personalData.firstName') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>Apellidos</span>
+                <input type="text" formControlName="lastName" autocomplete="family-name" />
+                @if (controlHasError('personalData.lastName')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('personalData.lastName') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field payment-field--wide">
+                <span>Correo electronico</span>
+                <input type="email" formControlName="email" autocomplete="email" />
+                @if (controlHasError('personalData.email')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('personalData.email') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>Telefono</span>
+                <input type="tel" formControlName="phone" autocomplete="tel" inputmode="tel" />
+                @if (controlHasError('personalData.phone')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('personalData.phone') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>DNI/NIE</span>
+                <input type="text" formControlName="documentId" autocomplete="off" />
+                @if (controlHasError('personalData.documentId')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('personalData.documentId') }}
+                  </small>
+                }
+              </label>
+            </div>
+          </section>
+
+          <section class="checkout-form__section" formGroupName="shippingAddress">
+            <div class="checkout-form__section-header">
+              <p class="payment-modal__eyebrow">Dirección de envío</p>
+              <h2>¿Dónde quieres recibir el pedido?</h2>
+              <p class="payment-modal__description">
+                Esta dirección quedará guardada en el pedido para que puedas revisarla después.
+              </p>
+            </div>
+
+            <div class="payment-form__grid">
+              <label class="payment-field payment-field--wide">
+                <span>Dirección</span>
+                <input
+                  type="text"
+                  formControlName="street"
+                  autocomplete="shipping street-address"
+                />
+                @if (controlHasError('shippingAddress.street')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.street') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>Ciudad</span>
+                <input type="text" formControlName="city" autocomplete="shipping address-level2" />
+                @if (controlHasError('shippingAddress.city')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.city') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>Código postal</span>
+                <input type="text" formControlName="zipCode" autocomplete="shipping postal-code" />
+                @if (controlHasError('shippingAddress.zipCode')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.zipCode') }}
+                  </small>
+                }
+              </label>
+
+              <label class="payment-field payment-field--wide">
+                <span>País</span>
+                <input type="text" formControlName="country" autocomplete="shipping country-name" />
+                @if (controlHasError('shippingAddress.country')) {
+                  <small class="payment-field__error">
+                    {{ controlErrorMessage('shippingAddress.country') }}
+                  </small>
+                }
+              </label>
+            </div>
+          </section>
+
+          <section class="checkout-form__section">
+            <div class="checkout-form__section-header">
+              <p class="payment-modal__eyebrow">Tarjeta de prueba</p>
+              <h2>Datos de la tarjeta</h2>
+              <p class="payment-modal__description">
+                No se realiza ningun cobro real. Al confirmar, se crea el pedido con el mismo
+                carrito.
+              </p>
+            </div>
+
+            <div class="payment-card">
+              <span class="payment-card__chip"></span>
+              <div class="payment-card__number">**** **** **** {{ getPaymentCardPreview() }}</div>
+              <div class="payment-card__details">
+                <span>{{ checkoutForm.controls.cardHolder.value || 'Nombre en la tarjeta' }}</span>
+                <span>{{ checkoutForm.controls.expiryDate.value || 'MM/AA' }}</span>
+              </div>
+            </div>
+
+            <div class="payment-form__grid">
+              <label class="payment-field">
+                <span>Nombre en la tarjeta</span>
+                <input type="text" formControlName="cardHolder" autocomplete="cc-name" />
+                @if (controlHasError('cardHolder')) {
+                  <small class="payment-field__error">{{
+                    controlErrorMessage('cardHolder')
+                  }}</small>
+                }
+              </label>
+
+              <label class="payment-field payment-field--wide">
+                <span>Numero de tarjeta</span>
+                <input
+                  type="text"
+                  formControlName="cardNumber"
+                  autocomplete="cc-number"
+                  inputmode="numeric"
+                />
+                @if (controlHasError('cardNumber')) {
+                  <small class="payment-field__error">{{
+                    controlErrorMessage('cardNumber')
+                  }}</small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>Caducidad</span>
+                <input
+                  type="text"
+                  formControlName="expiryDate"
+                  placeholder="MM/AA"
+                  autocomplete="cc-exp"
+                />
+                @if (controlHasError('expiryDate')) {
+                  <small class="payment-field__error">{{
+                    controlErrorMessage('expiryDate')
+                  }}</small>
+                }
+              </label>
+
+              <label class="payment-field">
+                <span>CVV</span>
+                <input
+                  type="password"
+                  formControlName="cvv"
+                  autocomplete="cc-csc"
+                  inputmode="numeric"
+                />
+                @if (controlHasError('cvv')) {
+                  <small class="payment-field__error">{{ controlErrorMessage('cvv') }}</small>
+                }
+              </label>
+            </div>
+          </section>
+        </section>
+
         <aside class="checkout-summary">
           <h2>Resumen del pedido</h2>
 
@@ -40,7 +238,6 @@
           </div>
 
           <div class="checkout-summary__totals">
-            <!-- Coupon Section -->
             @if (!appliedCoupon()) {
               <div class="coupon-input-section">
                 <input
@@ -97,151 +294,13 @@
             </div>
           </div>
 
-          <section
-            class="checkout-form__section checkout-form__section--shipping"
-            formGroupName="shippingAddress"
-          >
-            <div class="checkout-form__section-header">
-              <p class="payment-modal__eyebrow">Dirección de envío</p>
-              <h2>¿Dónde quieres recibir el pedido?</h2>
-              <p class="payment-modal__description">
-                Esta dirección quedará guardada en el pedido para que puedas revisarla después.
-              </p>
-            </div>
-
-            <div class="payment-form__grid">
-              <label class="payment-field payment-field--wide">
-                <span>Dirección</span>
-                <input
-                  type="text"
-                  formControlName="street"
-                  autocomplete="shipping street-address"
-                />
-                @if (controlHasError('shippingAddress.street')) {
-                  <small class="payment-field__error">
-                    {{ controlErrorMessage('shippingAddress.street') }}
-                  </small>
-                }
-              </label>
-
-              <label class="payment-field">
-                <span>Ciudad</span>
-                <input type="text" formControlName="city" autocomplete="shipping address-level2" />
-                @if (controlHasError('shippingAddress.city')) {
-                  <small class="payment-field__error">
-                    {{ controlErrorMessage('shippingAddress.city') }}
-                  </small>
-                }
-              </label>
-
-              <label class="payment-field">
-                <span>Código postal</span>
-                <input type="text" formControlName="zipCode" autocomplete="shipping postal-code" />
-                @if (controlHasError('shippingAddress.zipCode')) {
-                  <small class="payment-field__error">
-                    {{ controlErrorMessage('shippingAddress.zipCode') }}
-                  </small>
-                }
-              </label>
-
-              <label class="payment-field payment-field--wide">
-                <span>País</span>
-                <input type="text" formControlName="country" autocomplete="shipping country-name" />
-                @if (controlHasError('shippingAddress.country')) {
-                  <small class="payment-field__error">
-                    {{ controlErrorMessage('shippingAddress.country') }}
-                  </small>
-                }
-              </label>
-            </div>
-          </section>
-        </aside>
-
-        <section class="checkout-panel">
-          <div class="payment-card">
-            <span class="payment-card__chip"></span>
-            <div class="payment-card__number">**** **** **** {{ getPaymentCardPreview() }}</div>
-            <div class="payment-card__details">
-              <span>{{ checkoutForm.controls.cardHolder.value || 'Nombre en la tarjeta' }}</span>
-              <span>{{ checkoutForm.controls.expiryDate.value || 'MM/AA' }}</span>
-            </div>
-          </div>
-
-          <div class="payment-modal__header">
-            <p class="payment-modal__eyebrow">Tarjeta de prueba</p>
-            <h2>Introduce los datos de pago</h2>
-            <p class="payment-modal__description">
-              No se realiza ningun cobro real. Al confirmar, se crea el pedido con el mismo carrito.
-            </p>
-          </div>
-
-          @if (submitError()) {
-            <p class="payment-form__error">{{ submitError() }}</p>
-          }
-
-          <div class="payment-form__grid">
-            <label class="payment-field">
-              <span>Nombre en la tarjeta</span>
-              <input type="text" formControlName="cardHolder" autocomplete="cc-name" />
-              @if (controlHasError('cardHolder')) {
-                <small class="payment-field__error">{{ controlErrorMessage('cardHolder') }}</small>
-              }
-            </label>
-
-            <label class="payment-field payment-field--wide">
-              <span>Numero de tarjeta</span>
-              <input
-                type="text"
-                formControlName="cardNumber"
-                autocomplete="cc-number"
-                inputmode="numeric"
-              />
-              @if (controlHasError('cardNumber')) {
-                <small class="payment-field__error">{{ controlErrorMessage('cardNumber') }}</small>
-              }
-            </label>
-
-            <label class="payment-field">
-              <span>Caducidad</span>
-              <input
-                type="text"
-                formControlName="expiryDate"
-                placeholder="MM/AA"
-                autocomplete="cc-exp"
-              />
-              @if (controlHasError('expiryDate')) {
-                <small class="payment-field__error">{{ controlErrorMessage('expiryDate') }}</small>
-              }
-            </label>
-
-            <label class="payment-field">
-              <span>CVV</span>
-              <input
-                type="password"
-                formControlName="cvv"
-                autocomplete="cc-csc"
-                inputmode="numeric"
-              />
-              @if (controlHasError('cvv')) {
-                <small class="payment-field__error">{{ controlErrorMessage('cvv') }}</small>
-              }
-            </label>
-          </div>
-
-          <div class="payment-form__hint">
-            Dirección de prueba: <strong>{{ shippingAddressLabel() }}</strong
-            ><br />
-            Tarjeta de prueba: <strong>4242 4242 4242 4242</strong> | Fecha:
-            <strong>12/29</strong> | CVV: <strong>123</strong>
-          </div>
-
-          <div class="payment-form__actions">
+          <div class="payment-form__actions checkout-summary__actions">
             <a routerLink="/cart" class="payment-form__secondary">Cancelar</a>
             <button type="submit" class="payment-form__primary" [disabled]="processingCheckout()">
-              {{ processingCheckout() ? 'Procesando pedido...' : 'Pagar y realizar pedido' }}
+              {{ processingCheckout() ? 'Procesando pedido...' : 'Realizar pedido' }}
             </button>
           </div>
-        </section>
+        </aside>
       </div>
     </form>
   } @else {

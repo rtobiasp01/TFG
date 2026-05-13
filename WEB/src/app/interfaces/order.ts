@@ -4,6 +4,13 @@ export interface Order {
   items: OrderItem[];
   total: number;
   status: 'pendiente' | 'confirmado' | 'enviado' | 'entregado' | 'cancelado';
+  personalData?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+    documentId?: string;
+  };
   shippingAddress: {
     street?: string;
     city?: string;
