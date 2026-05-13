@@ -56,6 +56,7 @@ export class ProductDetails {
   readonly product = signal<Product | null>(null);
   readonly relatedProducts = signal<Product[]>([]);
   readonly selectedVariant = signal<Variant | undefined>(undefined);
+  readonly catalogQueryParams = signal<Record<string, string>>({});
   readonly customizationConfig = signal<CustomizationConfig | null>(null);
   readonly customizationErrors = signal<string[]>([]);
   readonly customText = signal<string>('');
@@ -113,7 +114,13 @@ export class ProductDetails {
   });
 
   constructor() {
-    this.setProductoActual();
+    this.route.queryParamMap.subscribe((params) => {
+      this.catalogQueryParams.set(this.extractCatalogQueryParams(params));
+    });
+
+    this.route.paramMap.subscribe(() => {
+      this.setProductoActual();
+    });
   }
 
   // Obtiene el producto mediante su sku
@@ -967,6 +974,30 @@ export class ProductDetails {
   private isBackgroundRemovalEnabled(): boolean {
     const config = this.customizationConfig();
     return config?.enableBackgroundRemoval !== false;
+  }
+
+  private extractCatalogQueryParams(
+    params: import('@angular/router').ParamMap,
+  ): Record<string, string> {
+    const queryParams: Record<string, string> = {};
+
+    const categoria = params.get('categoria');
+    const search = params.get('search');
+    const sort = params.get('sort');
+
+    if (categoria) {
+      queryParams['categoria'] = categoria;
+    }
+
+    if (search) {
+      queryParams['search'] = search;
+    }
+
+    if (sort) {
+      queryParams['sort'] = sort;
+    }
+
+    return queryParams;
   }
 
   // Reviews Methods

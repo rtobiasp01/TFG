@@ -1,4 +1,14 @@
 <div class="main-content">
+  <div class="product-details__topbar">
+    <a
+      class="product-details__back-link"
+      [routerLink]="['/productos']"
+      [queryParams]="catalogQueryParams()"
+    >
+      Volver al catálogo
+    </a>
+  </div>
+
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
@@ -298,7 +308,11 @@
       @if (relatedProducts().length > 0) {
         <div #relatedProductsViewport class="related-products-slider">
           @for (relatedProduct of relatedProducts(); track relatedProduct._id) {
-            <article class="related-product-card" [routerLink]="['/productos', relatedProduct.sku]">
+            <article
+              class="related-product-card"
+              [routerLink]="['/productos', relatedProduct.sku]"
+              [queryParams]="catalogQueryParams()"
+            >
               <div class="related-product-card__image-wrap">
                 <img
                   class="related-product-card__image"

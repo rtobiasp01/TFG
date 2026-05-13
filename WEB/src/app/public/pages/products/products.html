@@ -4,20 +4,50 @@
       <p class="catalog-eyebrow">Catálogo</p>
       <h1>{{ pageTitle() }}</h1>
       <p class="catalog-copy">
-        Navega por todos los productos disponibles y filtra por categoría cuando quieras afinar tu
-        búsqueda.
+        Navega por todos los productos disponibles y usa los filtros de categoría, variantes, precio
+        y valoración para afinar tu búsqueda.
       </p>
     </div>
-
-    @if (selectedCategory()) {
-      <a routerLink="/productos" class="catalog-reset">Ver todo el catálogo</a>
-    }
   </div>
 
+  <section class="catalog-filters" aria-label="Filtros de catálogo">
+    <label class="catalog-filter">
+      <span>Categoría</span>
+      <select [value]="selectedCategory()" (change)="onCategoryChange($any($event.target).value)">
+        <option value="">Todas</option>
+        @for (category of availableCategories(); track category) {
+          <option [value]="category">{{ category }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="catalog-filter">
+      <span>Ordenar por</span>
+      <select [value]="selectedSort()" (change)="onSortChange($any($event.target).value)">
+        @for (option of sortOptions; track option.value) {
+          <option [value]="option.value">{{ option.label }}</option>
+        }
+      </select>
+    </label>
+
+    <button
+      type="button"
+      class="catalog-reset"
+      (click)="clearFilters()"
+      [disabled]="!selectedCategory() && selectedSort() === 'featured' && !searchQuery()"
+    >
+      Limpiar filtros
+    </button>
+  </section>
+
   @if (filteredProducts().length > 0) {
+    <p class="catalog-results-meta">{{ filteredProducts().length }} productos encontrados</p>
     <section class="products">
       @for (product of filteredProducts(); track product._id) {
-        <app-product-card [productoActual]="product"></app-product-card>
+        <app-product-card
+          [productoActual]="product"
+          [queryParams]="catalogQueryParams()"
+        ></app-product-card>
       }
     </section>
   } @else {

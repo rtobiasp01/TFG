@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Product } from '../../../interfaces/product';
-import { RouterLink } from "@angular/router";
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-product-card',
@@ -10,8 +10,8 @@ import { RouterLink } from "@angular/router";
   styleUrl: './product-card.css',
 })
 export class ProductCard {
-
   @Input() productoActual!: Product;
+  @Input() queryParams: Record<string, string> = {};
 
   private readonly locale = navigator.language || 'es-ES';
   private readonly currencyCode = this.detectCurrencyCode(this.locale);
@@ -63,7 +63,7 @@ export class ProductCard {
       RO: 'RON',
     };
 
-    return region ? regionToCurrency[region] ?? 'EUR' : 'EUR';
+    return region ? (regionToCurrency[region] ?? 'EUR') : 'EUR';
   }
 
   private extractRegionFromLocale(locale: string): string | null {
@@ -75,5 +75,4 @@ export class ProductCard {
     const region = parts[1].toUpperCase();
     return region.length === 2 ? region : null;
   }
-
 }

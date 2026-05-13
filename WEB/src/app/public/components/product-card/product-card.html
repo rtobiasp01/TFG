@@ -1,13 +1,14 @@
 <article
   class="product-card"
   [routerLink]="['/productos', productoActual.sku]"
+  [queryParams]="queryParams"
   [state]="{ product: productoActual }"
 >
-    <div class="product-img">
-        <img src="{{ productoActual.image }}" alt="{{ productoActual.sku }}">
-    </div>
-    <div class="product-info">
-        <p class="title">{{ productoActual.title }}</p>
-        <p class="price">{{ formatPrice(productoActual.price) }}</p>
-    </div>
+  <div class="product-img">
+    <img src="{{ productoActual.image }}" alt="{{ productoActual.sku }}" />
+  </div>
+  <div class="product-info">
+    <p class="title">{{ productoActual.title }}</p>
+    <p class="price">{{ formatPrice(productoActual.price) }}</p>
+  </div>
 </article>
