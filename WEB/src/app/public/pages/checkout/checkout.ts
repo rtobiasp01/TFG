@@ -12,6 +12,27 @@ import { CartItem, CartService } from '../../../services/cart-service';
 import { OrderService } from '../../../services/order-service';
 import { CouponService, Coupon } from '../../../services/coupon-service';
 
+const CARDHOLDER_NAME_REGEX = /^[A-Za-zÀ-ÿ' -]{2,60}$/;
+
+function expiryDateNotExpiredValidator(control: AbstractControl) {
+  const value = String(control.value || '').trim();
+
+  if (!value) {
+    return null;
+  }
+
+  const match = /^(0[1-9]|1[0-2])\/(\d{2})$/.exec(value);
+  if (!match) {
+    return null;
+  }
+
+  const month = Number(match[1]);
+  const year = 2000 + Number(match[2]);
+  const expiryDate = new Date(year, month, 0, 23, 59, 59, 999);
+
+  return expiryDate < new Date() ? { expiredCard: true } : null;
+}
+
 @Component({
   selector: 'app-checkout',
   standalone: true,
@@ -66,12 +87,22 @@ export class Checkout {
       zipCode: ['28013', [Validators.required, Validators.pattern(/^\d{5}$/)]],
       country: ['España', [Validators.required, Validators.minLength(2)]],
     }),
-    cardHolder: ['Ruben Prueba', [Validators.required, Validators.minLength(3)]],
+    cardHolder: [
+      'Ruben Prueba',
+      [Validators.required, Validators.minLength(3), Validators.pattern(CARDHOLDER_NAME_REGEX)],
+    ],
     cardNumber: [
       '4242 4242 4242 4242',
       [Validators.required, Validators.pattern(/^(\d{4}\s?){3}\d{4}$/)],
     ],
-    expiryDate: ['12/29', [Validators.required, Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/)]],
+    expiryDate: [
+      '12/29',
+      [
+        Validators.required,
+        Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/),
+        expiryDateNotExpiredValidator,
+      ],
+    ],
     cvv: ['123', [Validators.required, Validators.pattern(/^\d{3}$/)]],
   });
 
@@ -147,6 +178,10 @@ export class Checkout {
         return 'Introduce un DNI o NIE valido (ejemplo: 12345678Z).';
       }
 
+      if (path === 'cardHolder') {
+        return 'El nombre de la tarjeta solo puede contener letras y espacios.';
+      }
+
       if (path === 'shippingAddress.zipCode') {
         return 'Introduce un código postal válido de 5 dígitos.';
       }
@@ -162,6 +197,10 @@ export class Checkout {
       if (path === 'cvv') {
         return 'El CVV debe tener 3 dígitos.';
       }
+    }
+
+    if (control.errors['expiredCard']) {
+      return 'La tarjeta está caducada.';
     }
 
     if (control.errors['email']) {
