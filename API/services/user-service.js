@@ -118,6 +118,59 @@ async function deleteUserById(userId) {
   }
 }
 
+async function setResetTokenByEmail(email, resetToken, resetTokenExpiry) {
+  try {
+    const db = await connectDB();
+    return await db.collection("users").updateOne(
+      { email },
+      {
+        $set: {
+          resetToken,
+          resetTokenExpiry,
+        },
+      },
+    );
+  } catch (error) {
+    console.error(`Error al establecer token de recuperación para: ${email}`, error);
+    throw new Error("No se pudo establecer el token de recuperación.");
+  }
+}
+
+async function findUserByResetToken(resetToken) {
+  try {
+    const db = await connectDB();
+    return await db.collection("users").findOne({
+      resetToken,
+      resetTokenExpiry: { $gt: new Date() },
+    });
+  } catch (error) {
+    console.error(`Error al buscar usuario por token de recuperación`, error);
+    throw new Error("No se pudo buscar el usuario por token de recuperación.");
+  }
+}
+
+async function clearResetToken(userId) {
+  try {
+    if (!ObjectId.isValid(userId)) {
+      throw new Error("Invalid user id");
+    }
+
+    const db = await connectDB();
+    return await db.collection("users").updateOne(
+      { _id: new ObjectId(userId) },
+      {
+        $unset: {
+          resetToken: "",
+          resetTokenExpiry: "",
+        },
+      },
+    );
+  } catch (error) {
+    console.error(`Error al limpiar token de recuperación para: ${userId}`, error);
+    throw new Error("No se pudo limpiar el token de recuperación.");
+  }
+}
+
 module.exports = {
   findUserByEmail,
   findUserById,
@@ -126,4 +179,7 @@ module.exports = {
   getAllUsers,
   updateUserProfileData,
   deleteUserById,
+  setResetTokenByEmail,
+  findUserByResetToken,
+  clearResetToken,
 };

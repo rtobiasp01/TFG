@@ -42,6 +42,14 @@ interface DeleteAccountResponse {
   message: string;
 }
 
+interface ForgotPasswordResponse {
+  message: string;
+}
+
+interface ResetPasswordResponse {
+  message: string;
+}
+
 interface JwtPayload {
   userId?: string;
   email?: string;
@@ -106,6 +114,14 @@ export class AuthService {
         this.clearSession();
       }),
     );
+  }
+
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${API_BASE_URL}/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, newPassword: string): Observable<ResetPasswordResponse> {
+    return this.http.post<ResetPasswordResponse>(`${API_BASE_URL}/reset-password`, { token, newPassword });
   }
 
   logout(): void {

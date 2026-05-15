@@ -1,6 +1,7 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 const middlewareAuth = require("../middlewares/authMiddleware");
 const userService = require("../services/user-service");
 const emailService = require("../services/email-service");
@@ -191,6 +192,73 @@ router.delete("/me", middlewareAuth, async (req, res) => {
     res.json({ message: "Cuenta eliminada correctamente" });
   } catch (err) {
     res.status(500).json({ error: "Error al eliminar la cuenta" });
+  }
+});
+
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "El email es requerido" });
+    }
+
+    const user = await userService.findUserByEmail(email);
+    if (!user) {
+      return res.status(200).json({ message: "Si el email existe, recibirás un correo con instrucciones para recuperar tu contraseña" });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+
+    await userService.setResetTokenByEmail(email, resetToken, resetTokenExpiry);
+
+    try {
+      await emailService.sendPasswordResetEmail({
+        recipientEmail: email,
+        resetToken,
+      });
+    } catch (emailError) {
+      console.error('Error sending password reset email:', emailError);
+    }
+
+    res.json({ message: "Si el email existe, recibirás un correo con instrucciones para recuperar tu contraseña" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al procesar la solicitud de recuperación" });
+  }
+});
+
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: "Token y nueva contraseña son requeridos" });
+    }
+
+    if (newPassword.length < 4) {
+      return res.status(400).json({ error: "La contraseña debe tener al menos 4 caracteres" });
+    }
+
+    const user = await userService.findUserByResetToken(token);
+    if (!user) {
+      return res.status(400).json({ error: "Token inválido o expirado" });
+    }
+
+    const hash = await bcrypt.hash(newPassword, 10);
+
+    const db = await require("../db/mongo")();
+    await db.collection("users").updateOne(
+      { _id: user._id },
+      {
+        $set: { password: hash },
+        $unset: { resetToken: "", resetTokenExpiry: "" },
+      },
+    );
+
+    res.json({ message: "Contraseña actualizada correctamente" });
+  } catch (err) {
+    res.status(500).json({ error: "Error al restablecer la contraseña" });
   }
 });
 

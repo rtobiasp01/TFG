@@ -20,6 +20,8 @@ import { Orders } from './public/pages/orders/orders';
 import { Login } from './public/pages/login/login';
 import { Register } from './public/pages/register/register';
 import { Profile } from './public/pages/profile/profile';
+import { ForgotPassword } from './public/pages/forgot-password/forgot-password';
+import { ResetPassword } from './public/pages/reset-password/reset-password';
 import { adminGuard, authGuard, publicOnlyGuard } from './guards/auth-guards';
 
 export const routes: Routes = [
@@ -121,6 +123,16 @@ export const routes: Routes = [
       {
         path: 'register',
         component: Register,
+        canActivate: [publicOnlyGuard],
+      },
+      {
+        path: 'recuperar-password',
+        component: ForgotPassword,
+        canActivate: [publicOnlyGuard],
+      },
+      {
+        path: 'reset-password/:token',
+        component: ResetPassword,
         canActivate: [publicOnlyGuard],
       },
       {
