@@ -701,6 +701,14 @@ export class ProductDetails {
       return errors;
     }
 
+    if (customizationConfig.allowImage && !customImageFile) {
+      errors.push('Debes subir una imagen para este producto.');
+    }
+
+    if (customizationConfig.allowText && !customText) {
+      errors.push('Debes introducir un texto personalizado para este producto.');
+    }
+
     if (customImageFile && !customizationConfig.allowImage) {
       errors.push('Este producto no permite subir imagen.');
     }
@@ -817,21 +825,36 @@ export class ProductDetails {
     const additionalPrice = selectedVariant?.precio_adicional ?? 0;
     const customization = this.buildCustomizationPayload(uploadedImageUrl);
 
+    this.isAddingToCart.set(true);
+
+    const willExceedStock = isSimple
+      ? this.willExceedStockForAdd({
+          productId: product._id,
+          productType: 'custom-personalized',
+          simpleSku: product.sku,
+          availableStock: product.stock_quantity,
+          quantityToAdd: 1,
+        })
+      : this.willExceedStockForAdd({
+          productId: product._id,
+          productType: 'custom-personalized',
+          variantSku: selectedVariant?.sku,
+          variantAttributes: this.selectedAttributes(),
+          availableStock: selectedVariant?.stock_quantity ?? 0,
+          quantityToAdd: 1,
+        });
+
+    if (willExceedStock) {
+      this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
+      setTimeout(() => this.addCartInlineMessage.set(''), 3500);
+      this.isAddingToCart.set(false);
+      return;
+    }
+
+    const imageSrc = this.imagenPrincipal() || product.image || '';
+    const animatePromise = this.flyToCart(imageSrc);
+
     if (isSimple) {
-      const willExceed = this.willExceedStockForAdd({
-        productId: product._id,
-        productType: 'custom-personalized',
-        simpleSku: product.sku,
-        availableStock: product.stock_quantity,
-        quantityToAdd: 1,
-      });
-
-      if (willExceed) {
-        this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
-        setTimeout(() => this.addCartInlineMessage.set(''), 3500);
-        return;
-      }
-
       this.cartService.addItem({
         productId: product._id,
         productTitle: product.title,
@@ -843,37 +866,25 @@ export class ProductDetails {
         availableStock: product.stock_quantity,
         customization,
       });
-      return;
+    } else {
+      this.cartService.addItem({
+        productId: product._id,
+        productTitle: product.title,
+        productType: 'custom-personalized',
+        productImage,
+        basePrice,
+        variantSku: selectedVariant?.sku,
+        variantAttributes: this.selectedAttributes(),
+        variantAdditionalPrice: additionalPrice,
+        quantity: 1,
+        availableStock: selectedVariant?.stock_quantity ?? 0,
+        customization,
+      });
     }
 
-    const willExceed = this.willExceedStockForAdd({
-      productId: product._id,
-      productType: 'custom-personalized',
-      variantSku: selectedVariant?.sku,
-      variantAttributes: this.selectedAttributes(),
-      availableStock: selectedVariant?.stock_quantity ?? 0,
-      quantityToAdd: 1,
-    });
-
-    if (willExceed) {
-      this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
-      setTimeout(() => this.addCartInlineMessage.set(''), 3500);
-      return;
-    }
-
-    this.cartService.addItem({
-      productId: product._id,
-      productTitle: product.title,
-      productType: 'custom-personalized',
-      productImage,
-      basePrice,
-      variantSku: selectedVariant?.sku,
-      variantAttributes: this.selectedAttributes(),
-      variantAdditionalPrice: additionalPrice,
-      quantity: 1,
-      availableStock: selectedVariant?.stock_quantity ?? 0,
-      customization,
-    });
+    this.addCartMessage.set('Añadido al carrito');
+    setTimeout(() => this.addCartMessage.set(''), 1800);
+    animatePromise.finally(() => setTimeout(() => this.isAddingToCart.set(false), 120));
   }
 
   private buildCustomizationPayload(uploadedImageUrl?: string): UserCustomization {
