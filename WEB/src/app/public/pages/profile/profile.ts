@@ -39,6 +39,12 @@ export class Profile implements OnInit {
     }),
   });
 
+  readonly hasSavedCard = signal(false);
+  readonly savedCardLast4 = signal('');
+  readonly savedCardHolder = signal('');
+  readonly savedCardExpiry = signal('');
+  readonly removingCard = signal(false);
+
   ngOnInit(): void {
     this.loadingProfile.set(true);
     this.loadError.set('');
@@ -60,6 +66,14 @@ export class Profile implements OnInit {
             country: response.user.shippingAddress?.country || '',
           },
         });
+
+        const savedCard = response.user.savedPaymentMethod;
+        if (savedCard?.cardNumber || savedCard?.last4) {
+          this.hasSavedCard.set(true);
+          this.savedCardLast4.set(savedCard.last4 || '');
+          this.savedCardHolder.set(savedCard.cardHolder || '');
+          this.savedCardExpiry.set(savedCard.expiryDate || '');
+        }
 
         this.loadingProfile.set(false);
       },
@@ -170,6 +184,32 @@ export class Profile implements OnInit {
       error: () => {
         this.deletingAccount.set(false);
         this.submitError.set('No se pudo borrar la cuenta. Intentalo de nuevo.');
+      },
+    });
+  }
+
+  removeSavedCard(): void {
+    this.submitError.set('');
+    this.submitSuccess.set('');
+
+    if (this.removingCard()) {
+      return;
+    }
+
+    this.removingCard.set(true);
+
+    this.authService.updateProfileData({ savedPaymentMethod: null }).subscribe({
+      next: () => {
+        this.hasSavedCard.set(false);
+        this.savedCardLast4.set('');
+        this.savedCardHolder.set('');
+        this.savedCardExpiry.set('');
+        this.removingCard.set(false);
+        this.submitSuccess.set('Tarjeta guardada eliminada.');
+      },
+      error: () => {
+        this.removingCard.set(false);
+        this.submitError.set('No se pudo eliminar la tarjeta guardada. Intentalo de nuevo.');
       },
     });
   }

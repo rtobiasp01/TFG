@@ -97,6 +97,34 @@
         </div>
       </div>
 
+      <div class="profile-section">
+        <h2>Tarjeta guardada</h2>
+
+        @if (hasSavedCard()) {
+          <div class="profile-saved-card">
+            <div class="profile-saved-card__info">
+              <span class="profile-saved-card__icon">💳</span>
+              <div>
+                <p class="profile-saved-card__number">**** **** **** {{ savedCardLast4() }}</p>
+                <p class="profile-saved-card__meta">
+                  {{ savedCardHolder() }} · Caduca {{ savedCardExpiry() }}
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="profile-saved-card__remove"
+              [disabled]="removingCard()"
+              (click)="removeSavedCard()"
+            >
+              {{ removingCard() ? 'Eliminando...' : 'Eliminar tarjeta' }}
+            </button>
+          </div>
+        } @else {
+          <p class="profile-saved-card__empty">No tienes ninguna tarjeta guardada.</p>
+        }
+      </div>
+
       @if (submitError()) {
         <p class="profile-message profile-message--error">{{ submitError() }}</p>
       }

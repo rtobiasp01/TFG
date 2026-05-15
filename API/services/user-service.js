@@ -84,6 +84,12 @@ async function updateUserProfileData(userId, updates = {}) {
       });
     }
 
+    if (updates.savedPaymentMethod && typeof updates.savedPaymentMethod === "object") {
+      Object.entries(updates.savedPaymentMethod).forEach(([key, value]) => {
+        setPayload[`savedPaymentMethod.${key}`] = value;
+      });
+    }
+
     if (Object.keys(setPayload).length === 0) {
       return await db.collection("users").findOne({ _id: new ObjectId(userId) });
     }

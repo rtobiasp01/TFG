@@ -166,6 +166,28 @@
               </p>
             </div>
 
+            @if (hasSavedPaymentMethod()) {
+              <div class="saved-card-banner">
+                <div class="saved-card-banner__info">
+                  <span class="saved-card-banner__icon">💳</span>
+                  <div>
+                    <p class="saved-card-banner__number">{{ getSavedCardDisplay() }}</p>
+                    <p class="saved-card-banner__meta">
+                      {{ getSavedCardHolder() }} · Caduca {{ getSavedCardExpiry() }}
+                    </p>
+                  </div>
+                </div>
+                <div class="saved-card-banner__actions">
+                  <button type="button" class="saved-card-banner__use" (click)="useSavedPaymentMethod()">
+                    Usar esta tarjeta
+                  </button>
+                  <button type="button" class="saved-card-banner__remove" (click)="clearSavedPaymentMethod()">
+                    ✕
+                  </button>
+                </div>
+              </div>
+            }
+
             <div class="payment-card">
               <span class="payment-card__chip"></span>
               <div class="payment-card__number">**** **** **** {{ getPaymentCardPreview() }}</div>
@@ -229,6 +251,16 @@
                 }
               </label>
             </div>
+
+            <label class="checkout-save-option">
+              <input
+                type="checkbox"
+                [ngModel]="savePaymentMethodForFuture()"
+                (ngModelChange)="savePaymentMethodForFuture.set($event)"
+                [ngModelOptions]="{ standalone: true }"
+              />
+              <span>Guardar esta tarjeta para futuras compras</span>
+            </label>
           </section>
         </section>
 

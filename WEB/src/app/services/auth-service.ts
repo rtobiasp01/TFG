@@ -31,6 +31,12 @@ interface UpdateProfilePayload {
     zipCode?: string;
     country?: string;
   };
+  savedPaymentMethod?: {
+    cardHolder?: string;
+    cardNumber?: string;
+    last4?: string;
+    expiryDate?: string;
+  } | null;
 }
 
 interface UpdateProfileResponse {

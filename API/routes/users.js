@@ -97,6 +97,7 @@ router.post("/login", async (req, res) => {
         isAdmin,
         personalData: user.personalData || {},
         shippingAddress: user.shippingAddress || {},
+        savedPaymentMethod: user.savedPaymentMethod || null,
       },
     });
   } catch (err) {
@@ -119,6 +120,7 @@ router.get("/profile", middlewareAuth, async (req, res) => {
         isAdmin: Boolean(user.isAdmin),
         personalData: user.personalData || {},
         shippingAddress: user.shippingAddress || {},
+        savedPaymentMethod: user.savedPaymentMethod || null,
       },
     });
   } catch (err) {
@@ -141,6 +143,7 @@ router.get("/me", middlewareAuth, async (req, res) => {
         isAdmin: Boolean(user.isAdmin),
         personalData: user.personalData || {},
         shippingAddress: user.shippingAddress || {},
+        savedPaymentMethod: user.savedPaymentMethod || null,
       },
     });
   } catch (err) {
@@ -160,6 +163,22 @@ router.put("/me", middlewareAuth, async (req, res) => {
       payload.shippingAddress = normalizeShippingAddress(req.body.shippingAddress);
     }
 
+    if (req.body.savedPaymentMethod && typeof req.body.savedPaymentMethod === 'object') {
+      payload.savedPaymentMethod = {};
+      if (req.body.savedPaymentMethod.cardHolder) {
+        payload.savedPaymentMethod.cardHolder = String(req.body.savedPaymentMethod.cardHolder).trim();
+      }
+      if (req.body.savedPaymentMethod.cardNumber) {
+        payload.savedPaymentMethod.cardNumber = String(req.body.savedPaymentMethod.cardNumber).trim();
+      }
+      if (req.body.savedPaymentMethod.last4) {
+        payload.savedPaymentMethod.last4 = String(req.body.savedPaymentMethod.last4).trim();
+      }
+      if (req.body.savedPaymentMethod.expiryDate) {
+        payload.savedPaymentMethod.expiryDate = String(req.body.savedPaymentMethod.expiryDate).trim();
+      }
+    }
+
     const updatedUser = await userService.updateUserProfileData(req.userId, payload);
 
     if (!updatedUser) {
@@ -174,6 +193,7 @@ router.put("/me", middlewareAuth, async (req, res) => {
         isAdmin: Boolean(updatedUser.isAdmin),
         personalData: updatedUser.personalData || {},
         shippingAddress: updatedUser.shippingAddress || {},
+        savedPaymentMethod: updatedUser.savedPaymentMethod || null,
       },
     });
   } catch (err) {

@@ -15,4 +15,10 @@ export interface AuthUser {
     zipCode?: string;
     country?: string;
   };
+  savedPaymentMethod?: {
+    cardHolder?: string;
+    cardNumber?: string;
+    last4?: string;
+    expiryDate?: string;
+  };
 }
