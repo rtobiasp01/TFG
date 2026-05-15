@@ -373,15 +373,14 @@ export class ProductDetails {
     const filterValidImages = (image: string | undefined): image is string => Boolean(image);
     const uniqueImages = (images: string[]) => Array.from(new Set(images));
 
-    this.imagenPrincipal.set(productImage);
-
     if (variantImages.length > 0) {
-      this.galeriaActual.set(
-        uniqueImages([productImage, ...variantImages].filter(filterValidImages)),
-      );
+      const gallery = uniqueImages([productImage, ...variantImages].filter(filterValidImages));
+      this.imagenPrincipal.set(variantImages[0]);
+      this.galeriaActual.set(gallery);
       return;
     }
 
+    this.imagenPrincipal.set(productImage);
     this.galeriaActual.set(
       uniqueImages([productImage, ...productGallery].filter(filterValidImages)),
     );
