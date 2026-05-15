@@ -249,12 +249,21 @@ export class ProductDetails {
     const nextSelectedAttributes = { ...this.selectedAttributes(), [key]: value };
 
     if (groupIndex >= 0) {
-      const lowerKeys = this.variantesProducto()
-        .slice(groupIndex + 1)
-        .map((group) => group.key);
+      const lowerGroups = this.variantesProducto().slice(groupIndex + 1);
 
-      lowerKeys.forEach((lowerKey) => {
-        delete nextSelectedAttributes[lowerKey];
+      lowerGroups.forEach((lowerGroup) => {
+        delete nextSelectedAttributes[lowerGroup.key];
+      });
+
+      this.selectedAttributes.set(nextSelectedAttributes);
+
+      lowerGroups.forEach((lowerGroup) => {
+        const lowerGroupIndex = this.variantesProducto().findIndex((g) => g.key === lowerGroup.key);
+        const availableValues = this.getAvailableValues(lowerGroup.key, lowerGroupIndex);
+        if (availableValues.length > 0) {
+          nextSelectedAttributes[lowerGroup.key] = availableValues[0];
+          this.selectedAttributes.set({ ...nextSelectedAttributes });
+        }
       });
     }
 
