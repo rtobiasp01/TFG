@@ -85,11 +85,6 @@ async function updateUserProfileData(userId, updates = {}) {
     }
 
     if (updates.savedPaymentMethod && typeof updates.savedPaymentMethod === "object") {
-      // If the existing document has `savedPaymentMethod` set to null,
-      // trying to set subfields like `savedPaymentMethod.cardHolder` will
-      // fail with MongoServerError (cannot create field in element null).
-      // To avoid that, always replace the `savedPaymentMethod` object as
-      // a whole when updating it.
       setPayload.savedPaymentMethod = updates.savedPaymentMethod;
     } else if (updates.savedPaymentMethod === null) {
       setPayload.savedPaymentMethod = null;
