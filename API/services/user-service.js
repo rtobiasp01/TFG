@@ -85,9 +85,14 @@ async function updateUserProfileData(userId, updates = {}) {
     }
 
     if (updates.savedPaymentMethod && typeof updates.savedPaymentMethod === "object") {
-      Object.entries(updates.savedPaymentMethod).forEach(([key, value]) => {
-        setPayload[`savedPaymentMethod.${key}`] = value;
-      });
+      // If the existing document has `savedPaymentMethod` set to null,
+      // trying to set subfields like `savedPaymentMethod.cardHolder` will
+      // fail with MongoServerError (cannot create field in element null).
+      // To avoid that, always replace the `savedPaymentMethod` object as
+      // a whole when updating it.
+      setPayload.savedPaymentMethod = updates.savedPaymentMethod;
+    } else if (updates.savedPaymentMethod === null) {
+      setPayload.savedPaymentMethod = null;
     }
 
     if (Object.keys(setPayload).length === 0) {
@@ -96,15 +101,13 @@ async function updateUserProfileData(userId, updates = {}) {
 
     await db.collection("users").updateOne(
       { _id: new ObjectId(userId) },
-      {
-        $set: setPayload,
-      },
+      { $set: setPayload },
     );
 
     return await db.collection("users").findOne({ _id: new ObjectId(userId) });
   } catch (error) {
     console.error(`Error al actualizar datos del usuario: ${userId}`, error);
-    throw new Error("No se pudieron actualizar los datos del usuario.");
+    throw error;
   }
 }
 

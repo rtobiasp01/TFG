@@ -164,19 +164,14 @@ router.put("/me", middlewareAuth, async (req, res) => {
     }
 
     if (req.body.savedPaymentMethod && typeof req.body.savedPaymentMethod === 'object') {
-      payload.savedPaymentMethod = {};
-      if (req.body.savedPaymentMethod.cardHolder) {
-        payload.savedPaymentMethod.cardHolder = String(req.body.savedPaymentMethod.cardHolder).trim();
-      }
-      if (req.body.savedPaymentMethod.cardNumber) {
-        payload.savedPaymentMethod.cardNumber = String(req.body.savedPaymentMethod.cardNumber).trim();
-      }
-      if (req.body.savedPaymentMethod.last4) {
-        payload.savedPaymentMethod.last4 = String(req.body.savedPaymentMethod.last4).trim();
-      }
-      if (req.body.savedPaymentMethod.expiryDate) {
-        payload.savedPaymentMethod.expiryDate = String(req.body.savedPaymentMethod.expiryDate).trim();
-      }
+      payload.savedPaymentMethod = {
+        cardHolder: String(req.body.savedPaymentMethod.cardHolder || '').trim(),
+        cardNumber: String(req.body.savedPaymentMethod.cardNumber || '').trim(),
+        last4: String(req.body.savedPaymentMethod.last4 || '').trim(),
+        expiryDate: String(req.body.savedPaymentMethod.expiryDate || '').trim(),
+      };
+    } else if (req.body.savedPaymentMethod === null) {
+      payload.savedPaymentMethod = null;
     }
 
     const updatedUser = await userService.updateUserProfileData(req.userId, payload);
@@ -197,6 +192,7 @@ router.put("/me", middlewareAuth, async (req, res) => {
       },
     });
   } catch (err) {
+    console.error('Error al actualizar datos del usuario:', err);
     res.status(500).json({ error: "Error al actualizar datos del usuario" });
   }
 });

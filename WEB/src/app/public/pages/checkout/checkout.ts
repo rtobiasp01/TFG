@@ -56,6 +56,12 @@ export class Checkout {
   readonly saveShippingAddressForFuture = signal(false);
   readonly savePaymentMethodForFuture = signal(false);
   readonly hasSavedPaymentMethod = signal(false);
+  readonly availablePaymentMethod = signal<{
+    cardHolder: string;
+    cardNumber: string;
+    last4: string;
+    expiryDate: string;
+  } | null>(null);
 
   // Coupon related
   readonly couponCode = signal<string>('');
@@ -95,22 +101,22 @@ export class Checkout {
       country: ['', [Validators.required, Validators.minLength(2)]],
     }),
     cardHolder: [
-      'Ruben Prueba',
+      '',
       [Validators.required, Validators.minLength(3), Validators.pattern(CARDHOLDER_NAME_REGEX)],
     ],
     cardNumber: [
-      '4242 4242 4242 4242',
+      '',
       [Validators.required, Validators.pattern(/^(\d{4}\s?){3}\d{4}$/)],
     ],
     expiryDate: [
-      '12/29',
+      '',
       [
         Validators.required,
         Validators.pattern(/^(0[1-9]|1[0-2])\/\d{2}$/),
         expiryDateNotExpiredValidator,
       ],
     ],
-    cvv: ['123', [Validators.required, Validators.pattern(/^\d{3}$/)]],
+    cvv: ['', [Validators.required, Validators.pattern(/^\d{3}$/)]],
   });
 
   readonly items = computed(() => this.cartService.cart().items);
@@ -250,21 +256,21 @@ export class Checkout {
   }
 
   getSavedCardDisplay(): string | null {
-    const paymentMethod = this.authService.currentUser()?.savedPaymentMethod;
+    const paymentMethod = this.availablePaymentMethod();
     if (!paymentMethod?.last4) return null;
     return `**** **** **** ${paymentMethod.last4}`;
   }
 
   getSavedCardHolder(): string {
-    return this.authService.currentUser()?.savedPaymentMethod?.cardHolder || '';
+    return this.availablePaymentMethod()?.cardHolder || '';
   }
 
   getSavedCardExpiry(): string {
-    return this.authService.currentUser()?.savedPaymentMethod?.expiryDate || '';
+    return this.availablePaymentMethod()?.expiryDate || '';
   }
 
   useSavedPaymentMethod(): void {
-    const paymentMethod = this.authService.currentUser()?.savedPaymentMethod;
+    const paymentMethod = this.availablePaymentMethod();
     if (!paymentMethod?.cardNumber) return;
 
     const formattedCardNumber = paymentMethod.cardNumber.replace(/(\d{4})/g, '$1 ').trim();
@@ -278,10 +284,11 @@ export class Checkout {
 
   clearSavedPaymentMethod(): void {
     this.hasSavedPaymentMethod.set(false);
-    this.checkoutForm.controls.cardHolder.setValue('Ruben Prueba');
-    this.checkoutForm.controls.cardNumber.setValue('4242 4242 4242 4242');
-    this.checkoutForm.controls.expiryDate.setValue('12/29');
-    this.checkoutForm.controls.cvv.setValue('123');
+    this.availablePaymentMethod.set(null);
+    this.checkoutForm.controls.cardHolder.setValue('');
+    this.checkoutForm.controls.cardNumber.setValue('');
+    this.checkoutForm.controls.expiryDate.setValue('');
+    this.checkoutForm.controls.cvv.setValue('');
   }
 
   private getControl(path: string): AbstractControl | null {
@@ -296,6 +303,7 @@ export class Checkout {
           response.user?.shippingAddress || {},
           response.user?.savedPaymentMethod || null,
         );
+        this.loadAvailablePaymentMethod(response.user?.savedPaymentMethod || null);
       },
       error: () => {
         const currentUser = this.authService.currentUser();
@@ -305,9 +313,29 @@ export class Checkout {
             currentUser.shippingAddress || {},
             currentUser.savedPaymentMethod || null,
           );
+          this.loadAvailablePaymentMethod(currentUser.savedPaymentMethod || null);
         }
       },
     });
+  }
+
+  private loadAvailablePaymentMethod(
+    savedPaymentMethod: {
+      cardHolder?: string;
+      cardNumber?: string;
+      last4?: string;
+      expiryDate?: string;
+    } | null,
+  ): void {
+    if (savedPaymentMethod && (savedPaymentMethod.cardNumber || savedPaymentMethod.last4)) {
+      this.hasSavedPaymentMethod.set(true);
+      this.availablePaymentMethod.set({
+        cardHolder: savedPaymentMethod.cardHolder || '',
+        cardNumber: savedPaymentMethod.cardNumber || '',
+        last4: savedPaymentMethod.last4 || '',
+        expiryDate: savedPaymentMethod.expiryDate || '',
+      });
+    }
   }
 
   applyCoupon(): void {
@@ -392,12 +420,14 @@ export class Checkout {
 
           if (this.savePaymentMethodForFuture()) {
             const cardNumber = this.checkoutForm.controls.cardNumber.value.replace(/\D/g, '');
-            updatePayload.savedPaymentMethod = {
-              cardHolder: this.checkoutForm.controls.cardHolder.value,
-              cardNumber: cardNumber,
-              last4: cardNumber.slice(-4),
-              expiryDate: this.checkoutForm.controls.expiryDate.value,
-            };
+            if (cardNumber.length > 0) {
+              updatePayload.savedPaymentMethod = {
+                cardHolder: this.checkoutForm.controls.cardHolder.value,
+                cardNumber: cardNumber,
+                last4: cardNumber.slice(-4),
+                expiryDate: this.checkoutForm.controls.expiryDate.value,
+              };
+            }
           }
 
           this.authService.updateProfileData(updatePayload).subscribe({
@@ -435,7 +465,7 @@ export class Checkout {
       zipCode?: string;
       country?: string;
     },
-    savedPaymentMethod: {
+    _savedPaymentMethod: {
       cardHolder?: string;
       cardNumber?: string;
       last4?: string;
@@ -462,18 +492,6 @@ export class Checkout {
         zipCode: shippingAddress.zipCode || shippingForm.controls.zipCode.value,
         country: shippingAddress.country || shippingForm.controls.country.value,
       });
-    }
-
-    if (savedPaymentMethod && savedPaymentMethod.cardNumber) {
-      this.hasSavedPaymentMethod.set(true);
-      const formattedCardNumber = savedPaymentMethod.cardNumber.replace(/(\d{4})/g, '$1 ').trim();
-      this.checkoutForm.controls.cardHolder.setValue(savedPaymentMethod.cardHolder || '');
-      this.checkoutForm.controls.cardNumber.setValue(formattedCardNumber);
-      this.checkoutForm.controls.expiryDate.setValue(savedPaymentMethod.expiryDate || '');
-    } else if (savedPaymentMethod && savedPaymentMethod.last4) {
-      this.hasSavedPaymentMethod.set(true);
-      this.checkoutForm.controls.cardHolder.setValue(savedPaymentMethod.cardHolder || '');
-      this.checkoutForm.controls.expiryDate.setValue(savedPaymentMethod.expiryDate || '');
     }
   }
 }
