@@ -1127,7 +1127,6 @@ export class ProductForm {
       values.map((val) => this.fb.control(val || '', Validators.required)),
     );
 
-    // Si no hay valores, agregar al menos uno vacío
     if (valuesFormArray.length === 0) {
       valuesFormArray.push(this.fb.control('', Validators.required));
     }
@@ -1698,13 +1697,11 @@ export class ProductForm {
     const dynamicAttributes: Array<{ key: string; values: (string | number)[] }> = [];
     const seenKeys = new Set<string>();
 
-    // Primero, procesar propiedades dinámicas del objeto variante
     Object.entries(variant).forEach(([key, value]) => {
       if (reservedKeys.has(key) || value === null || value === undefined) {
         return;
       }
 
-      // Si es un array, agregarlo como tal
       if (Array.isArray(value)) {
         const cleanValues = value
           .map((v) => String(v).trim())
@@ -1715,7 +1712,6 @@ export class ProductForm {
         }
         seenKeys.add(key);
       } else {
-        // Si es un valor simple (string, number), agregarlo como array de un elemento
         const cleanValue = String(value).trim();
         if (cleanValue.length > 0) {
           dynamicAttributes.push({ key, values: [this.parseDynamicAttributeValue(cleanValue)] });
@@ -1724,7 +1720,6 @@ export class ProductForm {
       }
     });
 
-    // Luego, procesar el objeto attributes si existe (para redundancia)
     if (
       variant.attributes &&
       typeof variant.attributes === 'object' &&
@@ -1774,13 +1769,11 @@ export class ProductForm {
           return acc;
         }
 
-        // Procesar valores (pueden ser array de FormControls o array de strings)
         let valueArray: (string | number)[] = [];
 
         if (Array.isArray(rawValues)) {
           valueArray = rawValues
             .map((val) => {
-              // Si es un FormControl, obtener su valor; si no, usar directamente
               const value = val?.value !== undefined ? val.value : val;
               return String(value).trim();
             })
@@ -1792,7 +1785,6 @@ export class ProductForm {
           return acc;
         }
 
-        // Si solo hay un valor, guardar como string/número simple. Si hay múltiples, guardar como array
         acc[rawKey] = valueArray.length === 1 ? valueArray[0] : valueArray;
         return acc;
       },

@@ -72,7 +72,6 @@ export class ProductDetails {
   readonly variantesProducto = signal<VariantOptionGroup[]>([]);
   readonly selectedAttributes = signal<Record<string, VariantValue>>({});
 
-  // Reviews signals
   readonly reviews = signal<Review[]>([]);
   readonly isLoadingReviews = signal<boolean>(false);
   readonly reviewErrorMessage = signal<string>('');
@@ -123,7 +122,6 @@ export class ProductDetails {
     });
   }
 
-  // Obtiene el producto mediante su sku
   private setProductoActual(): void {
     const sku = this.route.snapshot.paramMap.get('sku');
     if (!sku) {
@@ -221,7 +219,6 @@ export class ProductDetails {
     });
   }
 
-  // Cambia la imagen principal al seleccionar una de la galeria
   changeImage(imagen: string) {
     this.imagenPrincipal.set(imagen);
   }
@@ -296,7 +293,6 @@ export class ProductDetails {
     );
   }
 
-  // Devuelve opciones por atributo para construir botones de combinacion
   private setProductAttributes(): VariantOptionGroup[] {
     const variantes = this.product()?.variantes ?? [];
     const optionsMap = new Map<string, Set<VariantValue>>();
@@ -425,10 +421,8 @@ export class ProductDetails {
     const productImage = product.image;
     const additionalPrice = selectedVariant?.precio_adicional ?? 0;
 
-    // Provide visual feedback when adding to cart
     this.isAddingToCart.set(true);
 
-    // Check stock before attempting to add
     const willExceedStock = this.willExceedStockForAdd({
       productId: product._id,
       productType: isSimple ? 'simple' : 'variable',
@@ -442,12 +436,10 @@ export class ProductDetails {
     if (willExceedStock) {
       this.addCartInlineMessage.set('No hay suficiente stock para añadir más unidades');
       setTimeout(() => this.addCartInlineMessage.set(''), 3500);
-      // stop spinner
       this.isAddingToCart.set(false);
       return;
     }
 
-    // Trigger fly-to-cart animation (best-effort)
     const imageSrc = this.imagenPrincipal() || product.image || '';
     const animatePromise = this.flyToCart(imageSrc);
 
@@ -480,10 +472,8 @@ export class ProductDetails {
 
       this.addCartMessage.set('Añadido al carrito');
       setTimeout(() => this.addCartMessage.set(''), 1800);
-      // Wait for animation to finish (max 1s) before hiding spinner
       animatePromise.finally(() => setTimeout(() => this.isAddingToCart.set(false), 120));
     } finally {
-      // nothing here
     }
   }
 
@@ -510,7 +500,6 @@ export class ProductDetails {
           return item.simpleSku === opts.simpleSku;
         }
 
-        // variable or custom-personalized: match variantSku + attributes
         if (opts.variantSku && item.variantSku !== opts.variantSku) return false;
 
         const left = item.variantAttributes ?? {};
@@ -563,13 +552,10 @@ export class ProductDetails {
 
         document.body.appendChild(flyImg);
 
-        // Calculate transform
         const translateX = destRect.left + destRect.width / 2 - (srcRect.left + srcRect.width / 2);
         const translateY = destRect.top + destRect.height / 2 - (srcRect.top + srcRect.height / 2);
         const scale = Math.max(0.18, Math.min(0.45, destRect.width / srcRect.width));
 
-        // Force reflow then apply transform
-        // eslint-disable-next-line @typescript-eslint/no-unused-expressions
         flyImg.getBoundingClientRect();
 
         requestAnimationFrame(() => {
@@ -580,7 +566,6 @@ export class ProductDetails {
         const cleanup = () => {
           try {
             document.body.removeChild(flyImg);
-            // Trigger cart bounce on destination element
             try {
               if (cartEl) {
                 cartEl.classList.add('cart-bounce');
@@ -591,7 +576,6 @@ export class ProductDetails {
                 };
 
                 cartEl.addEventListener('animationend', removeBounce, { once: true });
-                // Safety remove in case animationend doesn't fire
                 setTimeout(removeBounce, 800);
               }
             } catch (e) {}
@@ -601,7 +585,6 @@ export class ProductDetails {
 
         flyImg.addEventListener('transitionend', cleanup, { once: true });
 
-        // Safety timeout
         setTimeout(cleanup, 1000);
       } catch (e) {
         resolve();
@@ -1019,7 +1002,6 @@ export class ProductDetails {
     return queryParams;
   }
 
-  // Reviews Methods
   private loadProductReviews(productId: string): void {
     this.isLoadingReviews.set(true);
     this.reviewErrorMessage.set('');
@@ -1057,7 +1039,6 @@ export class ProductDetails {
         }
         this.isSubmittingReview.set(false);
 
-        // Limpiar mensaje de éxito después de 3 segundos
         setTimeout(() => this.reviewSuccessMessage.set(''), 3000);
       },
       error: (error) => {
@@ -1082,7 +1063,6 @@ export class ProductDetails {
             this.loadProductReviews(productId);
           }
 
-          // Limpiar mensaje de éxito después de 3 segundos
           setTimeout(() => this.reviewSuccessMessage.set(''), 3000);
         },
         error: (error) => {

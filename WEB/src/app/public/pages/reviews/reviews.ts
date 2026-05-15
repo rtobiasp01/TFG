@@ -62,7 +62,6 @@ export class Reviews {
         this.loadAllReviews();
         this.isSubmitting.set(false);
 
-        // Limpiar mensaje de éxito después de 3 segundos
         setTimeout(() => this.successMessage.set(''), 3000);
       },
       error: (error) => {
@@ -82,7 +81,6 @@ export class Reviews {
           this.successMessage.set('Reseña eliminada exitosamente');
           this.loadAllReviews();
 
-          // Limpiar mensaje de éxito después de 3 segundos
           setTimeout(() => this.successMessage.set(''), 3000);
         },
         error: (error) => {

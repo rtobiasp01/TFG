@@ -23,7 +23,6 @@ export class SidebarComponent {
   isCollapsed = signal(false);
   readonly siteName = this.siteSettingsService.siteName;
 
-  // Guardamos los labels de los menús abiertos
   openMenus = signal<Set<string>>(new Set());
 
   menuItems: MenuItem[] = [
@@ -47,11 +46,11 @@ export class SidebarComponent {
 
   toggleSidebar() {
     this.isCollapsed.update((v) => !v);
-    if (this.isCollapsed()) this.openMenus.set(new Set()); // Cerramos submenús al colapsar
+    if (this.isCollapsed()) this.openMenus.set(new Set());
   }
 
   toggleSubmenu(label: string) {
-    if (this.isCollapsed()) return; // No abrir si está colapsado
+    if (this.isCollapsed()) return;
 
     this.openMenus.update((prev) => {
       const next = new Set(prev);

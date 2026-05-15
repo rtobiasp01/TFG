@@ -80,7 +80,6 @@ export class AuthService {
 
   constructor() {
     this.restoreSession();
-    // Avoid triggering HTTP interceptors while the service is still being constructed.
     queueMicrotask(() => this.syncUserFromServer());
   }
 
@@ -216,7 +215,6 @@ export class AuthService {
           return;
         }
 
-        // Keep current session on transient backend/network errors.
         console.error('Error syncing authenticated user:', error);
       },
     });

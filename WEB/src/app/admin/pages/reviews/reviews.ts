@@ -90,12 +90,10 @@ export class AdminReviews implements OnInit {
   getSortedAndFilteredReviews(): Review[] {
     let filtered = [...this.reviews()];
 
-    // Filtrar por calificación si está seleccionado
     if (this.filterByRating() !== null) {
       filtered = filtered.filter((review) => review.rating === this.filterByRating());
     }
 
-    // Ordenar
     filtered.sort((a, b) => {
       let comparison = 0;
 

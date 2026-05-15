@@ -37,7 +37,6 @@ export const authInterceptor: HttpInterceptorFn = (
         authRequest.url.includes(endpoint),
       );
 
-      // Only clear session on token validation calls; keep session for other unauthorized APIs.
       if (error.status === 401 && authService.isAuthenticated() && isSelfAuthRequest) {
         authService.logout();
       }

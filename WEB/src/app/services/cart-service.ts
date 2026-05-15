@@ -427,6 +427,5 @@ export class CartService {
   }
 
   private logCart(): void {
-    console.log('🛒 Carrito actual:', this.cart().items);
   }
 }

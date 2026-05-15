@@ -63,7 +63,6 @@ export class Checkout {
     expiryDate: string;
   } | null>(null);
 
-  // Coupon related
   readonly couponCode = signal<string>('');
   readonly appliedCoupon = signal<Coupon | null>(null);
   readonly couponError = signal<string>('');
@@ -391,7 +390,6 @@ export class Checkout {
 
     this.orderService.checkout(personalData, shippingAddress, couponCode).subscribe({
       next: () => {
-        // Registrar el uso del cupón si se aplicó
         if (couponCode) {
           this.couponService.incrementCouponUse(couponCode).subscribe({
             error: (error) => {

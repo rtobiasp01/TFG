@@ -1,4 +1,3 @@
-/* --- LAYOUT GENERAL --- */
 .info-form {
   display: flex;
   flex-direction: row;
@@ -26,7 +25,6 @@
   top: 20px;
 }
 
-/* --- ESTILOS DE INPUTS DEL FORMULARIO --- */
 .form-product-title input {
   width: 100%;
   padding: 10px 0;
@@ -43,10 +41,9 @@
   border-bottom-color: #70c489;
 }
 
-/* --- TABS SYSTEM (REPARADO) --- */
 .radio-inputs {
   display: flex;
-  flex-wrap: wrap; /* Permite que el contenido ocupe la siguiente "fila" */
+  flex-wrap: wrap;
   background-color: #e8e8e8;
   padding: 0.25rem;
   border-radius: 0.5rem;
@@ -55,7 +52,7 @@
 }
 
 .radio {
-  display: contents; /* El label no genera caja, sus hijos sí */
+  display: contents;
 }
 
 .radio-inputs .name {
@@ -66,36 +63,32 @@
   border-radius: 0.5rem;
   font-weight: 500;
   transition: 0.2s;
-  order: 1; /* Las pestañas siempre arriba */
+  order: 1;
 }
 
 .radio input[type='radio'] {
   display: none;
 }
 
-/* Estado activo de la pestaña */
 .radio input:checked + .name {
   background-color: #fff;
   color: #70c489;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Contenido de la pestaña */
 .radio .content {
   display: none;
   width: 100%;
-  order: 2; /* El contenido siempre abajo de las pestañas */
+  order: 2;
   padding: 2rem 0;
   background: transparent;
 }
 
-/* Mostrar contenido cuando el radio está checkeado */
 .radio input:checked ~ .content {
   display: block;
   animation: fadeIn 0.3s ease;
 }
 
-/* --- GRID DENTRO DE LOS CONTENIDOS --- */
 .form-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -112,7 +105,6 @@
   grid-column: span 2;
 }
 
-/* Quill editor: mantener ancho completo y altura estable, incluso sin contenido */
 .product-description-editor {
   width: 100%;
 }
@@ -144,7 +136,6 @@
   color: #666;
 }
 
-/* Estilo de los inputs reales */
 .content input:not([type='checkbox']),
 .content textarea,
 .content select {
@@ -169,7 +160,6 @@
   grid-column: span 2;
 }
 
-/* --- BLOQUES DE SUBIDA (IMAGEN Y GALERIA) --- */
 .image-upload-container {
   background: #ffffff;
   border: 1px solid #e8e8e8;
@@ -601,7 +591,6 @@
   }
 }
 
-/* --- CONTENEDOR DE GUARDADO --- */
 .data-save-container {
   background: white;
   border-radius: 0.8rem;
@@ -616,7 +605,6 @@
   color: #333;
 }
 
-/* --- CONTROL DE VISIBILIDAD (SWITCH) --- */
 .visibility-control {
   display: flex;
   align-items: center;
@@ -631,7 +619,6 @@
   color: #555;
 }
 
-/* Estilo del Switch */
 .switch {
   position: relative;
   display: inline-block;
@@ -677,9 +664,8 @@ input:checked + .slider:before {
   transform: translateX(18px);
 }
 
-/* --- BOTÓN PRINCIPAL --- */
 .btn-primary {
-  width: 100%; /* Ocupa todo el ancho disponible */
+  width: 100%;
   background-color: #70c489;
   color: white;
   border: none;
@@ -823,7 +809,6 @@ input:checked + .slider:before {
   }
 }
 
-/* Visual polish layer */
 .info-form {
   gap: 1.4rem;
 }
@@ -922,13 +907,11 @@ input:checked + .slider:before {
   border-radius: 12px;
 }
 
-/* --- MODAL OPEN STATE --- */
 .info-form.modal-open {
   pointer-events: none;
   opacity: 0.5;
 }
 
-/* Desabilitar editor Quill cuando modal está abierto */
 .product-description-editor.disabled {
   opacity: 0.6;
   pointer-events: none;

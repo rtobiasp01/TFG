@@ -11,6 +11,5 @@ import { SiteSettingsService } from './services/site-settings-service';
 export class App {
   private readonly siteSettingsService = inject(SiteSettingsService);
 
-  // Keeps site settings service instantiated from app startup.
   protected readonly _siteSettings = this.siteSettingsService;
 }

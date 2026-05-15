@@ -364,7 +364,6 @@
     }
 }
 
-/* Bounce animation applied to cart link when an item is added */
 .cart-bounce {
     animation: cartBounce 560ms cubic-bezier(.2,.9,.2,1);
 }
