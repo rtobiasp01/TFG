@@ -191,6 +191,10 @@ export class Cart {
       return 0;
     }
 
+    if (currentProduct.manage_stock === false) {
+      return Number.MAX_SAFE_INTEGER;
+    }
+
     if (item.productType === 'simple' || !item.variantSku) {
       return Number(currentProduct.stock_quantity) || 0;
     }

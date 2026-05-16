@@ -12,7 +12,6 @@ export interface Product {
   type: ProductType;
   sku: string;
   slug?: string;
-  stock_status?: string;
   stock_quantity: number;
   manage_stock?: boolean;
   physical_attributes?: PhysicalAttributes | null;

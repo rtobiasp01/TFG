@@ -25,6 +25,10 @@
   top: 20px;
 }
 
+.form-product-title {
+  position: relative;
+}
+
 .form-product-title input {
   width: 100%;
   padding: 10px 0;
@@ -35,6 +39,14 @@
   outline: none;
   background: transparent;
   color: #333;
+}
+
+.title-asterisk {
+  position: absolute;
+  right: 0.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.5rem;
 }
 
 .form-product-title input:focus {
@@ -136,6 +148,11 @@
   color: #666;
 }
 
+.required-asterisk {
+  color: #ef4444;
+  font-weight: 700;
+}
+
 .content input:not([type='checkbox']),
 .content textarea,
 .content select {
@@ -172,6 +189,10 @@
   margin: 0 0 0.75rem 0;
   font-size: 1rem;
   color: #2e2e2e;
+}
+
+.image-upload-container h3 .required-asterisk {
+  font-size: 1rem;
 }
 
 .image-upload-container input[type='file'] {

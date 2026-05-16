@@ -224,12 +224,17 @@ export class ProductDetails {
   }
 
   stockAvailability(): boolean {
+    const product = this.product();
+    if (!product) return false;
+
+    if (product.manage_stock === false) return true;
+
     const variantStock = this.selectedVariant()?.stock_quantity;
     if (typeof variantStock === 'number') {
       return variantStock > 0;
     }
 
-    const productStock = this.product()?.stock_quantity ?? 0;
+    const productStock = product.stock_quantity ?? 0;
     return productStock > 0;
   }
 
@@ -420,6 +425,10 @@ export class ProductDetails {
     const basePrice = product.price;
     const productImage = product.image;
     const additionalPrice = selectedVariant?.precio_adicional ?? 0;
+    const manageStock = product.manage_stock !== false;
+    const infiniteStock = Number.MAX_SAFE_INTEGER;
+    const productStock = manageStock ? product.stock_quantity : infiniteStock;
+    const variantStockValue = manageStock ? (selectedVariant?.stock_quantity ?? 0) : infiniteStock;
 
     this.isAddingToCart.set(true);
 
@@ -429,7 +438,7 @@ export class ProductDetails {
       simpleSku: isSimple ? product.sku : undefined,
       variantSku: !isSimple ? selectedVariant?.sku : undefined,
       variantAttributes: !isSimple ? this.selectedAttributes() : undefined,
-      availableStock: isSimple ? product.stock_quantity : (selectedVariant?.stock_quantity ?? 0),
+      availableStock: isSimple ? productStock : variantStockValue,
       quantityToAdd: 1,
     });
 
@@ -453,7 +462,7 @@ export class ProductDetails {
           basePrice,
           simpleSku: product.sku,
           quantity: 1,
-          availableStock: product.stock_quantity,
+          availableStock: productStock,
         });
       } else {
         this.cartService.addItem({
@@ -466,7 +475,7 @@ export class ProductDetails {
           variantAttributes: this.selectedAttributes(),
           variantAdditionalPrice: additionalPrice,
           quantity: 1,
-          availableStock: selectedVariant?.stock_quantity ?? 0,
+          availableStock: variantStockValue,
         });
       }
 
@@ -806,6 +815,10 @@ export class ProductDetails {
     const basePrice = product.price;
     const productImage = product.image;
     const additionalPrice = selectedVariant?.precio_adicional ?? 0;
+    const manageStock = product.manage_stock !== false;
+    const infiniteStock = Number.MAX_SAFE_INTEGER;
+    const productStock = manageStock ? product.stock_quantity : infiniteStock;
+    const variantStockValue = manageStock ? (selectedVariant?.stock_quantity ?? 0) : infiniteStock;
     const customization = this.buildCustomizationPayload(uploadedImageUrl);
 
     this.isAddingToCart.set(true);
@@ -815,7 +828,7 @@ export class ProductDetails {
           productId: product._id,
           productType: 'custom-personalized',
           simpleSku: product.sku,
-          availableStock: product.stock_quantity,
+          availableStock: productStock,
           quantityToAdd: 1,
         })
       : this.willExceedStockForAdd({
@@ -823,7 +836,7 @@ export class ProductDetails {
           productType: 'custom-personalized',
           variantSku: selectedVariant?.sku,
           variantAttributes: this.selectedAttributes(),
-          availableStock: selectedVariant?.stock_quantity ?? 0,
+          availableStock: variantStockValue,
           quantityToAdd: 1,
         });
 
@@ -846,7 +859,7 @@ export class ProductDetails {
         basePrice,
         simpleSku: product.sku,
         quantity: 1,
-        availableStock: product.stock_quantity,
+        availableStock: productStock,
         customization,
       });
     } else {
@@ -860,7 +873,7 @@ export class ProductDetails {
         variantAttributes: this.selectedAttributes(),
         variantAdditionalPrice: additionalPrice,
         quantity: 1,
-        availableStock: selectedVariant?.stock_quantity ?? 0,
+        availableStock: variantStockValue,
         customization,
       });
     }

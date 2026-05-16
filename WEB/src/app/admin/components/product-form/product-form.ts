@@ -108,7 +108,6 @@ export class ProductForm {
     slug: [''],
     price: [0, [Validators.required, Validators.min(0.01)]],
     sku: ['', Validators.required],
-    stock_status: ['in_stock', Validators.required],
     stock_quantity: [0, [Validators.min(0)]],
     manage_stock: [false],
     physical_attributes: this.fb.group({
@@ -135,7 +134,7 @@ export class ProductForm {
       textPlacementHeightPercent: [22, [Validators.min(1), Validators.max(100)]],
     }),
     variantes: this.fb.array([]),
-    image: [''],
+    image: ['', Validators.required],
     gallery: [[] as string[]],
   });
 
