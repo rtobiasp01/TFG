@@ -1116,6 +1116,15 @@ export class ProductDetails {
     return star <= rating;
   }
 
+  canDeleteReview(review: Review): boolean {
+    if (this.authService.isAdmin()) return true;
+
+    const currentUser = this.authService.currentUser();
+    if (currentUser?.email && currentUser.email === review.email) return true;
+
+    return false;
+  }
+
   isAuthenticated(): boolean {
     return this.authService.isAuthenticated();
   }

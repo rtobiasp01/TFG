@@ -272,6 +272,10 @@
               </div>
 
               <p class="review-message">{{ review.message }}</p>
+
+              @if (canDeleteReview(review)) {
+                <button class="btn-delete-review" (click)="onDeleteReview(review._id)">Eliminar</button>
+              }
             </div>
           }
         </div>

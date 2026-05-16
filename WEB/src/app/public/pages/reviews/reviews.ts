@@ -3,6 +3,7 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ReviewService } from '../../../services/review-service';
 import { Review } from '../../../interfaces/review';
+import { AuthService } from '../../../services/auth-service';
 
 @Component({
   selector: 'app-reviews',
@@ -13,6 +14,7 @@ import { Review } from '../../../interfaces/review';
 })
 export class Reviews {
   private readonly reviewService = inject(ReviewService);
+  private readonly authService = inject(AuthService);
 
   readonly reviews = signal<Review[]>([]);
   readonly isLoading = signal<boolean>(false);
@@ -89,6 +91,15 @@ export class Reviews {
         },
       });
     }
+  }
+
+  canDeleteReview(review: Review): boolean {
+    if (this.authService.isAdmin()) return true;
+
+    const currentUser = this.authService.currentUser();
+    if (currentUser?.email && currentUser.email === review.email) return true;
+
+    return false;
   }
 
   toggleForm(): void {

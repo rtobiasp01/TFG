@@ -941,6 +941,25 @@
 	font-size: 0.95rem;
 }
 
+.btn-delete-review {
+	display: inline-block;
+	margin-top: 0.75rem;
+	padding: 0.4rem 0.8rem;
+	background: #fee2e2;
+	color: #b91c1c;
+	border: 1px solid #fca5a5;
+	border-radius: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s;
+}
+
+.btn-delete-review:hover {
+	background: #fecaca;
+	border-color: #f87171;
+}
+
 @media (max-width: 768px) {
 	.reviews-header {
 		flex-direction: column;

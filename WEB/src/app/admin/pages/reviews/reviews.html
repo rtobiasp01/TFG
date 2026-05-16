@@ -11,14 +11,7 @@
     </div>
     <div class="stat-card">
       <div class="stat-rating">
-        <div class="stat-stars">
-          @for (star of getRatingStars(5); track star) {
-            <span class="star" [class.filled]="isStarFilled(star, getTotalReviews() > 0 ? 5 : 0)">
-              ★
-            </span>
-          }
-        </div>
-        <div class="stat-number">{{ getAverageRating() }}</div>
+        <div class="stat-number">{{ getAverageRating() }} / 5</div>
       </div>
       <div class="stat-label">Calificación Promedio</div>
     </div>

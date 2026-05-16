@@ -122,7 +122,9 @@
 
             <div class="review-footer">
               <p class="review-product-id">Producto ID: {{ review.product_id }}</p>
-              <button class="btn-delete" (click)="onDeleteReview(review._id)">Eliminar</button>
+              @if (canDeleteReview(review)) {
+                <button class="btn-delete" (click)="onDeleteReview(review._id)">Eliminar</button>
+              }
             </div>
           </div>
         }

@@ -18,19 +18,19 @@ function validateReviewInput(reviewData = {}) {
   }
 
   if (!normalized.product_id) {
-    throw new Error("Product ID is required");
+    throw new Error("El ID del producto es obligatorio");
   }
 
   if (!ObjectId.isValid(normalized.product_id)) {
-    throw new Error("Invalid product ID");
+    throw new Error("El ID del producto no es válido");
   }
 
   if (!normalized.message) {
-    throw new Error("Review message is required");
+    throw new Error("El mensaje de la reseña es obligatorio");
   }
 
   if (!Number.isInteger(normalized.rating) || normalized.rating < 1 || normalized.rating > 5) {
-    throw new Error("Rating must be an integer between 1 and 5");
+    throw new Error("La calificación debe ser un número entre 1 y 5");
   }
 
   return normalized;
