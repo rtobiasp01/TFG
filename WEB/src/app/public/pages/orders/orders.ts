@@ -17,6 +17,7 @@ export class Orders {
   orders = signal<Order[]>([]);
   loadingOrders = signal<boolean>(true);
   selectedOrder = signal<Order | null>(null);
+  modalImageUrl = signal<string | null>(null);
 
   readonly statusColors = computed(() => ({
     pendiente: '#f59e0b',
@@ -115,5 +116,38 @@ export class Orders {
 
   getCustomText(item: OrderItem): string {
     return item.customization?.customText?.trim() || '';
+  }
+
+  hasCustomImage(item: OrderItem): boolean {
+    return Boolean(item.customization?.uploadedImageUrl?.trim());
+  }
+
+  getCustomImageUrl(item: OrderItem): string {
+    const rawImageUrl = item.customization?.uploadedImageUrl?.trim() || '';
+
+    if (!rawImageUrl) {
+      return '';
+    }
+
+    if (/^https?:\/\//i.test(rawImageUrl)) {
+      return rawImageUrl;
+    }
+
+    const sanitizedPath = rawImageUrl.replace(/^\/+/, '');
+    return `http://localhost:3000/${sanitizedPath}`;
+  }
+
+  getCustomImageDownloadName(item: OrderItem): string {
+    const rawImageUrl = item.customization?.uploadedImageUrl?.trim() || '';
+    const fileName = rawImageUrl.split('/').pop();
+    return fileName || `personalizacion-${item.product_id}.png`;
+  }
+
+  openImageModal(item: OrderItem) {
+    this.modalImageUrl.set(this.getCustomImageUrl(item));
+  }
+
+  closeImageModal() {
+    this.modalImageUrl.set(null);
   }
 }

@@ -51,6 +51,15 @@
                         @if (hasCustomText(item)) {
                           <p class="item-custom">📝 Texto: "{{ getCustomText(item) }}"</p>
                         }
+                        @if (hasCustomImage(item)) {
+                          <button
+                            class="item-download-image"
+                            type="button"
+                            (click)="openImageModal(item)"
+                          >
+                            Ver imagen personalizada
+                          </button>
+                        }
                       </div>
                       <div class="item-quantity">
                         <span>{{ item.quantity }}x</span>
@@ -128,6 +137,15 @@
           }
         </div>
       }
+    </div>
+  }
+
+  @if (modalImageUrl()) {
+    <div class="modal-overlay" (click)="closeImageModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="modal-close" type="button" (click)="closeImageModal()">✕</button>
+        <img [src]="modalImageUrl()!" alt="Imagen personalizada" />
+      </div>
     </div>
   }
 </div>
