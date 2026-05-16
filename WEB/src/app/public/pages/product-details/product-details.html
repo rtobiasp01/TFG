@@ -12,11 +12,22 @@
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
-        <img
-          class="img-principal__image"
-          [src]="imagenPrincipal()"
-          [alt]="product()?.title || ''"
-        />
+        @if (isVideoFile(imagenPrincipal() ?? '')) {
+          <video
+            class="img-principal__image"
+            [src]="imagenPrincipal()"
+            controls
+            muted
+            autoplay
+            playsinline
+          ></video>
+        } @else {
+          <img
+            class="img-principal__image"
+            [src]="imagenPrincipal()"
+            [alt]="product()?.title || ''"
+          />
+        }
 
         @if (isCustomPersonalizedProduct() && customImagePreview()) {
           <img
@@ -35,7 +46,11 @@
       </div>
       <div class="gallery">
         @for (img of galeriaActual(); track $index) {
-          <img class="gallery__image" src="{{ img }}" alt="" (click)="changeImage(img)" />
+          @if (isVideoFile(img)) {
+            <video class="gallery__image" [src]="img" muted (click)="changeImage(img)"></video>
+          } @else {
+            <img class="gallery__image" [src]="img" alt="" (click)="changeImage(img)" />
+          }
         }
       </div>
     </div>
@@ -274,7 +289,9 @@
               <p class="review-message">{{ review.message }}</p>
 
               @if (canDeleteReview(review)) {
-                <button class="btn-delete-review" (click)="onDeleteReview(review._id)">Eliminar</button>
+                <button class="btn-delete-review" (click)="onDeleteReview(review._id)">
+                  Eliminar
+                </button>
               }
             </div>
           }

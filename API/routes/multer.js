@@ -173,6 +173,11 @@ router.post("/remove-background", upload.single("archivo"), async (req, res) => 
     return res.status(400).json({ error: "No se seleccionó ningún archivo." });
   }
 
+  if (!req.file.mimetype.startsWith("image/")) {
+    await fs.unlink(req.file.path).catch(() => {});
+    return res.status(400).json({ error: "Solo se permiten imágenes para eliminar el fondo." });
+  }
+
   const inputFilePath = path.resolve(req.file.path);
   const useDeltaPng = req.query.format === 'deltapng'; // Permitir ?format=deltapng
 
@@ -213,6 +218,10 @@ router.post("/remove-background", upload.single("archivo"), async (req, res) => 
 router.post("/remove-background-preview", memoryUpload.single("archivo"), async (req, res) => {
   if (!req.file || !req.file.buffer) {
     return res.status(400).json({ error: "No se seleccionó ningún archivo." });
+  }
+
+  if (!req.file.mimetype.startsWith("image/")) {
+    return res.status(400).json({ error: "Solo se permiten imágenes para eliminar el fondo." });
   }
 
   const useDeltaPng = req.query.format === "deltapng";

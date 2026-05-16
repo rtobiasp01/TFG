@@ -24,6 +24,11 @@ export class Media {
     return `${this.uploadBaseUrl}${encodeURIComponent(filename)}`;
   }
 
+  isVideoFile(filename: string): boolean {
+    const ext = filename.split('.').pop()?.toLowerCase().split('?')[0];
+    return ext === 'mp4' || ext === 'webm' || ext === 'ogg' || ext === 'mov' || ext === 'avi';
+  }
+
   openImageModal(filename: string): void {
     this.selectedImage.set(this.getImageUrl(filename));
     this.showImageModal.set(true);

@@ -721,6 +721,11 @@ export class ProductForm {
     return this.variantImagePreviews().get(variantIndex) || [];
   }
 
+  isVideoFile(url: string): boolean {
+    const ext = url.split('.').pop()?.toLowerCase();
+    return ext === 'mp4' || ext === 'webm' || ext === 'ogg' || ext === 'mov' || ext === 'avi';
+  }
+
   getUploadedImageUrl(filename: string): string {
     return `${API_BASE_URL}/uploads/${encodeURIComponent(filename)}`;
   }
@@ -738,9 +743,9 @@ export class ProductForm {
 
   getImagePickerTitle(): string {
     const target = this.imagePickerTarget();
-    if (target === 'main') return 'Seleccionar imagen principal';
-    if (target === 'gallery') return 'Seleccionar imágenes de la galería';
-    return `Seleccionar imágenes de la variante #${(this.activeVariantIndex() ?? 0) + 1}`;
+    if (target === 'main') return 'Elegir imagen principal de la biblioteca';
+    if (target === 'gallery') return 'Elegir imágenes de la biblioteca';
+    return `Elegir imágenes de la variante #${(this.activeVariantIndex() ?? 0) + 1}`;
   }
 
   onModalImageClick(filename: string): void {

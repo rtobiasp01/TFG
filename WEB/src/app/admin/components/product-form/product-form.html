@@ -491,7 +491,7 @@
                               class="btn-secondary btn-small"
                               (click)="openImagePickerModal('variant', variantIndex)"
                             >
-                              Seleccionar desde API
+                              Seleccionar desde media
                             </button>
                           </div>
                           <input
@@ -499,7 +499,7 @@
                             class="variant-file-input"
                             type="file"
                             (change)="onVariantImagesSelected($event, variantIndex)"
-                            accept="image/*"
+                            accept="image/*,video/*"
                             multiple
                           />
                           <div class="gallery variant-gallery">
@@ -509,13 +509,17 @@
                               let imageIndex = $index
                             ) {
                               <div class="gallery-item">
-                                <img [src]="img" alt="Variante imagen" />
+                                @if (isVideoFile(img)) {
+                                  <video [src]="img" muted></video>
+                                } @else {
+                                  <img [src]="img" alt="Variante imagen" />
+                                }
                                 <button
                                   type="button"
                                   class="gallery-remove-btn"
                                   (click)="removeVariantImageAt(variantIndex, imageIndex)"
-                                  aria-label="Quitar imagen de variante"
-                                  title="Quitar imagen"
+                                  aria-label="Quitar archivo de variante"
+                                  title="Quitar archivo"
                                 >
                                   x
                                 </button>
@@ -579,13 +583,13 @@
       <div class="image-upload-container">
         <h3>Imagen del producto <span class="required-asterisk">*</span></h3>
         <div class="media-actions">
-          <label for="image" class="upload-btn">Subir imagen</label>
+          <label for="image" class="upload-btn">Subir archivo</label>
           <button
             type="button"
             class="btn-secondary btn-small"
             (click)="openImagePickerModal('main')"
           >
-            Seleccionar desde API
+            Seleccionar desde media
           </button>
         </div>
         <input type="file" (change)="onFileSelected($event)" id="image" accept="image/*" />
@@ -600,32 +604,36 @@
         <div class="image-upload-container">
           <h3>Galeria del producto</h3>
           <div class="media-actions">
-            <label for="gallery" class="upload-btn">Subir imagenes</label>
+            <label for="gallery" class="upload-btn">Subir archivos</label>
             <button
               type="button"
               class="btn-secondary btn-small"
               (click)="openImagePickerModal('gallery')"
             >
-              Seleccionar desde API
+              Seleccionar desde media
             </button>
           </div>
           <input
             type="file"
             (change)="onGalerySelected($event)"
             id="gallery"
-            accept="image/*"
+            accept="image/*,video/*"
             multiple
           />
           <div class="gallery">
             @for (img of galeryPaths(); track $index; let imageIndex = $index) {
               <div class="gallery-item">
-                <img [src]="img" alt="Galería producto" />
+                @if (isVideoFile(img)) {
+                  <video [src]="img" muted></video>
+                } @else {
+                  <img [src]="img" alt="Galería producto" />
+                }
                 <button
                   type="button"
                   class="gallery-remove-btn"
                   (click)="removeGalleryImageAt(imageIndex)"
-                  aria-label="Quitar imagen"
-                  title="Quitar imagen"
+                  aria-label="Quitar archivo"
+                  title="Quitar archivo"
                 >
                   x
                 </button>
@@ -690,14 +698,23 @@
 
         <div class="api-picker-grid modal-grid">
           @for (file of uploadedFiles(); track file) {
-            <button
-              type="button"
-              class="api-picker-item"
-              [class.selected]="isModalImageSelected(file)"
-              (click)="onModalImageClick(file)"
-            >
-              <img [src]="getUploadedImageUrl(file)" [alt]="file" />
-            </button>
+            @if (imagePickerTarget() === 'main' && isVideoFile(file)) {
+              <!-- skip videos when picking main image -->
+            } @else {
+              <button
+                type="button"
+                class="api-picker-item"
+                [class.selected]="isModalImageSelected(file)"
+                (click)="onModalImageClick(file)"
+              >
+                @if (isVideoFile(file)) {
+                  <video [src]="getUploadedImageUrl(file)" muted></video>
+                  <span class="api-picker-item__video-badge">▶</span>
+                } @else {
+                  <img [src]="getUploadedImageUrl(file)" [alt]="file" />
+                }
+              </button>
+            }
           }
         </div>
       </div>

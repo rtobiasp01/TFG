@@ -53,24 +53,38 @@
 }
 
 .media-preview {
-	width: 100%;
-	display: block;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	cursor: zoom-in;
+  position: relative;
+  width: 100%;
+  display: block;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: zoom-in;
 }
 
-.media-preview img {
-	width: 100%;
-	height: 220px;
-	object-fit: cover;
-	display: block;
-	transition: transform 0.35s ease;
+.media-preview img,
+.media-preview video {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.35s ease;
 }
 
-.media-preview:hover img {
-	transform: scale(1.08);
+.media-preview:hover img,
+.media-preview:hover video {
+  transform: scale(1.08);
+}
+
+.video-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  color: white;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
 }
 
 .delete-btn {
@@ -112,11 +126,12 @@
 	box-shadow: 0 16px 36px rgba(15, 32, 58, 0.24);
 }
 
-.image-modal img {
-	width: 100%;
-	max-height: calc(96vh - 2rem);
-	object-fit: contain;
-	display: block;
+.image-modal img,
+.image-modal video {
+  width: 100%;
+  max-height: calc(96vh - 2rem);
+  object-fit: contain;
+  display: block;
 }
 
 .modal-close {

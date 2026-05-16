@@ -14,14 +14,19 @@
             @for (media of archivos(); track media) {
                 <article class="media-card">
                     <button type="button" class="media-preview" (click)="openImageModal(media)">
-                        <img [src]="getImageUrl(media)" [alt]="media" loading="lazy" />
+                        @if (isVideoFile(media)) {
+                            <video [src]="getImageUrl(media)" muted></video>
+                            <span class="video-badge">▶</span>
+                        } @else {
+                            <img [src]="getImageUrl(media)" [alt]="media" loading="lazy" />
+                        }
                     </button>
 
                     <button
                         type="button"
                         class="delete-btn"
                         (click)="$event.stopPropagation(); eliminarArchivo(media)"
-                        aria-label="Eliminar imagen"
+                        aria-label="Eliminar archivo"
                         title="Eliminar"
                     >
                         Eliminar
@@ -39,11 +44,15 @@
                 type="button"
                 class="modal-close"
                 (click)="closeImageModal()"
-                aria-label="Cerrar imagen"
+                aria-label="Cerrar"
             >
                 ×
             </button>
-            <img [src]="selectedImage()" alt="Vista ampliada de la imagen" />
+            @if (isVideoFile(selectedImage())) {
+                <video [src]="selectedImage()" controls autoplay playsinline></video>
+            } @else {
+                <img [src]="selectedImage()" alt="Vista ampliada" />
+            }
         </div>
     </div>
 }

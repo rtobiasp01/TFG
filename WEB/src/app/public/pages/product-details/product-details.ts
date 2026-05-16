@@ -536,18 +536,18 @@ export class ProductDetails {
     return new Promise((resolve) => {
       try {
         const cartEl = document.getElementById('app-cart-link');
-        const srcImgEl = document.querySelector('.img-principal__image') as HTMLImageElement | null;
+        const srcEl = document.querySelector('.img-principal__image') as HTMLElement | null;
 
-        if (!cartEl || !srcImgEl) {
+        if (!cartEl || !srcEl) {
           resolve();
           return;
         }
 
-        const srcRect = srcImgEl.getBoundingClientRect();
+        const srcRect = srcEl.getBoundingClientRect();
         const destRect = cartEl.getBoundingClientRect();
 
         const flyImg = document.createElement('img');
-        flyImg.src = imageSrc;
+        flyImg.src = this.isVideoFile(imageSrc) ? '/favicon.ico' : imageSrc;
         flyImg.style.position = 'fixed';
         flyImg.style.left = `${srcRect.left}px`;
         flyImg.style.top = `${srcRect.top}px`;
@@ -558,6 +558,7 @@ export class ProductDetails {
         flyImg.style.pointerEvents = 'none';
         flyImg.style.borderRadius = '8px';
         flyImg.style.boxShadow = '0 10px 30px rgba(2,6,23,0.18)';
+        flyImg.style.objectFit = 'cover';
 
         document.body.appendChild(flyImg);
 
@@ -1123,6 +1124,11 @@ export class ProductDetails {
     if (currentUser?.email && currentUser.email === review.email) return true;
 
     return false;
+  }
+
+  isVideoFile(url: string): boolean {
+    const ext = url.split('.').pop()?.toLowerCase();
+    return ext === 'mp4' || ext === 'webm' || ext === 'ogg' || ext === 'mov' || ext === 'avi';
   }
 
   isAuthenticated(): boolean {
