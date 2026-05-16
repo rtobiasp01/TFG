@@ -193,6 +193,14 @@
 .profile-saved-card__icon {
   font-size: 1.5rem;
   flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.profile-saved-card__icon img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
 }
 
 .profile-saved-card__number {

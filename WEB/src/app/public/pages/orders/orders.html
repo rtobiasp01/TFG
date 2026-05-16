@@ -49,7 +49,7 @@
                         <p class="item-name">{{ item.productTitle || 'Producto' }}</p>
                         <p class="item-sku">ID: {{ item.product_id.substring(0, 8) }}</p>
                         @if (hasCustomText(item)) {
-                          <p class="item-custom">📝 Texto: "{{ getCustomText(item) }}"</p>
+                          <p class="item-custom"><img src="/icon-document.png" alt="Texto" class="inline-icon" /> Texto: "{{ getCustomText(item) }}"</p>
                         }
                         @if (hasCustomImage(item)) {
                           <button

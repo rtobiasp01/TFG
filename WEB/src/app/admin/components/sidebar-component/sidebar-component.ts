@@ -26,22 +26,22 @@ export class SidebarComponent {
   openMenus = signal<Set<string>>(new Set());
 
   menuItems: MenuItem[] = [
-    { icon: '🏠', label: 'Home', route: '/admin/home' },
-    { icon: '🏠', label: 'Inicio publica', route: '/inicio' },
-    { icon: '🖼️', label: 'Media', route: '/admin/media' },
+    { icon: '/home-icon-illustration-image-vector-removebg-preview.png', label: 'Home', route: '/admin/home' },
+    { icon: '/home-icon-illustration-image-vector-removebg-preview.png', label: 'Inicio publica', route: '/inicio' },
+    { icon: '/icon-gallery.png', label: 'Media', route: '/admin/media' },
     {
-      icon: '📊',
+      icon: '/icon-graphic.png',
       label: 'Productos',
       children: [
-        { icon: '📦', label: 'Inventario', route: '/admin/products' },
-        { icon: '🧩', label: 'Variantes', route: '/admin/products/variants' },
-        { icon: '🏷️', label: 'Categorías', route: '/admin/products/categories' },
+        { icon: '/icon-box.png', label: 'Inventario', route: '/admin/products' },
+        { icon: '/icon-puzzle.png', label: 'Variantes', route: '/admin/products/variants' },
+        { icon: '/icon-tag.png', label: 'Categorías', route: '/admin/products/categories' },
       ],
     },
-    { icon: '📦', label: 'Pedidos', route: '/admin/pedidos' },
-    { icon: '⭐', label: 'Reseñas', route: '/admin/resenas' },
-    { icon: '🎟️', label: 'Cupones', route: '/admin/cupones' },
-    { icon: '⚙️', label: 'Ajustes', route: '/admin/settings' },
+    { icon: '/icon-box.png', label: 'Pedidos', route: '/admin/pedidos' },
+    { icon: '/star-icon-balanced-star-drawing-award-icon-on-white-background-free-vector.png', label: 'Reseñas', route: '/admin/resenas' },
+    { icon: '/icon-ticket.png', label: 'Cupones', route: '/admin/cupones' },
+    { icon: '/settings-icon-symbol-design-illustration-vector.png', label: 'Ajustes', route: '/admin/settings' },
   ];
 
   toggleSidebar() {

@@ -450,3 +450,11 @@
     flex: 0 0 45%;
   }
 }
+
+.inline-icon {
+  width: 1rem;
+  height: 1rem;
+  object-fit: contain;
+  vertical-align: middle;
+  margin-right: 0.25rem;
+}

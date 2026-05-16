@@ -3,7 +3,6 @@
     <h1>Gestión de Reseñas</h1>
   </div>
 
-  <!-- Stats Cards -->
   <div class="stats-container">
     <div class="stat-card">
       <div class="stat-number">{{ getTotalReviews() }}</div>
@@ -17,7 +16,6 @@
     </div>
   </div>
 
-  <!-- Rating Distribution -->
   @if (getTotalReviews() > 0) {
     <div class="rating-distribution">
       <h2>Distribución de Calificaciones</h2>
@@ -44,7 +42,6 @@
     </div>
   }
 
-  <!-- Messages -->
   @if (successMessage()) {
     <div class="alert alert-success">
       {{ successMessage() }}
@@ -56,7 +53,6 @@
     </div>
   }
 
-  <!-- Controls -->
   <div class="controls-section">
     <div class="filter-group">
       <label for="filter-rating">Filtrar por calificación:</label>
@@ -89,7 +85,6 @@
     </div>
   </div>
 
-  <!-- Reviews List -->
   <div class="reviews-list-container">
     @if (isLoading()) {
       <div class="loading">
