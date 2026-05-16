@@ -546,36 +546,49 @@ export class ProductDetails {
         const srcRect = srcEl.getBoundingClientRect();
         const destRect = cartEl.getBoundingClientRect();
 
-        const flyImg = document.createElement('img');
-        flyImg.src = this.isVideoFile(imageSrc) ? '/favicon.ico' : imageSrc;
-        flyImg.style.position = 'fixed';
-        flyImg.style.left = `${srcRect.left}px`;
-        flyImg.style.top = `${srcRect.top}px`;
-        flyImg.style.width = `${srcRect.width}px`;
-        flyImg.style.height = `${srcRect.height}px`;
-        flyImg.style.transition = 'transform 650ms cubic-bezier(.2,.9,.2,1), opacity 600ms ease';
-        flyImg.style.zIndex = '9999';
-        flyImg.style.pointerEvents = 'none';
-        flyImg.style.borderRadius = '8px';
-        flyImg.style.boxShadow = '0 10px 30px rgba(2,6,23,0.18)';
-        flyImg.style.objectFit = 'cover';
+        let flyEl: HTMLElement;
 
-        document.body.appendChild(flyImg);
+        if (this.isVideoFile(imageSrc)) {
+          flyEl = document.createElement('video');
+          (flyEl as HTMLVideoElement).src = imageSrc;
+          (flyEl as HTMLVideoElement).muted = true;
+          (flyEl as HTMLVideoElement).autoplay = true;
+          (flyEl as HTMLVideoElement).playsInline = true;
+          (flyEl as HTMLVideoElement).playbackRate = 2;
+          document.body.appendChild(flyEl);
+          (flyEl as HTMLVideoElement).play().catch(() => {});
+        } else {
+          flyEl = document.createElement('img');
+          (flyEl as HTMLImageElement).src = imageSrc;
+          document.body.appendChild(flyEl);
+        }
+
+        flyEl.style.position = 'fixed';
+        flyEl.style.left = `${srcRect.left}px`;
+        flyEl.style.top = `${srcRect.top}px`;
+        flyEl.style.width = `${srcRect.width}px`;
+        flyEl.style.height = `${srcRect.height}px`;
+        flyEl.style.transition = 'transform 650ms cubic-bezier(.2,.9,.2,1), opacity 600ms ease';
+        flyEl.style.zIndex = '9999';
+        flyEl.style.pointerEvents = 'none';
+        flyEl.style.borderRadius = '8px';
+        flyEl.style.boxShadow = '0 10px 30px rgba(2,6,23,0.18)';
+        flyEl.style.objectFit = 'cover';
 
         const translateX = destRect.left + destRect.width / 2 - (srcRect.left + srcRect.width / 2);
         const translateY = destRect.top + destRect.height / 2 - (srcRect.top + srcRect.height / 2);
         const scale = Math.max(0.18, Math.min(0.45, destRect.width / srcRect.width));
 
-        flyImg.getBoundingClientRect();
+        flyEl.getBoundingClientRect();
 
         requestAnimationFrame(() => {
-          flyImg.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-          flyImg.style.opacity = '0.0';
+          flyEl.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+          flyEl.style.opacity = '0.0';
         });
 
         const cleanup = () => {
           try {
-            document.body.removeChild(flyImg);
+            document.body.removeChild(flyEl);
             try {
               if (cartEl) {
                 cartEl.classList.add('cart-bounce');
@@ -593,7 +606,7 @@ export class ProductDetails {
           resolve();
         };
 
-        flyImg.addEventListener('transitionend', cleanup, { once: true });
+        flyEl.addEventListener('transitionend', cleanup, { once: true });
 
         setTimeout(cleanup, 1000);
       } catch (e) {
