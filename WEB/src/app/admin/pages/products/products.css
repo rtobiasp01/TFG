@@ -124,6 +124,18 @@ td p {
   font-weight: 500;
 }
 
+.draft-badge {
+  display: inline-block;
+  margin-top: 0.25rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #92400e;
+  background: #fef3c7;
+  border-radius: 999px;
+  border: 1px solid #fde68a;
+}
+
 input[type='checkbox'] {
   width: 16px;
   height: 16px;

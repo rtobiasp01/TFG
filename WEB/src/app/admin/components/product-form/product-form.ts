@@ -110,6 +110,7 @@ export class ProductForm {
     sku: ['', Validators.required],
     stock_quantity: [0, [Validators.min(0)]],
     manage_stock: [false],
+    is_draft: [false],
     physical_attributes: this.fb.group({
       length: [0, [Validators.min(0)]],
       width: [0, [Validators.min(0)]],
@@ -152,7 +153,7 @@ export class ProductForm {
     this.loadUploadedFiles();
 
     if (this.id()) {
-      this.productService.getById(this.id()).subscribe({
+      this.productService.getByIdAdmin(this.id()).subscribe({
         next: (product: Product) => {
           this.imagePath.set(product.image || '');
           this.galeryPaths.set(Array.isArray(product.gallery) ? product.gallery : []);
@@ -487,6 +488,7 @@ export class ProductForm {
       stock_quantity: rawValue.manage_stock ? Number(rawValue.stock_quantity) || 0 : 0,
       variantes: this.buildVariantsPayload(rawValue.variantes ?? [], variantImagesMap),
       categoria: categorias,
+      is_draft: rawValue.is_draft ?? false,
     };
 
     payload.customization_config =

@@ -9,9 +9,34 @@ const router = express.Router();
 router.get("/", async (req, res) => {
   try {
     const products = await productService.getAllProducts();
+    const publicProducts = products.filter((p) => !p.is_draft);
+    res.json(publicProducts);
+  } catch (err) {
+    res.status(500).json({ error: "Error al obtener productos" });
+  }
+});
+
+// GET /api/products/admin/all (includes draft products)
+router.get("/admin/all", async (req, res) => {
+  try {
+    const products = await productService.getAllProducts();
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: "Error al obtener productos" });
+  }
+});
+
+// GET /api/products/admin/:id (includes draft products)
+router.get("/admin/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const product = await productService.getProductById(id);
+    if (!product) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
+    res.json(product);
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener producto" });
   }
 });
 
@@ -31,7 +56,7 @@ router.get("/sku/:sku", async (req, res) => {
     const { sku } = req.params;
     const product = await productService.getProductBySku(sku);
 
-    if (!product) {
+    if (!product || product.is_draft) {
       return res.status(404).json({ error: "Producto no encontrado" });
     }
 
@@ -45,6 +70,9 @@ router.get("/:id", async (req, res) => {
   try {
     const id = req.params.id;
     const product = await productService.getProductById(id);
+    if (product?.is_draft) {
+      return res.status(404).json({ error: "Producto no encontrado" });
+    }
     res.json(product);
   } catch (error) {
     res.status(500).json({ error: "Error al obtener producto" });
@@ -213,6 +241,7 @@ router.put("/:id", async (req, res) => {
       image: req.body.image,
       gallery: req.body.gallery,
       visible: req.body.visible,
+      is_draft: req.body.is_draft,
     };
 
     Object.keys(updateData).forEach(

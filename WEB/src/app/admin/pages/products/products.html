@@ -47,6 +47,9 @@
         </td>
         <td>
           <p>{{ product.title }}</p>
+          @if (product.is_draft) {
+            <span class="draft-badge">Borrador</span>
+          }
         </td>
         <td>
           <p>{{ product.sku }}</p>

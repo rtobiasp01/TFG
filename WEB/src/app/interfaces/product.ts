@@ -21,4 +21,5 @@ export interface Product {
   image: string;
   gallery?: string[];
   categoria?: string[];
+  is_draft?: boolean;
 }

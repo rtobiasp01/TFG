@@ -16,8 +16,17 @@ export class ProductService {
     return productos;
   }
 
+  getAllAdmin() {
+    const productos = this.http.get<Product[]>(`${this.API_URL}/admin/all`);
+    return productos;
+  }
+
   getById(id: string) {
     return this.http.get<Product>(`${this.API_URL}/${id}`);
+  }
+
+  getByIdAdmin(id: string) {
+    return this.http.get<Product>(`${this.API_URL}/admin/${id}`);
   }
 
   getBySku(sku: string) {

@@ -22,7 +22,7 @@ export class Products {
   }
 
   private loadProducts() {
-    this.productService.getAll().subscribe({
+    this.productService.getAllAdmin().subscribe({
       next: (value) => this.products.set(value),
     });
   }

@@ -20,6 +20,7 @@ class Product {
     image = null,
     gallery = [],
     visible = true,
+    is_draft = false,
   } = {}) {
     this.title = title;
     this.description = description;
@@ -62,6 +63,7 @@ class Product {
     this.sku = this.normalizeSku(sku, this.slug, this.title);
 
     this.visible = Boolean(visible);
+    this.is_draft = Boolean(is_draft);
   }
 
   normalizeSku(sku, slug, title) {

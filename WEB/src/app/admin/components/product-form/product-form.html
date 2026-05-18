@@ -574,6 +574,22 @@
         </div>
 
         <div class="save-actions">
+          <div class="draft-toggle">
+            <label class="draft-toggle__label">
+              <span class="draft-toggle__text">Borrador</span>
+              <div class="draft-toggle__switch">
+                <input
+                  type="checkbox"
+                  formControlName="is_draft"
+                  id="is_draft"
+                />
+                <span class="draft-toggle__slider"></span>
+              </div>
+            </label>
+            <p class="draft-toggle__hint">
+              {{ productForm.get('is_draft')?.value ? 'El producto no será visible públicamente' : 'El producto será publicado' }}
+            </p>
+          </div>
           <button type="submit" class="btn-primary">
             {{ id() ? 'Actualizar Producto' : 'Guardar Producto' }}
           </button>
