@@ -479,13 +479,17 @@
   }
 
   .hero-stats,
-  .products-grid,
   .category-grid,
   .process-grid,
   .testimonial-grid,
   .cta-benefits,
   .landing-footer {
     grid-template-columns: 1fr;
+  }
+
+  .products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.65rem;
   }
 
   .section-heading {
