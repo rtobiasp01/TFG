@@ -347,6 +347,30 @@
           </div>
 
           <div class="payment-form__actions checkout-summary__actions">
+            <div class="checkout-legal-checkboxes">
+              <label class="checkout-legal-checkbox">
+                <input
+                  type="checkbox"
+                  [ngModel]="acceptTerms()"
+                  (ngModelChange)="acceptTerms.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  required
+                />
+                <span>He leido y acepto las <a routerLink="/condiciones" target="_blank">Condiciones Generales de Contratacion</a></span>
+              </label>
+
+              <label class="checkout-legal-checkbox">
+                <input
+                  type="checkbox"
+                  [ngModel]="acceptPrivacy()"
+                  (ngModelChange)="acceptPrivacy.set($event)"
+                  [ngModelOptions]="{ standalone: true }"
+                  required
+                />
+                <span>He leido y acepto la <a routerLink="/privacidad" target="_blank">Politica de Privacidad</a></span>
+              </label>
+            </div>
+
             <a routerLink="/cart" class="payment-form__secondary">Cancelar</a>
             <button type="submit" class="payment-form__primary" [disabled]="processingCheckout()">
               {{ processingCheckout() ? 'Procesando pedido...' : 'Realizar pedido' }}

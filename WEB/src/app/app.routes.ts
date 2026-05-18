@@ -22,6 +22,12 @@ import { Register } from './public/pages/register/register';
 import { Profile } from './public/pages/profile/profile';
 import { ForgotPassword } from './public/pages/forgot-password/forgot-password';
 import { ResetPassword } from './public/pages/reset-password/reset-password';
+import { AvisoLegal } from './public/pages/aviso-legal/aviso-legal';
+import { Privacidad } from './public/pages/privacidad/privacidad';
+import { Cookies } from './public/pages/cookies/cookies';
+import { Condiciones } from './public/pages/condiciones/condiciones';
+import { Desistimiento } from './public/pages/desistimiento/desistimiento';
+import { Contacto } from './public/pages/contacto/contacto';
 import { adminGuard, authGuard, publicOnlyGuard } from './guards/auth-guards';
 
 export const routes: Routes = [
@@ -134,6 +140,30 @@ export const routes: Routes = [
         path: 'reset-password/:token',
         component: ResetPassword,
         canActivate: [publicOnlyGuard],
+      },
+      {
+        path: 'aviso-legal',
+        component: AvisoLegal,
+      },
+      {
+        path: 'privacidad',
+        component: Privacidad,
+      },
+      {
+        path: 'politica-cookies',
+        component: Cookies,
+      },
+      {
+        path: 'condiciones',
+        component: Condiciones,
+      },
+      {
+        path: 'formulario-desistimiento',
+        component: Desistimiento,
+      },
+      {
+        path: 'contacto',
+        component: Contacto,
       },
       {
         path: '',

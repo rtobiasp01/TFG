@@ -24,10 +24,13 @@
     </div>
 
     <div class="footer-column">
-      <h3>Contacto</h3>
-      <ul class="footer-contact">
-        <li>Formulario y pedidos desde el catálogo.</li>
-        <li>Redes sociales y legal pendientes de tus datos reales.</li>
+      <h3>Legal</h3>
+      <ul class="footer-links">
+        @for (link of legalLinks; track link.label) {
+          <li>
+            <a [routerLink]="link.route">{{ link.label }}</a>
+          </li>
+        }
       </ul>
     </div>
   </div>

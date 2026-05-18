@@ -52,6 +52,8 @@ export class Checkout {
   readonly processingCheckout = signal(false);
   readonly submitError = signal('');
   readonly showSuccessModal = signal(false);
+  readonly acceptTerms = signal(false);
+  readonly acceptPrivacy = signal(false);
   readonly savePersonalDataForFuture = signal(false);
   readonly saveShippingAddressForFuture = signal(false);
   readonly savePaymentMethodForFuture = signal(false);
@@ -370,6 +372,11 @@ export class Checkout {
 
   confirmPaymentAndCheckout(): void {
     if (this.processingCheckout()) {
+      return;
+    }
+
+    if (!this.acceptTerms() || !this.acceptPrivacy()) {
+      this.submitError.set('Debes aceptar las Condiciones Generales de Contratacion y la Politica de Privacidad para continuar.');
       return;
     }
 

@@ -26,7 +26,15 @@ export class Footer {
     { label: 'Catálogo', route: '/productos' },
     { label: 'Personaliza', route: '/inicio', fragment: 'customize' },
     { label: 'Proceso', route: '/inicio', fragment: 'process' },
-    { label: 'Contacto', route: '/inicio', fragment: 'contact' },
+    { label: 'Contacto', route: '/contacto' },
+  ];
+
+  legalLinks: FooterLink[] = [
+    { label: 'Aviso Legal', route: '/aviso-legal' },
+    { label: 'Privacidad', route: '/privacidad' },
+    { label: 'Cookies', route: '/politica-cookies' },
+    { label: 'Condiciones', route: '/condiciones' },
+    { label: 'Desistimiento', route: '/formulario-desistimiento' },
   ];
 
   currentYear = new Date().getFullYear();

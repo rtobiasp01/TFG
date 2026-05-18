@@ -1,0 +1,198 @@
+.legal-page {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 3rem;
+}
+
+.legal-page__header {
+  margin-bottom: 2rem;
+}
+
+.legal-page__eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #92400e;
+}
+
+.legal-page__header h1 {
+  margin: 0.2rem 0 0.5rem;
+  font-size: clamp(1.8rem, 3vw, 2.4rem);
+  color: #1f2937;
+}
+
+.legal-page__description {
+  margin: 0;
+  color: #4b5563;
+  line-height: 1.7;
+  max-width: 65ch;
+}
+
+.legal-page__section {
+  margin-bottom: 1.5rem;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+}
+
+.legal-page__section h2 {
+  margin: 0 0 0.75rem;
+  font-size: 1.15rem;
+  color: #1f2937;
+}
+
+.legal-page__section p {
+  margin: 0 0 0.65rem;
+  color: #374151;
+  line-height: 1.7;
+}
+
+.legal-page__section p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-page__list {
+  margin: 0.5rem 0 0;
+  padding: 0 0 0 1.25rem;
+  list-style: none;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.legal-page__list li {
+  color: #374151;
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.legal-page__list li strong {
+  color: #1f2937;
+}
+
+.withdrawal-form {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.withdrawal-field {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.withdrawal-field label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.withdrawal-field input,
+.withdrawal-field textarea {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background: #ffffff;
+  font-size: 0.95rem;
+  color: #1f2937;
+  font-family: inherit;
+}
+
+.withdrawal-field input:focus,
+.withdrawal-field textarea:focus {
+  outline: none;
+  border-color: #b45309;
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.12);
+}
+
+.withdrawal-field__static {
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.withdrawal-notice {
+  padding: 0.85rem;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  border-radius: 0.5rem;
+  color: #92400e;
+  font-size: 0.92rem;
+  font-weight: 500;
+}
+
+.withdrawal-notice p {
+  margin: 0;
+}
+
+.withdrawal-info {
+  padding: 0.85rem;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 0.5rem;
+  color: #15803d;
+  font-size: 0.9rem;
+}
+
+.withdrawal-info p {
+  margin: 0;
+}
+
+.withdrawal-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.withdrawal-btn {
+  padding: 0.65rem 1.25rem;
+  background: #b45309;
+  color: #ffffff;
+  border: none;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.withdrawal-btn:hover {
+  background: #92400e;
+}
+
+.legal-page__last-update {
+  margin-top: 2rem;
+  font-size: 0.88rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
+@media (max-width: 640px) {
+  .legal-page {
+    padding: 1.25rem 0.75rem 2rem;
+  }
+
+  .legal-page__section {
+    padding: 1rem;
+  }
+
+  .legal-page__header h1 {
+    font-size: 1.6rem;
+  }
+
+  .withdrawal-actions {
+    justify-content: stretch;
+  }
+
+  .withdrawal-btn {
+    width: 100%;
+    text-align: center;
+  }
+}
