@@ -89,6 +89,7 @@ async function updateUserProfileData(userId, updates = {}) {
     } else if (updates.savedPaymentMethod === null) {
       setPayload.savedPaymentMethod = null;
     }
+    
 
     if (Object.keys(setPayload).length === 0) {
       return await db.collection("users").findOne({ _id: new ObjectId(userId) });
