@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { SiteSettingsService } from '../../../services/site-settings-service';
@@ -21,6 +21,7 @@ export class SidebarComponent {
   private readonly siteSettingsService = inject(SiteSettingsService);
 
   isCollapsed = signal(false);
+  mobileOpen = signal(false);
   readonly siteName = this.siteSettingsService.siteName;
 
   openMenus = signal<Set<string>>(new Set());
@@ -44,6 +45,11 @@ export class SidebarComponent {
     { icon: '/settings-icon-symbol-design-illustration-vector.png', label: 'Ajustes', route: '/admin/settings' },
   ];
 
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    this.closeMobile();
+  }
+
   toggleSidebar() {
     this.isCollapsed.update((v) => !v);
     if (this.isCollapsed()) this.openMenus.set(new Set());
@@ -62,5 +68,17 @@ export class SidebarComponent {
 
   isMenuOpen(label: string): boolean {
     return this.openMenus().has(label);
+  }
+
+  openMobile() {
+    this.mobileOpen.set(true);
+  }
+
+  closeMobile() {
+    this.mobileOpen.set(false);
+  }
+
+  toggleMobile() {
+    this.mobileOpen.update((v) => !v);
   }
 }

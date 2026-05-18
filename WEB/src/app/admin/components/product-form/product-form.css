@@ -654,6 +654,12 @@
   color: #333;
 }
 
+.save-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
 .draft-toggle {
   margin-bottom: 1rem;
   padding: 0.75rem;
@@ -1076,4 +1082,316 @@ input:checked + .slider:before {
 
 .product-description-editor.disabled ::ng-deep .ql-container {
   pointer-events: none;
+}
+
+@media (max-width: 900px) {
+  .info-form {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .info-form.modal-open {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .info-izquierda {
+    flex: none;
+    width: 100%;
+    padding: 1rem;
+    order: 2;
+  }
+
+  .info-derecha {
+    flex: none;
+    width: 100%;
+    position: static;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    order: 1;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  .data-save-container {
+    grid-column: 1 / -1;
+    margin-bottom: 0;
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .save-header h3 {
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .save-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .draft-toggle {
+    margin-bottom: 0;
+    padding: 0.65rem;
+  }
+
+  .draft-toggle__label {
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .draft-toggle__hint {
+    width: 100%;
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .image-upload-container {
+    margin-bottom: 0;
+    border-radius: 12px;
+    padding: 0.85rem;
+  }
+
+  .image-upload-container h3 {
+    font-size: 0.9rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .image-upload-container:first-of-type {
+    grid-column: 1 / -1;
+  }
+
+  .media-actions {
+    flex-direction: row;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+  }
+
+  .media-actions .upload-btn,
+  .media-actions .btn-secondary {
+    margin-bottom: 0;
+    flex: 1;
+    text-align: center;
+    padding: 0.55rem 0.6rem;
+    font-size: 0.82rem;
+  }
+
+  .image-preview-area {
+    min-height: 180px;
+  }
+
+  .image-preview-area img {
+    height: 180px;
+  }
+
+  .gallery {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 0.4rem;
+  }
+
+  .gallery-item img,
+  .gallery-item video {
+    height: 72px;
+  }
+
+  .categories-checkboxes {
+    padding: 0.75rem;
+  }
+
+  .category-manual-add {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .category-manual-add input {
+    padding: 0.55rem 0.6rem;
+    font-size: 0.88rem;
+  }
+
+  .category-manual-add .btn-secondary {
+    width: 100%;
+    padding: 0.55rem;
+  }
+
+  .checkbox-label {
+    font-size: 0.88rem;
+  }
+
+  .form-product-title input {
+    font-size: 1.5rem;
+  }
+
+  .title-asterisk {
+    font-size: 1.2rem;
+  }
+
+  .radio-inputs {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .radio-inputs .name {
+    font-size: 0.82rem;
+    padding: 0.6rem 0.7rem;
+    flex: none;
+    min-width: fit-content;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-group.full-width {
+    grid-column: span 1;
+  }
+
+  .checkbox-group {
+    grid-column: span 1;
+  }
+
+  .placement-editor {
+    max-width: 100%;
+    min-height: 240px;
+    height: clamp(240px, 50vw, 400px);
+  }
+
+  .placement-target-switch {
+    flex-direction: column;
+  }
+
+  .placement-target-switch .btn-secondary {
+    width: 100%;
+  }
+
+  .variant-attribute-row {
+    grid-template-columns: 1fr;
+  }
+
+  .variant-values-container {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .variant-values-list {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .variant-card-actions {
+    flex-wrap: wrap;
+  }
+
+  .image-picker-modal {
+    width: 96vw;
+    max-height: 90vh;
+    padding: 0.8rem;
+  }
+
+  .api-picker-grid {
+    grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .info-form {
+    margin: 0;
+  }
+
+  .info-izquierda {
+    padding: 0.75rem;
+  }
+
+  .info-derecha {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    padding: 0 0.75rem;
+  }
+
+  .image-upload-container:first-of-type {
+    grid-column: 1;
+  }
+
+  .data-save-container {
+    padding: 0.85rem;
+  }
+
+  .image-upload-container {
+    padding: 0.75rem;
+  }
+
+  .form-product-title input {
+    font-size: 1.3rem;
+    padding: 0.6rem 0;
+  }
+
+  .radio-inputs .name {
+    font-size: 0.76rem;
+    padding: 0.5rem 0.6rem;
+  }
+
+  .content input:not([type='checkbox']),
+  .content textarea,
+  .content select {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+
+  .btn-primary {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .image-preview-area {
+    min-height: 160px;
+  }
+
+  .image-preview-area img {
+    height: 160px;
+  }
+
+  .gallery {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .variant-gallery {
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  }
+
+  .variant-gallery img {
+    height: 90px;
+  }
+
+  .placement-editor {
+    min-height: 200px;
+    height: 200px;
+  }
+
+  .placement-zone__label {
+    font-size: 0.65rem;
+  }
+
+  .draft-toggle__text {
+    font-size: 0.82rem;
+  }
+
+  .draft-toggle__switch {
+    width: 40px;
+    height: 22px;
+  }
+
+  .draft-toggle__slider:before {
+    height: 16px;
+    width: 16px;
+  }
+
+  .draft-toggle__switch input:checked + .draft-toggle__slider:before {
+    transform: translateX(18px);
+  }
 }

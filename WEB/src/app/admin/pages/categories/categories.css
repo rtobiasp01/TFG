@@ -213,3 +213,79 @@ td:last-child {
     white-space: nowrap;
   }
 }
+
+@media (max-width: 600px) {
+  .categories-page {
+    padding: 0.75rem;
+  }
+
+  .categories-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .categories-header h1 {
+    font-size: 1.3rem;
+  }
+
+  .form-card {
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+  }
+
+  .form-card h2 {
+    font-size: 1rem;
+  }
+
+  .form-group input[type='text'],
+  .form-group textarea {
+    padding: 0.6rem 0.7rem;
+    font-size: 0.9rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .form-actions .btn-primary,
+  .form-actions .btn-secondary {
+    width: 100%;
+    text-align: center;
+  }
+
+  .categories-list {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+
+  table th {
+    padding: 0.75rem 0.7rem;
+    font-size: 0.68rem;
+  }
+
+  table td {
+    padding: 0.7rem 0.7rem;
+    font-size: 0.85rem;
+  }
+
+  td:last-child {
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .btn-edit,
+  .btn-delete {
+    width: 100%;
+    text-align: center;
+    padding: 0.55rem 0.7rem;
+  }
+
+  .badge {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+  }
+}

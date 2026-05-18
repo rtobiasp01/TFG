@@ -1,56 +1,62 @@
-<div class="sidebar-container" [class.collapsed]="isCollapsed()">
-  <div class="sidebar-header">
-    <span class="logo-text" *ngIf="!isCollapsed()">{{ siteName() }}</span>
-    <button class="toggle-btn" (click)="toggleSidebar()">
-      {{ isCollapsed() ? '➤' : '◀' }}
-    </button>
+<div class="sidebar-container" [class.collapsed]="isCollapsed()" [class.mobile-open]="mobileOpen()">
+  <div class="sidebar-overlay" (click)="closeMobile()"></div>
+  <div class="sidebar-inner">
+    <div class="sidebar-header">
+      <span class="logo-text" *ngIf="!isCollapsed()">{{ siteName() }}</span>
+      <div class="header-actions">
+        <button class="mobile-close-btn" (click)="closeMobile()" aria-label="Cerrar menú">✕</button>
+        <button class="toggle-btn" (click)="toggleSidebar()">
+          {{ isCollapsed() ? '➤' : '◀' }}
+        </button>
+      </div>
+    </div>
+
+    <ul class="nav-list">
+      <li *ngFor="let item of menuItems">
+        <ng-container *ngIf="item.children; else singleItem">
+          <div class="nav-item has-children" (click)="toggleSubmenu(item.label)">
+            <span class="icon">
+              @if (item.icon.startsWith('/')) {
+                <img [src]="item.icon" [alt]="item.label" />
+              } @else {
+                {{ item.icon }}
+              }
+            </span>
+            <span class="label" *ngIf="!isCollapsed()">{{ item.label }}</span>
+            <span class="arrow" *ngIf="!isCollapsed()">
+              {{ isMenuOpen(item.label) ? '▾' : '▸' }}
+            </span>
+          </div>
+
+          <ul class="submenu" *ngIf="isMenuOpen(item.label) && !isCollapsed()">
+            <li *ngFor="let sub of item.children">
+              <a [routerLink]="sub.route" routerLinkActive="active" class="nav-item sub-item" (click)="closeMobile()">
+                <span class="icon">
+                  @if (sub.icon.startsWith('/')) {
+                    <img [src]="sub.icon" [alt]="sub.label" />
+                  } @else {
+                    {{ sub.icon }}
+                  }
+                </span>
+                <span class="label">{{ sub.label }}</span>
+              </a>
+            </li>
+          </ul>
+        </ng-container>
+
+        <ng-template #singleItem>
+          <a [routerLink]="item.route" routerLinkActive="active" class="nav-item" (click)="closeMobile()">
+            <span class="icon">
+              @if (item.icon.startsWith('/')) {
+                <img [src]="item.icon" [alt]="item.label" />
+              } @else {
+                {{ item.icon }}
+              }
+            </span>
+            <span class="label" *ngIf="!isCollapsed()">{{ item.label }}</span>
+          </a>
+        </ng-template>
+      </li>
+    </ul>
   </div>
-
-  <ul class="nav-list">
-    <li *ngFor="let item of menuItems">
-      <ng-container *ngIf="item.children; else singleItem">
-        <div class="nav-item has-children" (click)="toggleSubmenu(item.label)">
-          <span class="icon">
-            @if (item.icon.startsWith('/')) {
-              <img [src]="item.icon" [alt]="item.label" />
-            } @else {
-              {{ item.icon }}
-            }
-          </span>
-          <span class="label" *ngIf="!isCollapsed()">{{ item.label }}</span>
-          <span class="arrow" *ngIf="!isCollapsed()">
-            {{ isMenuOpen(item.label) ? '▾' : '▸' }}
-          </span>
-        </div>
-
-        <ul class="submenu" *ngIf="isMenuOpen(item.label) && !isCollapsed()">
-          <li *ngFor="let sub of item.children">
-            <a [routerLink]="sub.route" routerLinkActive="active" class="nav-item sub-item">
-              <span class="icon">
-                @if (sub.icon.startsWith('/')) {
-                  <img [src]="sub.icon" [alt]="sub.label" />
-                } @else {
-                  {{ sub.icon }}
-                }
-              </span>
-              <span class="label">{{ sub.label }}</span>
-            </a>
-          </li>
-        </ul>
-      </ng-container>
-
-      <ng-template #singleItem>
-        <a [routerLink]="item.route" routerLinkActive="active" class="nav-item">
-          <span class="icon">
-            @if (item.icon.startsWith('/')) {
-              <img [src]="item.icon" [alt]="item.label" />
-            } @else {
-              {{ item.icon }}
-            }
-          </span>
-          <span class="label" *ngIf="!isCollapsed()">{{ item.label }}</span>
-        </a>
-      </ng-template>
-    </li>
-  </ul>
 </div>

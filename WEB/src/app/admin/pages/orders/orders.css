@@ -315,6 +315,16 @@
     font-size: 1.75rem;
   }
 
+  .filter-section {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .status-filter-select {
+    width: 100%;
+  }
+
   .orders-table th,
   .orders-table td {
     padding: 0.75rem;
@@ -341,6 +351,94 @@
 
   .order-details {
     padding: 1rem;
+  }
+
+  .status-controls {
+    flex-direction: column;
+  }
+
+  .status-btn {
+    width: 100%;
+  }
+
+  .details-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-orders-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .orders-table-responsive {
+    border-radius: 8px;
+  }
+
+  .orders-table thead {
+    display: none;
+  }
+
+  .orders-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid #e5e7eb;
+  }
+
+  .orders-table tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .orders-table td {
+    padding: 0.25rem 0;
+    border: 0;
+  }
+
+  .orders-table td::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 0.15rem;
+    letter-spacing: 0.04em;
+  }
+
+  .status-badge {
+    align-self: flex-start;
+  }
+
+  .actions-cell {
+    text-align: left;
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .action-btn {
+    flex: 1;
+    text-align: center;
+  }
+
+  .order-details {
+    padding: 0.75rem;
+  }
+
+  .details-section h4 {
+    font-size: 0.85rem;
+  }
+
+  .item-detail {
+    padding: 0.6rem;
+  }
+
+  .item-main {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
   }
 }
 

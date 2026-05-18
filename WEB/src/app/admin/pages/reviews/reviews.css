@@ -392,22 +392,20 @@
     grid-template-columns: 1fr;
   }
 
-  .reviews-table-header,
-  .reviews-table-row {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
+  .stat-number {
+    font-size: 2rem;
   }
 
-  .table-cell {
-    display: grid;
-    grid-template-columns: 100px 1fr;
-    gap: 0.5rem;
+  .controls-section {
+    padding: 1rem;
   }
 
-  .table-cell::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #666;
+  .filter-group {
+    width: 100%;
+  }
+
+  .filter-group select {
+    width: 100%;
   }
 
   .reviews-table-header {
@@ -415,9 +413,44 @@
   }
 
   .reviews-table-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
     border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    border-radius: 8px;
     margin-bottom: 1rem;
     padding: 1rem;
+  }
+
+  .table-cell {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 0.4rem;
+  }
+
+  .table-cell::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #666;
+    font-size: 0.82rem;
+  }
+
+  .table-cell.message {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+  }
+
+  .table-cell.action {
+    grid-template-columns: 1fr;
+  }
+
+  .table-cell.action::before {
+    content: 'Acciones:';
+  }
+
+  .btn-delete {
+    width: 100%;
+    text-align: center;
+    padding: 0.6rem 0.8rem;
   }
 }

@@ -45,3 +45,25 @@ tbody tr:last-child td {
     white-space: nowrap;
   }
 }
+
+@media (max-width: 600px) {
+  h1 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  table {
+    border-radius: 10px;
+    font-size: 0.85rem;
+  }
+
+  th {
+    padding: 0.7rem 0.75rem;
+    font-size: 0.68rem;
+  }
+
+  td {
+    padding: 0.65rem 0.75rem;
+    font-size: 0.85rem;
+  }
+}

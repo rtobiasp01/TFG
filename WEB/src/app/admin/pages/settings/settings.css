@@ -84,3 +84,51 @@
   color: #047857;
   font-weight: 600;
 }
+
+@media (max-width: 768px) {
+  .settings-page {
+    padding: 1rem;
+  }
+
+  .settings-page__header h1 {
+    font-size: 1.3rem;
+  }
+
+  .settings-card {
+    max-width: 100%;
+    padding: 0.85rem;
+  }
+
+  .settings-card input {
+    padding: 0.55rem 0.65rem;
+    font-size: 0.9rem;
+  }
+
+  .save-button {
+    width: 100%;
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-page {
+    padding: 0.75rem;
+  }
+
+  .settings-page__header h1 {
+    font-size: 1.15rem;
+  }
+
+  .settings-card {
+    padding: 0.75rem;
+    border-radius: 0.6rem;
+  }
+
+  .settings-card label {
+    font-size: 0.85rem;
+  }
+
+  .settings-preview__content {
+    padding: 0.35rem 0.5rem;
+  }
+}

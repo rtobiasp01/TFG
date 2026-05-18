@@ -364,12 +364,82 @@ tbody tr {
 }
 
 @media (max-width: 640px) {
-	.kpi-grid {
-		grid-template-columns: 1fr;
-	}
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
 
-	.monthly-chart {
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		row-gap: 0.9rem;
-	}
+  .monthly-chart {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    row-gap: 0.9rem;
+  }
+
+  .dashboard-shell {
+    padding: 0.85rem;
+    border-radius: 12px;
+  }
+
+  h1 {
+    font-size: 1.35rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
+  .kpi-value {
+    font-size: 1.15rem;
+  }
+
+  .kpi-card {
+    padding: 0.75rem;
+  }
+
+  .panel-card {
+    padding: 0.85rem;
+  }
+
+  .panel-header h2 {
+    font-size: 0.95rem;
+  }
+
+  .table-wrap {
+    margin: 0 -0.85rem;
+    padding: 0 0.85rem;
+  }
+
+  table {
+    font-size: 0.8rem;
+  }
+
+  th,
+  td {
+    padding: 0.5rem 0.15rem;
+    font-size: 0.78rem;
+  }
+
+  th {
+    font-size: 0.68rem;
+  }
+
+  .stock-list li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+  }
+
+  .btn-refresh {
+    width: 100%;
+    text-align: center;
+  }
+
+  .error-box {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .head-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
