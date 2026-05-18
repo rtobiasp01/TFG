@@ -76,3 +76,24 @@ button:disabled {
   font-size: 0.88rem;
   font-weight: 600;
 }
+
+@media (max-width: 640px) {
+  .auth-page {
+    padding: 1rem 0.75rem;
+  }
+
+  .auth-card {
+    padding: 1.1rem;
+    border-radius: 12px;
+  }
+
+  input {
+    padding: 0.65rem 0.7rem;
+    font-size: 1rem;
+  }
+
+  button {
+    padding: 0.7rem 1rem;
+    width: 100%;
+  }
+}

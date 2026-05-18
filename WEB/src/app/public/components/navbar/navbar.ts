@@ -1,10 +1,11 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CartService } from '../../../services/cart-service';
 import { AuthService } from '../../../services/auth-service';
 import { SiteSettingsService } from '../../../services/site-settings-service';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
@@ -26,8 +27,15 @@ export class Navbar {
   readonly siteIcon = this.siteSettingsService.siteIcon;
   readonly isAdmin = this.authService.isAdmin;
   readonly showUserMenu = signal(false);
+  readonly showMobileMenu = signal(false);
   readonly searchQuery = signal('');
   readonly searchExpanded = signal(false);
+
+  constructor() {
+    this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => this.closeMobileMenu());
+  }
 
   cartItemCount(): number {
     return this.cart().items.length;
@@ -41,6 +49,12 @@ export class Navbar {
     }
   }
 
+  @HostListener('document:keydown.escape')
+  onEscape() {
+    this.closeMobileMenu();
+    this.closeUserMenu();
+  }
+
   toggleUserMenu(): void {
     this.showUserMenu.update((value) => !value);
   }
@@ -49,9 +63,18 @@ export class Navbar {
     this.showUserMenu.set(false);
   }
 
+  toggleMobileMenu(): void {
+    this.showMobileMenu.update((v) => !v);
+  }
+
+  closeMobileMenu(): void {
+    this.showMobileMenu.set(false);
+  }
+
   logout(): void {
     this.authService.logout();
     this.closeUserMenu();
+    this.closeMobileMenu();
     this.router.navigate(['/inicio']);
   }
 

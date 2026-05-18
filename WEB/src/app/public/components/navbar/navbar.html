@@ -1,6 +1,18 @@
 <div>
   <nav class="navbar">
     <div class="navbar-left">
+      <button
+        type="button"
+        class="mobile-menu-btn"
+        (click)="toggleMobileMenu()"
+        [class.is-open]="showMobileMenu()"
+        aria-label="Abrir menú"
+      >
+        <span class="mobile-menu-btn__line"></span>
+        <span class="mobile-menu-btn__line"></span>
+        <span class="mobile-menu-btn__line"></span>
+      </button>
+
       <a routerLink="/inicio" class="logo" aria-label="Ir al inicio">
         <img class="logo-icon" [src]="siteIcon()" [alt]="siteName() + ' logo'" />
         <span class="logo-text">{{ siteName() }}</span>
@@ -50,17 +62,17 @@
       </div>
 
       <ul class="nav-links nav-links--actions">
-        <li>
+        <li class="nav-actions-desktop">
           <a id="app-cart-link" routerLink="/cart" routerLinkActive="active-link"
             >Carrito ({{ cartItemCount() }})</a
           >
         </li>
 
         @if (!isAuthenticated()) {
-          <li><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
-          <li><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
+          <li class="nav-actions-desktop"><a routerLink="/login" routerLinkActive="active-link">Iniciar sesión</a></li>
+          <li class="nav-actions-desktop"><a routerLink="/register" routerLinkActive="active-link">Registrarse</a></li>
         } @else {
-          <li class="user-menu-wrapper">
+          <li class="user-menu-wrapper nav-actions-desktop">
             <button
               type="button"
               class="user-menu-trigger"
@@ -109,4 +121,67 @@
       </ul>
     </div>
   </nav>
+
+  <div class="mobile-menu-backdrop" [class.is-visible]="showMobileMenu()" (click)="closeMobileMenu()">
+    <nav class="mobile-menu" [class.is-open]="showMobileMenu()" (click)="$event.stopPropagation()">
+      <div class="mobile-menu__header">
+        <a routerLink="/inicio" class="logo" (click)="closeMobileMenu()">
+          <img class="logo-icon" [src]="siteIcon()" [alt]="siteName() + ' logo'" />
+          <span class="logo-text">{{ siteName() }}</span>
+        </a>
+        <button type="button" class="mobile-menu__close" (click)="closeMobileMenu()" aria-label="Cerrar menú">✕</button>
+      </div>
+
+      <ul class="mobile-menu__links">
+        <li><a routerLink="/inicio" routerLinkActive="active-link" (click)="closeMobileMenu()">Home</a></li>
+        <li><a routerLink="/productos" routerLinkActive="active-link" (click)="closeMobileMenu()">Productos</a></li>
+        <li><a routerLink="/inicio" fragment="customize" (click)="closeMobileMenu()">Personaliza</a></li>
+        <li><a routerLink="/inicio" fragment="process" (click)="closeMobileMenu()">Cómo funciona</a></li>
+        <li><a routerLink="/inicio" fragment="contact" (click)="closeMobileMenu()">Contacto</a></li>
+      </ul>
+
+      <div class="mobile-menu__search">
+        <div class="search-bar-container mobile-search-bar">
+          <input
+            type="text"
+            [(ngModel)]="searchQuery"
+            (keypress)="onSearchKeypress($event)"
+            class="search-input"
+            placeholder="Buscar productos..."
+          />
+          <button type="button" class="search-button" (click)="searchProducts()">
+            <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <ul class="mobile-menu__actions">
+        <li>
+          <a routerLink="/cart" (click)="closeMobileMenu()">
+            Carrito ({{ cartItemCount() }})
+          </a>
+        </li>
+
+        @if (!isAuthenticated()) {
+          <li><a routerLink="/login" (click)="closeMobileMenu()">Iniciar sesión</a></li>
+          <li><a routerLink="/register" (click)="closeMobileMenu()">Registrarse</a></li>
+        } @else {
+          <li class="mobile-menu__user-email">{{ currentUser()?.email }}</li>
+          <li><a routerLink="/mi-perfil" (click)="closeMobileMenu()">Mi perfil</a></li>
+          <li><a routerLink="/pedidos" (click)="closeMobileMenu()">Mis Pedidos</a></li>
+          @if (isAdmin()) {
+            <li><a routerLink="/admin/home" class="admin-link" (click)="closeMobileMenu()">Panel de admin</a></li>
+          }
+          <li>
+            <button type="button" class="logout-button" (click)="logout()">
+              Cerrar sesión
+            </button>
+          </li>
+        }
+      </ul>
+    </nav>
+  </div>
 </div>
