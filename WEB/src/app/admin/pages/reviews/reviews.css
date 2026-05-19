@@ -474,6 +474,43 @@
   width: 100%;
 }
 
+.review-images-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.review-images-grid .review-image-thumb {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.review-images-grid .review-image-thumb:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.review-image-modal {
+  position: relative;
+  max-width: 90%;
+  max-height: 90%;
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.review-image-modal img {
+  max-width: 100%;
+  max-height: 80vh;
+  border-radius: 4px;
+}
+
 @media (max-width: 1200px) {
   .reviews-table-header,
   .reviews-table-row {

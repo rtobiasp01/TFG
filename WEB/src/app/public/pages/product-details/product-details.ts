@@ -86,6 +86,10 @@ export class ProductDetails {
   });
   readonly showReviewForm = signal<boolean>(false);
   readonly isSubmittingReview = signal<boolean>(false);
+  readonly reviewImageFiles = signal<File[]>([]);
+  readonly reviewImagePreviews = signal<string[]>([]);
+  readonly isUploadingReviewImages = signal<boolean>(false);
+  readonly reviewImageModal = signal<string | null>(null);
   @ViewChild('relatedProductsViewport')
   private relatedProductsViewport?: ElementRef<HTMLDivElement>;
   readonly customTextPreview = computed(() => {
@@ -1050,7 +1054,7 @@ export class ProductDetails {
     });
   }
 
-  onSubmitReview(): void {
+  async onSubmitReview(): Promise<void> {
     if (!this.authService.isAuthenticated()) {
       this.reviewErrorMessage.set('Debes iniciar sesión para dejar una reseña');
       return;
@@ -1060,26 +1064,38 @@ export class ProductDetails {
     this.reviewErrorMessage.set('');
     this.reviewSuccessMessage.set('');
 
-    this.reviewService.createReview(this.newReview()).subscribe({
-      next: (response) => {
-        this.reviewSuccessMessage.set('Reseña creada exitosamente');
-        this.resetReviewForm();
-        const productId = this.product()?._id;
-        if (productId) {
-          this.loadProductReviews(productId);
-        }
-        this.isSubmittingReview.set(false);
+    try {
+      const uploadedImageUrls = await this.uploadReviewImages();
 
-        setTimeout(() => this.reviewSuccessMessage.set(''), 3000);
-      },
-      error: (error) => {
-        this.reviewErrorMessage.set(
-          error.error?.error || 'Error al crear la reseña. Intenta de nuevo.',
-        );
-        this.isSubmittingReview.set(false);
-        console.error('Error creating review:', error);
-      },
-    });
+      const reviewData = {
+        ...this.newReview(),
+        images: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
+      };
+
+      this.reviewService.createReview(reviewData).subscribe({
+        next: () => {
+          this.reviewSuccessMessage.set('Reseña creada exitosamente');
+          this.resetReviewForm();
+          const productId = this.product()?._id;
+          if (productId) {
+            this.loadProductReviews(productId);
+          }
+          this.isSubmittingReview.set(false);
+
+          setTimeout(() => this.reviewSuccessMessage.set(''), 3000);
+        },
+        error: (error) => {
+          this.reviewErrorMessage.set(
+            error.error?.error || 'Error al crear la reseña. Intenta de nuevo.',
+          );
+          this.isSubmittingReview.set(false);
+          console.error('Error creating review:', error);
+        },
+      });
+    } catch {
+      this.reviewErrorMessage.set('Error al subir las imágenes. Inténtalo de nuevo.');
+      this.isSubmittingReview.set(false);
+    }
   }
 
   onDeleteReview(reviewId: string | undefined): void {
@@ -1123,7 +1139,92 @@ export class ProductDetails {
       message: '',
       rating: 5,
     });
+    this.reviewImageFiles.set([]);
+    this.reviewImagePreviews.set([]);
+    this.isUploadingReviewImages.set(false);
     this.showReviewForm.set(false);
+  }
+
+  onReviewImagesSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const newFiles = Array.from(input.files);
+    const currentFiles = this.reviewImageFiles();
+    const currentPreviews = this.reviewImagePreviews();
+
+    const maxImages = 5;
+    const remainingSlots = maxImages - currentFiles.length;
+
+    if (remainingSlots <= 0) {
+      alert('Máximo 5 imágenes permitidas por reseña.');
+      input.value = '';
+      return;
+    }
+
+    const filesToAdd = newFiles.slice(0, remainingSlots);
+
+    for (const file of filesToAdd) {
+      const previewUrl = URL.createObjectURL(file);
+      currentFiles.push(file);
+      currentPreviews.push(previewUrl);
+    }
+
+    this.reviewImageFiles.set([...currentFiles]);
+    this.reviewImagePreviews.set([...currentPreviews]);
+    input.value = '';
+  }
+
+  removeReviewImage(index: number): void {
+    const preview = this.reviewImagePreviews()[index];
+
+    if (preview.startsWith('blob:')) {
+      URL.revokeObjectURL(preview);
+    }
+
+    const newFiles = this.reviewImageFiles().filter((_, i) => i !== index);
+    const newPreviews = this.reviewImagePreviews().filter((_, i) => i !== index);
+
+    this.reviewImageFiles.set(newFiles);
+    this.reviewImagePreviews.set(newPreviews);
+  }
+
+  openReviewImageModal(url: string): void {
+    this.reviewImageModal.set(url);
+  }
+
+  closeReviewImageModal(): void {
+    this.reviewImageModal.set(null);
+  }
+
+  private uploadReviewImages(): Promise<string[]> {
+    const files = this.reviewImageFiles();
+
+    if (files.length === 0) {
+      return Promise.resolve([]);
+    }
+
+    this.isUploadingReviewImages.set(true);
+
+    const uploadPromises = files.map(
+      (file) =>
+        new Promise<string>((resolve, reject) => {
+          this.uploadService.subirArchivo(file).subscribe({
+            next: (response: any) => {
+              const url = `${API_BASE_URL}/${String(response?.fileDetails?.path || '').replace(/\\/g, '/')}`;
+              resolve(url);
+            },
+            error: (err) => reject(err),
+          });
+        }),
+    );
+
+    return Promise.all(uploadPromises).finally(() => {
+      this.isUploadingReviewImages.set(false);
+    });
   }
 
   getRatingStars(rating: number): number[] {

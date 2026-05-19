@@ -4,6 +4,7 @@ export interface Review {
   product_id: string;
   message: string;
   rating: number;
+  images?: string[];
   createdAt?: Date;
   updatedAt?: Date;
 }

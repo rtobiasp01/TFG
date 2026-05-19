@@ -188,7 +188,31 @@
             <span class="detail-label">Mensaje:</span>
             <p class="detail-message">{{ selectedReview()!.message }}</p>
           </div>
+          @if (selectedReview()!.images && selectedReview()!.images!.length > 0) {
+            <div class="detail-row full">
+              <span class="detail-label">Imágenes:</span>
+              <div class="review-images-grid">
+                @for (image of selectedReview()!.images; track image) {
+                  <img
+                    class="review-image-thumb"
+                    [src]="image"
+                    [alt]="'Imagen de la reseña'"
+                    (click)="openReviewImageModal(image)"
+                  />
+                }
+              </div>
+            </div>
+          }
         </div>
+      </div>
+    </div>
+  }
+
+  @if (reviewImageModal()) {
+    <div class="modal-overlay" (click)="closeReviewImageModal()">
+      <div class="review-image-modal" (click)="$event.stopPropagation()">
+        <button class="modal-close" (click)="closeReviewImageModal()" title="Cerrar">&times;</button>
+        <img [src]="reviewImageModal()!" alt="Imagen de la reseña" />
       </div>
     </div>
   }

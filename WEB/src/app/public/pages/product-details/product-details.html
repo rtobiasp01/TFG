@@ -266,8 +266,38 @@
               ></textarea>
             </div>
 
-            <button type="submit" class="btn-submit" [disabled]="isSubmittingReview()">
-              {{ isSubmittingReview() ? 'Enviando...' : 'Enviar Reseña' }}
+            <div class="form-group">
+              <label>Imágenes (máx. 5)</label>
+              <div class="review-image-upload">
+                <input
+                  type="file"
+                  id="review-images"
+                  accept="image/*"
+                  multiple
+                  (change)="onReviewImagesSelected($event)"
+                  [disabled]="reviewImageFiles().length >= 5"
+                />
+                @if (reviewImagePreviews().length > 0) {
+                  <div class="review-image-previews">
+                    @for (preview of reviewImagePreviews(); track preview) {
+                      <div class="review-image-thumb-wrapper">
+                        <img class="review-image-thumb" [src]="preview" alt="Vista previa" />
+                        <button
+                          type="button"
+                          class="remove-image"
+                          (click)="removeReviewImage($index)"
+                        >
+                          &times;
+                        </button>
+                      </div>
+                    }
+                  </div>
+                }
+              </div>
+            </div>
+
+            <button type="submit" class="btn-submit" [disabled]="isSubmittingReview() || isUploadingReviewImages()">
+              {{ isSubmittingReview() || isUploadingReviewImages() ? 'Enviando...' : 'Enviar Reseña' }}
             </button>
           </form>
         </div>
@@ -308,6 +338,19 @@
 
               <p class="review-message">{{ review.message }}</p>
 
+              @if (review.images && review.images.length > 0) {
+                <div class="review-images-grid">
+                  @for (image of review.images; track image) {
+                    <img
+                      class="review-image-thumb"
+                      [src]="image"
+                      [alt]="'Imagen de la reseña'"
+                      (click)="openReviewImageModal(image)"
+                    />
+                  }
+                </div>
+              }
+
               @if (canDeleteReview(review)) {
                 <button class="btn-delete-review" (click)="onDeleteReview(review._id)">
                   Eliminar
@@ -325,6 +368,17 @@
       }
     </div>
   </section>
+
+  @if (reviewImageModal()) {
+    <div class="review-image-modal-overlay" (click)="closeReviewImageModal()">
+      <div class="review-image-modal" (click)="$event.stopPropagation()">
+        <button class="review-image-modal-close" (click)="closeReviewImageModal()">
+          &times;
+        </button>
+        <img [src]="reviewImageModal()!" alt="Imagen de la reseña" />
+      </div>
+    </div>
+  }
 
   <section class="related-products-section">
     <div class="section-card">

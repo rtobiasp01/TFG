@@ -7,6 +7,9 @@ function normalizeReviewInput(reviewData = {}) {
     product_id: String(reviewData.product_id || "").trim(),
     message: String(reviewData.message || "").trim(),
     rating: Number(reviewData.rating),
+    images: Array.isArray(reviewData.images)
+      ? reviewData.images.map((img) => String(img).trim()).filter(Boolean)
+      : [],
   };
 }
 
@@ -47,6 +50,7 @@ async function createReview(reviewData) {
       product_id: new ObjectId(review.product_id),
       message: review.message,
       rating: review.rating,
+      images: review.images.length > 0 ? review.images : [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };

@@ -27,6 +27,7 @@ export class AdminReviews implements OnInit {
   readonly sortOrder = signal<'asc' | 'desc'>('desc');
   readonly filterByRating = signal<number | null>(null);
   readonly selectedReview = signal<Review | null>(null);
+  readonly reviewImageModal = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadAllReviews();
@@ -168,5 +169,13 @@ export class AdminReviews implements OnInit {
 
   closeReviewModal(): void {
     this.selectedReview.set(null);
+  }
+
+  openReviewImageModal(url: string): void {
+    this.reviewImageModal.set(url);
+  }
+
+  closeReviewImageModal(): void {
+    this.reviewImageModal.set(null);
   }
 }
