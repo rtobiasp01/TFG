@@ -71,8 +71,11 @@
                 </span>
               </td>
               <td>
-                <button class="btn-edit" (click)="editCategory(category)">Editar</button>
-                <button class="btn-delete" (click)="deleteCategory(category._id)">Eliminar</button>
+                <app-action-menu
+                  primaryLabel="Editar"
+                  [primaryAction]="getEditAction(category)"
+                  [items]="getCategoryActions(category._id)"
+                />
               </td>
             </tr>
           }

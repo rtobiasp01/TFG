@@ -1,18 +1,20 @@
 import { Component, inject, signal } from '@angular/core';
 import { ProductService } from '../../../services/product-service';
-import { RouterLink } from '@angular/router';
+import { RouterLink, Router } from '@angular/router';
 import { Product } from '../../../interfaces/product';
 import { CurrencyPipe } from '@angular/common';
 import { forkJoin } from 'rxjs';
+import { ActionMenu, ActionMenuItem } from '../../components/action-menu/action-menu';
 
 @Component({
   selector: 'app-products',
-  imports: [RouterLink, CurrencyPipe],
+  imports: [RouterLink, CurrencyPipe, ActionMenu],
   templateUrl: './products.html',
   styleUrl: './products.css',
 })
 export class Products {
   private productService = inject(ProductService);
+  private router = inject(Router);
 
   products = signal<Product[]>([]);
   importingProducts = signal<boolean>(false);
@@ -218,5 +220,15 @@ export class Products {
     };
 
     reader.readAsText(file);
+  }
+
+  getEditAction(id: string): () => void {
+    return () => this.router.navigate(['/admin/product-form', id]);
+  }
+
+  getProductActions(id: string): ActionMenuItem[] {
+    return [
+      { label: 'Eliminar', danger: true, action: () => this.deleteProduct(id) },
+    ];
   }
 }

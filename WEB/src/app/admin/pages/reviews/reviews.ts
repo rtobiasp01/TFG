@@ -5,11 +5,12 @@ import { ReviewService } from '../../../services/review-service';
 import { ProductService } from '../../../services/product-service';
 import { Review } from '../../../interfaces/review';
 import { Product } from '../../../interfaces/product';
+import { ActionMenu, ActionMenuItem } from '../../components/action-menu/action-menu';
 
 @Component({
   selector: 'app-admin-reviews',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ActionMenu],
   templateUrl: './reviews.html',
   styleUrl: './reviews.css',
 })
@@ -177,5 +178,15 @@ export class AdminReviews implements OnInit {
 
   closeReviewImageModal(): void {
     this.reviewImageModal.set(null);
+  }
+
+  getViewAction(review: Review): () => void {
+    return () => this.openReviewModal(review);
+  }
+
+  getReviewActions(reviewId: string | undefined): ActionMenuItem[] {
+    return [
+      { label: 'Eliminar', danger: true, action: () => this.onDeleteReview(reviewId) },
+    ];
   }
 }

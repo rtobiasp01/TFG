@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { ActionMenu, ActionMenuItem } from '../../components/action-menu/action-menu';
 
 interface Coupon {
   _id?: string;
@@ -20,7 +21,7 @@ interface Coupon {
 @Component({
   selector: 'app-admin-coupons',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ActionMenu],
   templateUrl: './coupons.html',
   styleUrl: './coupons.css',
 })
@@ -187,5 +188,15 @@ export class AdminCoupons implements OnInit {
   isExpired(coupon: Coupon): boolean {
     if (!coupon.expiryDate) return false;
     return new Date() > new Date(coupon.expiryDate);
+  }
+
+  getEditAction(coupon: Coupon): () => void {
+    return () => this.onEditCoupon(coupon);
+  }
+
+  getCouponActions(couponId: string | undefined): ActionMenuItem[] {
+    return [
+      { label: 'Eliminar', danger: true, action: () => this.onDeleteCoupon(couponId) },
+    ];
   }
 }

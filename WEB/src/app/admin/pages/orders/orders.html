@@ -54,9 +54,11 @@
               </td>
               <td class="date-cell">{{ formatDate(order.createdAt) }}</td>
               <td class="actions-cell">
-                <button class="action-btn view-btn" (click)="selectOrder(order)">
-                  {{ selectedOrder() === order ? 'Cerrar' : 'Ver' }}
-                </button>
+                <app-action-menu
+                  [primaryLabel]="selectedOrder() === order ? 'Cerrar' : 'Ver'"
+                  [primaryAction]="getOrderViewAction(order)"
+                  [items]="getOrderActions(order)"
+                />
               </td>
             </tr>
 
@@ -141,12 +143,6 @@
                           }
                         </div>
                       }
-                    </div>
-
-                    <div class="details-actions">
-                      <button class="action-btn delete-btn" (click)="deleteOrder(order._id)">
-                        Eliminar Pedido
-                      </button>
                     </div>
                   </div>
                 </td>

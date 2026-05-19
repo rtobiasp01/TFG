@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoryService } from '../../../services/category-service';
 import { Category } from '../../../interfaces/category';
+import { ActionMenu, ActionMenuItem } from '../../components/action-menu/action-menu';
 
 @Component({
   selector: 'app-categories',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ActionMenu],
   templateUrl: './categories.html',
   styleUrl: './categories.css',
 })
@@ -94,5 +95,15 @@ export class Categories {
     this.newCategory = { name: '', description: '', visible: true };
     this.editingId.set(null);
     this.showForm.set(false);
+  }
+
+  getEditAction(category: Category): () => void {
+    return () => this.editCategory(category);
+  }
+
+  getCategoryActions(id: string | undefined): ActionMenuItem[] {
+    return [
+      { label: 'Eliminar', danger: true, action: () => this.deleteCategory(id) },
+    ];
   }
 }

@@ -1,0 +1,26 @@
+<div class="action-menu-wrapper" #menuRef>
+  <button class="action-menu-primary" (click)="onPrimaryClick()">
+    {{ primaryLabel }}
+  </button>
+  <button class="action-menu-toggle" #toggleRef (click)="toggle()" [class.open]="isOpen()">
+    <span class="arrow">▼</span>
+  </button>
+
+  @if (isOpen() && dropdownPosition()) {
+    <div
+      class="action-menu-dropdown"
+      [style.top.px]="dropdownPosition()!.top"
+      [style.right.px]="dropdownPosition()!.right"
+    >
+      @for (item of items; track item.label) {
+        <button
+          class="action-menu-item"
+          [class.danger]="item.danger"
+          (click)="executeAction(item.action)"
+        >
+          {{ item.label }}
+        </button>
+      }
+    </div>
+  }
+</div>

@@ -64,8 +64,11 @@
           <p>{{ product.price | currency: 'EUR' }}</p>
         </td>
         <td>
-          <a [routerLink]="['/admin/product-form', product._id]">Editar</a>
-          <a (click)="deleteProduct(product._id)">Eliminar</a>
+          <app-action-menu
+            primaryLabel="Editar"
+            [primaryAction]="getEditAction(product._id)"
+            [items]="getProductActions(product._id)"
+          />
         </td>
       </tr>
     } @empty {

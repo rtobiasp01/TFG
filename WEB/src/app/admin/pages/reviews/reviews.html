@@ -131,20 +131,11 @@
               {{ review.createdAt ? (review.createdAt | date: 'short') : 'N/A' }}
             </div>
             <div class="table-cell action">
-              <button
-                class="btn-view"
-                (click)="openReviewModal(review)"
-                title="Ver reseña completa"
-              >
-                Ver
-              </button>
-              <button
-                class="btn-delete"
-                (click)="onDeleteReview(review._id)"
-                title="Eliminar reseña"
-              >
-                Eliminar
-              </button>
+              <app-action-menu
+                primaryLabel="Ver"
+                [primaryAction]="getViewAction(review)"
+                [items]="getReviewActions(review._id)"
+              />
             </div>
           </div>
         }

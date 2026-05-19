@@ -172,8 +172,11 @@
               </button>
             </div>
             <div class="col-actions">
-              <button class="btn-edit" (click)="onEditCoupon(coupon)">Editar</button>
-              <button class="btn-delete" (click)="onDeleteCoupon(coupon._id)">Eliminar</button>
+              <app-action-menu
+                primaryLabel="Editar"
+                [primaryAction]="getEditAction(coupon)"
+                [items]="getCouponActions(coupon._id)"
+              />
             </div>
           </div>
         }

@@ -3,13 +3,14 @@ import { CommonModule } from '@angular/common';
 import { OrderService } from '../../../services/order-service';
 import { Order, OrderStatus, OrderItem } from '../../../interfaces/order';
 import { FormsModule } from '@angular/forms';
+import { ActionMenu, ActionMenuItem } from '../../components/action-menu/action-menu';
 
 const API_BASE_URL = 'http://localhost:3000';
 
 @Component({
   selector: 'app-admin-orders',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ActionMenu],
   templateUrl: './orders.html',
   styleUrl: './orders.css',
 })
@@ -177,5 +178,15 @@ export class AdminOrders {
     const rawImageUrl = item.customization?.uploadedImageUrl?.trim() || '';
     const fileName = rawImageUrl.split('/').pop();
     return fileName || `personalizacion-${item.product_id}.png`;
+  }
+
+  getOrderViewAction(order: Order): () => void {
+    return () => this.selectOrder(order);
+  }
+
+  getOrderActions(order: Order): ActionMenuItem[] {
+    return [
+      { label: 'Eliminar', danger: true, action: () => this.deleteOrder(order._id) },
+    ];
   }
 }
