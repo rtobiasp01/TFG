@@ -119,15 +119,16 @@
               track item.variant ? item.product._id + '-' + item.variantLabel : item.product._id
             ) {
               <li>
-                <div>
+                <div class="stock-info">
                   <p class="stock-title">{{ item.product.title }}</p>
-                  @if (item.variant) {
-                    <p class="stock-sku">{{ item.variantLabel }}</p>
-                  } @else {
-                    <p class="stock-sku">SKU: {{ item.product.sku }}</p>
-                  }
+                  <p class="stock-sku">SKU: {{ item.variant?.sku || item.product.sku }}</p>
                 </div>
-                <span class="stock-pill">{{ item.stock }} uds</span>
+                <a [routerLink]="['/admin/product-form', item.product._id]" class="stock-link"
+                  >Editar</a
+                >
+                <span class="stock-pill" [class.stock-zero]="item.stock === 0"
+                  >{{ item.stock }} uds</span
+                >
               </li>
             }
           </ul>

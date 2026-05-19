@@ -78,7 +78,10 @@
                                 </span>
                               </div>
                               @if (hasCustomText(item)) {
-                                <p class="item-custom"><img src="/icon-document.png" alt="Texto" class="inline-icon" /> Texto: "{{ getCustomText(item) }}"</p>
+                                <p class="item-custom">
+                                  <img src="/icon-document.png" alt="Texto" class="inline-icon" />
+                                  Texto: "{{ getCustomText(item) }}"
+                                </p>
                               }
                               @if (hasCustomImage(item)) {
                                 <a
@@ -142,7 +145,7 @@
 
                     <div class="details-actions">
                       <button class="action-btn delete-btn" (click)="deleteOrder(order._id)">
-                        <img src="/icon-trash.png" alt="Eliminar" class="inline-icon" /> Eliminar Pedido
+                        Eliminar Pedido
                       </button>
                     </div>
                   </div>
