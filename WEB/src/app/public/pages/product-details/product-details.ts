@@ -76,6 +76,8 @@ export class ProductDetails {
   readonly isLoadingReviews = signal<boolean>(false);
   readonly reviewErrorMessage = signal<string>('');
   readonly reviewSuccessMessage = signal<string>('');
+  readonly visibleReviewsCount = signal<number>(3);
+  readonly filterByRating = signal<number | null>(null);
   readonly newReview = signal<Review>({
     email: '',
     product_id: '',
@@ -1032,6 +1034,8 @@ export class ProductDetails {
   private loadProductReviews(productId: string): void {
     this.isLoadingReviews.set(true);
     this.reviewErrorMessage.set('');
+    this.visibleReviewsCount.set(3);
+    this.filterByRating.set(null);
 
     this.reviewService.getReviewsByProductId(productId).subscribe({
       next: (reviews) => {
@@ -1137,6 +1141,31 @@ export class ProductDetails {
     if (currentUser?.email && currentUser.email === review.email) return true;
 
     return false;
+  }
+
+  getFilteredReviews(): Review[] {
+    const rating = this.filterByRating();
+    if (rating === null) {
+      return this.reviews();
+    }
+    return this.reviews().filter((review) => review.rating === rating);
+  }
+
+  getVisibleReviews(): Review[] {
+    return this.getFilteredReviews().slice(0, this.visibleReviewsCount());
+  }
+
+  hasMoreReviews(): boolean {
+    return this.visibleReviewsCount() < this.getFilteredReviews().length;
+  }
+
+  showMoreReviews(): void {
+    this.visibleReviewsCount.set(this.visibleReviewsCount() + 3);
+  }
+
+  setFilterRating(rating: number | null): void {
+    this.filterByRating.set(rating);
+    this.visibleReviewsCount.set(3);
   }
 
   isVideoFile(url: string): boolean {

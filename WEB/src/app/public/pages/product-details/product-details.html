@@ -213,6 +213,22 @@
         </div>
       }
 
+      <div class="reviews-filter">
+        <label for="filter-rating">Filtrar por valoración:</label>
+        <select
+          id="filter-rating"
+          [ngModel]="filterByRating()"
+          (ngModelChange)="setFilterRating($event)"
+        >
+          <option [ngValue]="null">Todas</option>
+          <option [ngValue]="5">5 estrellas</option>
+          <option [ngValue]="4">4 estrellas</option>
+          <option [ngValue]="3">3 estrellas</option>
+          <option [ngValue]="2">2 estrellas</option>
+          <option [ngValue]="1">1 estrella</option>
+        </select>
+      </div>
+
       <!-- Add Review Form -->
       @if (showReviewForm() && isAuthenticated()) {
         <div class="review-form-container">
@@ -262,13 +278,17 @@
         <div class="loading">
           <p>Cargando reseñas...</p>
         </div>
-      } @else if (reviews().length === 0) {
+      } @else if (getFilteredReviews().length === 0) {
         <div class="no-reviews">
-          <p>No hay reseñas disponibles. ¡Sé el primero en dejar una!</p>
+          @if (filterByRating()) {
+            <p>No hay reseñas con esta valoración.</p>
+          } @else {
+            <p>No hay reseñas disponibles. ¡Sé el primero en dejar una!</p>
+          }
         </div>
       } @else {
         <div class="reviews-list">
-          @for (review of reviews(); track review._id) {
+          @for (review of getVisibleReviews(); track review._id) {
             <div class="review-item">
               <div class="review-header">
                 <div class="review-meta">
@@ -296,6 +316,12 @@
             </div>
           }
         </div>
+
+        @if (hasMoreReviews()) {
+          <button class="btn-show-more" (click)="showMoreReviews()">
+            Ver más ({{ reviews().length - visibleReviewsCount() }} restantes)
+          </button>
+        }
       }
     </div>
   </section>
