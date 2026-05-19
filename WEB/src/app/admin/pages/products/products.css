@@ -243,6 +243,20 @@ td a:last-of-type:hover {
     font-size: 0.75rem;
   }
 
+  .action-menu-wrapper {
+    width: 100%;
+  }
+
+  .action-menu-primary {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .action-menu-dropdown {
+    min-width: 100%;
+  }
+
   td p {
     font-size: 0.85rem;
   }

@@ -400,6 +400,7 @@ form {
     border-radius: 8px;
     margin-bottom: 1rem;
     padding: 1rem;
+    position: relative;
   }
 
   .col-code,
@@ -467,6 +468,20 @@ form {
   .col-actions {
     grid-template-columns: 1fr;
     gap: 0.4rem;
+  }
+
+  .action-menu-wrapper {
+    width: 100%;
+  }
+
+  .action-menu-primary {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .action-menu-dropdown {
+    min-width: 100%;
   }
 
   .btn-edit,

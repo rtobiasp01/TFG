@@ -464,6 +464,10 @@ tbody tr {
 
   .stock-link {
     align-self: flex-start;
+    width: 100%;
+    text-align: center;
+    display: block;
+    padding: 0.4rem;
   }
 
   .btn-refresh {

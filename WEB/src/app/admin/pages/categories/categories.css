@@ -277,6 +277,20 @@ td:last-child {
     gap: 0.4rem;
   }
 
+  .action-menu-wrapper {
+    width: 100%;
+  }
+
+  .action-menu-primary {
+    flex: 1;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .action-menu-dropdown {
+    min-width: 100%;
+  }
+
   .btn-edit,
   .btn-delete {
     width: 100%;
