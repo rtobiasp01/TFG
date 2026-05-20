@@ -294,47 +294,49 @@
                     </button>
                   </div>
 
-                  <div class="placement-editor" #placementCanvas>
-                    @if (imagePath()) {
-                      <img
-                        class="placement-editor__base"
-                        [src]="customizationPreviewImageUrl()"
-                        alt="Previsualización del producto"
-                      />
-                    } @else {
-                      <div class="placement-editor__base placement-editor__base--empty">
-                        Sube una imagen principal para una previsualización real
+                  <div class="placement-editor">
+                    <div class="preview-canvas" #placementCanvas>
+                      @if (imagePath()) {
+                        <img
+                          class="preview-canvas__media"
+                          [src]="customizationPreviewImageUrl()"
+                          alt="Previsualización del producto"
+                        />
+                      } @else {
+                        <div class="preview-canvas__empty">
+                          Sube una imagen principal para una previsualización real
+                        </div>
+                      }
+
+                      <div
+                        class="placement-zone placement-zone--image"
+                        [class.is-active]="activePlacementTarget() === 'image'"
+                        [ngStyle]="imagePlacementStyles()"
+                        (pointerdown)="startPlacementDrag($event, placementCanvas, 'image')"
+                      >
+                        <span class="placement-zone__label">Imagen</span>
+                        <button
+                          type="button"
+                          class="placement-zone__resize"
+                          (pointerdown)="startPlacementResize($event, placementCanvas, 'image')"
+                          aria-label="Cambiar tamaño de la zona de imagen"
+                        ></button>
                       </div>
-                    }
 
-                    <div
-                      class="placement-zone placement-zone--image"
-                      [class.is-active]="activePlacementTarget() === 'image'"
-                      [ngStyle]="imagePlacementStyles()"
-                      (pointerdown)="startPlacementDrag($event, placementCanvas, 'image')"
-                    >
-                      <span class="placement-zone__label">Imagen</span>
-                      <button
-                        type="button"
-                        class="placement-zone__resize"
-                        (pointerdown)="startPlacementResize($event, placementCanvas, 'image')"
-                        aria-label="Cambiar tamaño de la zona de imagen"
-                      ></button>
-                    </div>
-
-                    <div
-                      class="placement-zone placement-zone--text"
-                      [class.is-active]="activePlacementTarget() === 'text'"
-                      [ngStyle]="textPlacementStyles()"
-                      (pointerdown)="startPlacementDrag($event, placementCanvas, 'text')"
-                    >
-                      <span class="placement-zone__label">Texto</span>
-                      <button
-                        type="button"
-                        class="placement-zone__resize"
-                        (pointerdown)="startPlacementResize($event, placementCanvas, 'text')"
-                        aria-label="Cambiar tamaño de la zona de texto"
-                      ></button>
+                      <div
+                        class="placement-zone placement-zone--text"
+                        [class.is-active]="activePlacementTarget() === 'text'"
+                        [ngStyle]="textPlacementStyles()"
+                        (pointerdown)="startPlacementDrag($event, placementCanvas, 'text')"
+                      >
+                        <span class="placement-zone__label">Texto</span>
+                        <button
+                          type="button"
+                          class="placement-zone__resize"
+                          (pointerdown)="startPlacementResize($event, placementCanvas, 'text')"
+                          aria-label="Cambiar tamaño de la zona de texto"
+                        ></button>
+                      </div>
                     </div>
                   </div>
                 </div>

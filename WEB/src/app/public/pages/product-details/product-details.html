@@ -12,37 +12,39 @@
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
-        @if (isVideoFile(imagenPrincipal() ?? '')) {
-          <video
-            class="img-principal__image"
-            [src]="imagenPrincipal()"
-            controls
-            muted
-            autoplay
-            playsinline
-          ></video>
-        } @else {
-          <img
-            class="img-principal__image"
-            [src]="imagenPrincipal()"
-            [alt]="product()?.title || ''"
-          />
-        }
+        <div class="preview-canvas">
+          @if (isVideoFile(imagenPrincipal() ?? '')) {
+            <video
+              class="preview-canvas__media"
+              [src]="imagenPrincipal()"
+              controls
+              muted
+              autoplay
+              playsinline
+            ></video>
+          } @else {
+            <img
+              class="preview-canvas__media"
+              [src]="imagenPrincipal()"
+              [alt]="product()?.title || ''"
+            />
+          }
 
-        @if (isCustomPersonalizedProduct() && customImagePreview()) {
-          <img
-            class="img-principal__custom-overlay"
-            [src]="customImagePreview()"
-            [ngStyle]="customOverlayStyles()"
-            alt="Previsualizacion de personalizacion"
-          />
-        }
+          @if (isCustomPersonalizedProduct() && customImagePreview()) {
+            <img
+              class="preview-canvas__custom-overlay"
+              [src]="customImagePreview()"
+              [ngStyle]="customOverlayStyles()"
+              alt="Previsualizacion de personalizacion"
+            />
+          }
 
-        @if (isCustomPersonalizedProduct() && customTextPreview()) {
-          <div class="img-principal__custom-text-overlay" [ngStyle]="customTextOverlayStyles()">
-            {{ customTextPreview() }}
-          </div>
-        }
+          @if (isCustomPersonalizedProduct() && customTextPreview()) {
+            <div class="preview-canvas__custom-text-overlay" [ngStyle]="customTextOverlayStyles()">
+              {{ customTextPreview() }}
+            </div>
+          }
+        </div>
       </div>
       <div class="gallery">
         @for (img of galeriaActual(); track $index) {

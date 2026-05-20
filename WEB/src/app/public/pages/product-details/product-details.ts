@@ -17,6 +17,7 @@ import {
 } from '../../../interfaces/customization';
 
 const API_BASE_URL = 'http://localhost:3000';
+const PREVIEW_OVERLAY_MAX_PERCENT = 92;
 const DEFAULT_IMAGE_PLACEMENT: CustomImagePlacement = {
   xPercent: 50,
   yPercent: 50,
@@ -542,7 +543,7 @@ export class ProductDetails {
     return new Promise((resolve) => {
       try {
         const cartEl = document.getElementById('app-cart-link');
-        const srcEl = document.querySelector('.img-principal__image') as HTMLElement | null;
+        const srcEl = document.querySelector('.preview-canvas__media') as HTMLElement | null;
 
         if (!cartEl || !srcEl) {
           resolve();
@@ -953,13 +954,13 @@ export class ProductDetails {
       widthPercent: clampPercent(
         rawPlacement.widthPercent,
         1,
-        100,
+        PREVIEW_OVERLAY_MAX_PERCENT,
         DEFAULT_IMAGE_PLACEMENT.widthPercent,
       ),
       heightPercent: clampPercent(
         rawPlacement.heightPercent,
         1,
-        100,
+        PREVIEW_OVERLAY_MAX_PERCENT,
         DEFAULT_IMAGE_PLACEMENT.heightPercent,
       ),
     };
@@ -994,13 +995,13 @@ export class ProductDetails {
       widthPercent: clampPercent(
         rawPlacement.widthPercent,
         1,
-        100,
+        PREVIEW_OVERLAY_MAX_PERCENT,
         DEFAULT_TEXT_PLACEMENT.widthPercent,
       ),
       heightPercent: clampPercent(
         rawPlacement.heightPercent,
         1,
-        100,
+        PREVIEW_OVERLAY_MAX_PERCENT,
         DEFAULT_TEXT_PLACEMENT.heightPercent,
       ),
     };
