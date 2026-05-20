@@ -389,6 +389,17 @@
   color: #334155;
 }
 
+.payment-field span .required-asterisk {
+  color: #dc2626;
+  font-weight: 800;
+  margin-left: 0.15rem;
+}
+
+.checkout-submit-error {
+  margin-top: 0.75rem;
+  margin-bottom: 0;
+}
+
 .payment-field input {
   width: 100%;
   min-height: 2.8rem;
@@ -399,6 +410,15 @@
   color: #0f172a;
   font-size: 1rem;
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.payment-field.has-error input {
+  border-color: #dc2626;
+}
+
+.payment-field.has-error input:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
 }
 
 .payment-field input:focus {
