@@ -9,8 +9,8 @@ const crypto = require("crypto");
 
 const UPLOADS_DIR = path.resolve("uploads");
 const PIXIAN_API_URL = "https://api.pixian.ai/api/v2/remove-background";
-const PIXIAN_API_USER = process.env.PIXIAN_API_USER || "pxzffc9a8v32xrf";
-const PIXIAN_API_PASS = process.env.PIXIAN_API_PASS || "eqs16ta1fabonak1pjfdqndplg1d7m311vc3gpqc4np235e9m70d";
+const PIXIAN_API_USER = process.env.PIXIAN_API_USER;
+const PIXIAN_API_PASS = process.env.PIXIAN_API_PASS;
 const PIXIAN_TEST_MODE = (process.env.PIXIAN_TEST_MODE || "true").toLowerCase() === "true";
 const PIXIAN_TIMEOUT_MS = 180000;
 const PIXIAN_MAX_RETRIES = 3;
@@ -86,6 +86,10 @@ async function parsePixianError(response) {
 }
 
 async function removeBackgroundWithPixian({ fileBuffer, mimetype, originalname, useDeltaPng }) {
+  if (!PIXIAN_API_USER || !PIXIAN_API_PASS) {
+    throw new Error("Faltan las variables de entorno PIXIAN_API_USER o PIXIAN_API_PASS.");
+  }
+
   const formData = new FormData();
   formData.append(
     "image",

@@ -1,7 +1,6 @@
 const { MongoClient } = require("mongodb");
 
-const uri =
-  process.env.MONGO_URI || "mongodb://admin:admin1234@localhost:27017";
+const uri = process.env.MONGO_URI || "mongodb://localhost:27017";
 const client = new MongoClient(uri);
 
 let db;

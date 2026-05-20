@@ -13,6 +13,8 @@
 /yarn.lock
 
 # Environment files
+/.env
+/API/.env
 .env
 
 # Angular CLI and build artefacts
