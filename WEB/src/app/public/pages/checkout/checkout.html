@@ -371,10 +371,12 @@
               </label>
             </div>
 
-            <a routerLink="/cart" class="payment-form__secondary">Cancelar</a>
-            <button type="submit" class="payment-form__primary" [disabled]="processingCheckout()">
-              {{ processingCheckout() ? 'Procesando pedido...' : 'Realizar pedido' }}
-            </button>
+            <div class="checkout-summary__buttons">
+              <a routerLink="/cart" class="payment-form__secondary">Cancelar</a>
+              <button type="submit" class="payment-form__primary" [disabled]="processingCheckout()">
+                {{ processingCheckout() ? 'Procesando pedido...' : 'Realizar pedido' }}
+              </button>
+            </div>
           </div>
         </aside>
       </div>

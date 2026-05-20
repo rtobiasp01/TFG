@@ -527,7 +527,7 @@
 
 .payment-form__actions {
   display: flex;
-  justify-content: flex-end;
+  flex-direction: column;
   gap: 0.75rem;
 }
 
@@ -535,6 +535,12 @@
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #e2e8f0;
+}
+
+.checkout-summary__buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 .checkout-legal-checkboxes {
@@ -833,6 +839,10 @@
   }
 
   .payment-form__actions {
+    flex-direction: column;
+  }
+
+  .checkout-summary__buttons {
     flex-direction: column-reverse;
   }
 
