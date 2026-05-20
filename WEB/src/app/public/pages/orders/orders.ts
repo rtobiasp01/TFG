@@ -150,4 +150,17 @@ export class Orders {
   closeImageModal() {
     this.modalImageUrl.set(null);
   }
+
+  getItemVariantLabel(item: OrderItem): string {
+    const selection = item.selection || (item as any).variantAttributes || {};
+    const entries = Object.entries(selection).filter(
+      ([, value]) => value !== undefined && value !== null && value !== '',
+    );
+
+    if (entries.length === 0) {
+      return item.variantSku || 'N/A';
+    }
+
+    return entries.map(([key, value]) => `${key}: ${value}`).join(', ');
+  }
 }

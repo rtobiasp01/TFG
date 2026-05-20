@@ -74,6 +74,9 @@
                             <div class="item-detail">
                               <div class="item-main">
                                 <strong>{{ item.productTitle || 'Producto' }}</strong>
+                                @if (item.variantSku || getItemVariantLabel(item) !== 'N/A') {
+                                  <span class="item-variant-label">Variante: {{ getItemVariantLabel(item) }}</span>
+                                }
                                 <span class="item-qty">{{ item.quantity }}x</span>
                                 <span class="item-price">
                                   {{ getItemPrice(item) }}

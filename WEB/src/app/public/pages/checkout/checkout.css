@@ -73,8 +73,6 @@
 
 .checkout-summary {
   padding: 1.25rem;
-  position: sticky;
-  top: 1rem;
 }
 
 .checkout-summary h2,

@@ -28,6 +28,9 @@ export interface OrderItem {
   price: number;
   basePrice?: number;
   variantAdditionalPrice?: number;
+  variantSku?: string;
+  simpleSku?: string;
+  selection?: Record<string, string | number>;
   customization?: {
     customText?: string;
     uploadedImageUrl?: string | null;

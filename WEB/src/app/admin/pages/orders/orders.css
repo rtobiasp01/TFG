@@ -219,6 +219,16 @@
   color: #6b7280;
 }
 
+.item-variant-label {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  background: #ede9fe;
+  border-radius: 0.25rem;
+  font-size: 0.8rem;
+  color: #7c3aed;
+  font-weight: 600;
+}
+
 .item-custom {
   font-size: 0.85rem;
   color: #3b82f6;
