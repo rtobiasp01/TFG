@@ -12,7 +12,7 @@
   <div class="product-info">
     <div class="product-images">
       <div class="img-principal">
-        <div class="preview-canvas">
+        <div class="preview-canvas" [class.is-laser-preview]="isCustomPersonalizedProduct()">
           @if (isVideoFile(imagenPrincipal() ?? '')) {
             <video
               class="preview-canvas__media"

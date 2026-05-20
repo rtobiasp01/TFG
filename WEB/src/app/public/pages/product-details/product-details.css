@@ -111,6 +111,10 @@
 	filter: drop-shadow(0 6px 12px rgba(16, 24, 40, 0.18));
 }
 
+.preview-canvas.is-laser-preview .preview-canvas__custom-overlay {
+	filter: grayscale(100%) contrast(1.15) brightness(0.95);
+}
+
 .preview-canvas__custom-text-overlay {
 	position: absolute;
 	z-index: 3;
