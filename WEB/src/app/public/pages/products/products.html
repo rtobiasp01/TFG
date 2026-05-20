@@ -11,33 +11,60 @@
   </div>
 
   <section class="catalog-filters" aria-label="Filtros de catálogo">
-    <label class="catalog-filter">
-      <span>Categoría</span>
-      <select [value]="selectedCategory()" (change)="onCategoryChange($any($event.target).value)">
-        <option value="">Todas</option>
-        @for (category of availableCategories(); track category) {
-          <option [value]="category">{{ category }}</option>
-        }
-      </select>
-    </label>
+    <div class="catalog-search">
+      <svg class="catalog-search__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <input
+        type="search"
+        class="catalog-search__input"
+        placeholder="Buscar productos..."
+        [value]="searchQuery()"
+        (input)="onSearchInput($event)"
+        (keydown.enter)="onSearchSubmit()"
+      />
+      @if (searchQuery()) {
+        <button
+          type="button"
+          class="catalog-search__clear"
+          (click)="clearSearch()"
+          aria-label="Limpiar búsqueda"
+        >
+          &times;
+        </button>
+      }
+    </div>
 
-    <label class="catalog-filter">
-      <span>Ordenar por</span>
-      <select [value]="selectedSort()" (change)="onSortChange($any($event.target).value)">
-        @for (option of sortOptions; track option.value) {
-          <option [value]="option.value">{{ option.label }}</option>
-        }
-      </select>
-    </label>
+    <div class="catalog-filters__row">
+      <label class="catalog-filter">
+        <span>Categoría</span>
+        <select [value]="selectedCategory()" (change)="onCategoryChange($any($event.target).value)">
+          <option value="">Todas</option>
+          @for (category of availableCategories(); track category) {
+            <option [value]="category">{{ category }}</option>
+          }
+        </select>
+      </label>
 
-    <button
-      type="button"
-      class="catalog-reset"
-      (click)="clearFilters()"
-      [disabled]="!selectedCategory() && selectedSort() === 'featured' && !searchQuery()"
-    >
-      Limpiar filtros
-    </button>
+      <label class="catalog-filter">
+        <span>Ordenar por</span>
+        <select [value]="selectedSort()" (change)="onSortChange($any($event.target).value)">
+          @for (option of sortOptions; track option.value) {
+            <option [value]="option.value">{{ option.label }}</option>
+          }
+        </select>
+      </label>
+
+      <button
+        type="button"
+        class="catalog-reset"
+        (click)="clearFilters()"
+        [disabled]="!selectedCategory() && selectedSort() === 'featured' && !searchQuery()"
+      >
+        Limpiar filtros
+      </button>
+    </div>
   </section>
 
   @if (filteredProducts().length > 0) {

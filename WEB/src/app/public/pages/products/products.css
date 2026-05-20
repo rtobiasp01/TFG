@@ -60,7 +60,7 @@
 
 .catalog-filters {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  grid-template-columns: 1fr;
   gap: 0.85rem;
   align-items: end;
   padding: 1rem 1.1rem;
@@ -68,6 +68,79 @@
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.86);
   box-shadow: var(--shadow-sm);
+}
+
+.catalog-filters__row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+  gap: 0.85rem;
+  align-items: end;
+}
+
+.catalog-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.catalog-search__icon {
+  position: absolute;
+  left: 0.85rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.catalog-search__input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.catalog-search__input {
+  width: 100%;
+  min-height: 2.9rem;
+  padding: 0.7rem 2.6rem 0.7rem 2.6rem;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--text-main);
+  font-weight: 600;
+  font-size: 0.92rem;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.catalog-search__input::placeholder {
+  color: var(--text-muted);
+  font-weight: 400;
+}
+
+.catalog-search__input:focus {
+  border-color: var(--brand-strong);
+  box-shadow: 0 0 0 3px rgba(180, 83, 9, 0.14);
+}
+
+.catalog-search__clear {
+  position: absolute;
+  right: 0.55rem;
+  width: 1.6rem;
+  height: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  font-weight: 700;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.catalog-search__clear:hover {
+  color: var(--brand-strong);
+  background: rgba(180, 83, 9, 0.08);
 }
 
 .catalog-filter {
@@ -124,7 +197,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .catalog-filters {
+  .catalog-filters__row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -135,7 +208,7 @@
   }
 
   .catalog-header,
-  .catalog-filters {
+  .catalog-filters__row {
     grid-template-columns: 1fr;
   }
 
@@ -149,7 +222,7 @@
     align-items: start;
   }
 
-  .catalog-filters {
+  .catalog-filters__row {
     align-items: stretch;
   }
 }

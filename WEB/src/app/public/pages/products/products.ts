@@ -187,6 +187,23 @@ export class Products implements OnInit {
     this.router.navigate(['/productos']);
   }
 
+  onSearchInput(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    this.searchQuery.set(input.value);
+  }
+
+  onSearchSubmit(): void {
+    const query = this.searchQuery().trim();
+    if (query) {
+      this.syncCatalogFiltersToUrl();
+    }
+  }
+
+  clearSearch(): void {
+    this.searchQuery.set('');
+    this.syncCatalogFiltersToUrl();
+  }
+
   getAverageRating(productId: string): number {
     const summary = this.reviewSummaryByProduct().get(productId);
 
