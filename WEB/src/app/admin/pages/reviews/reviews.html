@@ -70,6 +70,18 @@
       </select>
     </div>
 
+    <div class="filter-group">
+      <label for="search-product">Buscar por producto:</label>
+      <input
+        id="search-product"
+        type="text"
+        [ngModel]="searchProduct()"
+        (ngModelChange)="updateSearchProduct($event)"
+        placeholder="Nombre del producto..."
+        class="search-input"
+      />
+    </div>
+
     <div class="sort-controls">
       <button class="sort-btn" [class.active]="sortBy() === 'date'" (click)="changeSortBy('date')">
         Ordenar por Fecha {{ sortBy() === 'date' ? (sortOrder() === 'desc' ? '↓' : '↑') : '' }}

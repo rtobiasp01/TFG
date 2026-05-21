@@ -187,6 +187,21 @@
   cursor: pointer;
 }
 
+.search-input {
+  padding: 0.6rem 0.8rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  background: white;
+  width: 250px;
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: #8b6f47;
+  box-shadow: 0 0 0 3px rgba(139, 111, 71, 0.1);
+}
+
 .sort-controls {
   display: flex;
   gap: 0.8rem;
@@ -580,6 +595,10 @@
   }
 
   .filter-group select {
+    width: 100%;
+  }
+
+  .search-input {
     width: 100%;
   }
 

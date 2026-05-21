@@ -27,6 +27,7 @@ export class AdminReviews implements OnInit {
   readonly sortBy = signal<'date' | 'rating'>('date');
   readonly sortOrder = signal<'asc' | 'desc'>('desc');
   readonly filterByRating = signal<number | null>(null);
+  readonly searchProduct = signal<string>('');
   readonly selectedReview = signal<Review | null>(null);
   readonly reviewImageModal = signal<string | null>(null);
 
@@ -97,6 +98,13 @@ export class AdminReviews implements OnInit {
       filtered = filtered.filter((review) => review.rating === this.filterByRating());
     }
 
+    const search = this.searchProduct().trim().toLowerCase();
+    if (search) {
+      filtered = filtered.filter((review) =>
+        this.getProductName(review.product_id).toLowerCase().includes(search)
+      );
+    }
+
     filtered.sort((a, b) => {
       let comparison = 0;
 
@@ -133,6 +141,10 @@ export class AdminReviews implements OnInit {
 
   updateFilter(value: number | null): void {
     this.filterByRating.set(value);
+  }
+
+  updateSearchProduct(value: string): void {
+    this.searchProduct.set(value);
   }
 
   getAverageRating(): number {
