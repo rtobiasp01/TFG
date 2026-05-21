@@ -13,6 +13,17 @@
         <option value="cancelado">Cancelado</option>
       </select>
     </div>
+
+    <div class="search-section">
+      <label for="search-input">Buscar por ID:</label>
+      <input
+        id="search-input"
+        type="text"
+        [(ngModel)]="searchQuery"
+        placeholder="Introduce el ID del pedido..."
+        class="search-input"
+      />
+    </div>
   </div>
 
   @if (loadingOrders()) {

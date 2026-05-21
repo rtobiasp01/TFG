@@ -21,6 +21,7 @@ export class AdminOrders {
   loadingOrders = signal<boolean>(true);
   selectedOrder = signal<Order | null>(null);
   statusFilter = signal<string>('');
+  searchQuery = signal<string>('');
 
   readonly statusOptions: OrderStatus[] = [
     'pendiente',
@@ -69,8 +70,17 @@ export class AdminOrders {
 
   getFilteredOrders(): Order[] {
     const filter = this.statusFilter();
-    if (!filter) return this.orders();
-    return this.orders().filter((order) => order.status === filter);
+    const search = this.searchQuery().trim().toLowerCase();
+    let filtered = this.orders();
+    if (filter) {
+      filtered = filtered.filter((order) => order.status === filter);
+    }
+    if (search) {
+      filtered = filtered.filter((order) =>
+        order._id.toLowerCase().includes(search)
+      );
+    }
+    return filtered;
   }
 
   selectOrder(order: Order) {
