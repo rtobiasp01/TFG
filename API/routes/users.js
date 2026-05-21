@@ -32,6 +32,9 @@ function normalizeShippingAddress(shippingAddress = {}) {
 router.post("/register", async (req, res) => {
   try {
     const { email, password, isAdmin, personalData, shippingAddress } = req.body;
+    if (typeof email !== "string" || typeof password !== "string") {
+      return res.status(400).json({ error: "Email y contraseña deben ser strings" });
+    }
     const wantsAdmin = Boolean(isAdmin);
 
     const existingUser = await userService.findUserByEmail(email);
@@ -68,7 +71,10 @@ router.post("/register", async (req, res) => {
 // POST /api/auth/login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
+    let { email, password } = req.body;
+    if (typeof email !== "string" || typeof password !== "string") {
+      return res.status(400).json({ error: "Email y contraseña deben ser strings" });
+    }
 
     const user = await userService.findUserByEmail(email);
     if (!user) {
@@ -215,7 +221,7 @@ router.post("/forgot-password", async (req, res) => {
   try {
     const { email } = req.body;
 
-    if (!email) {
+    if (typeof email !== "string" || !email) {
       return res.status(400).json({ error: "El email es requerido" });
     }
 
@@ -248,7 +254,7 @@ router.post("/reset-password", async (req, res) => {
   try {
     const { token, newPassword } = req.body;
 
-    if (!token || !newPassword) {
+    if (typeof token !== "string" || !token || typeof newPassword !== "string" || !newPassword) {
       return res.status(400).json({ error: "Token y nueva contraseña son requeridos" });
     }
 

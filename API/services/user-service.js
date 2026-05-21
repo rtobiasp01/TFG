@@ -4,6 +4,9 @@ const { ObjectId } = require("mongodb");
 // Buscar un usuario por email
 async function findUserByEmail(email) {
   try {
+    if (typeof email !== "string") {
+      throw new Error("Email inválido");
+    }
     const db = await connectDB();
     return await db.collection("users").findOne({ email });
   } catch (error) {
@@ -125,6 +128,9 @@ async function deleteUserById(userId) {
 
 async function setResetTokenByEmail(email, resetToken, resetTokenExpiry) {
   try {
+    if (typeof email !== "string") {
+      throw new Error("Email inválido");
+    }
     const db = await connectDB();
     return await db.collection("users").updateOne(
       { email },
@@ -143,6 +149,9 @@ async function setResetTokenByEmail(email, resetToken, resetTokenExpiry) {
 
 async function findUserByResetToken(resetToken) {
   try {
+    if (typeof resetToken !== "string") {
+      throw new Error("Token inválido");
+    }
     const db = await connectDB();
     return await db.collection("users").findOne({
       resetToken,

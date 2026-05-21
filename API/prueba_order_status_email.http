@@ -4,8 +4,7 @@
 @base_url = http://localhost:3000
 
 ### Variables
-@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2NzhhMjk4MzI5ZTY5YTAwMTIzNDU2NzgiLCJlbWFpbCI6ImFkbWluLm1hZGVyYUBkZW1vLmNvbSIsImlzQWRtaW4iOnRydWUsImlhdCI6MTczNDc4NzE1Nn0.r7r8uvh3GH-P-aeNvWlw6JTpKZQPcfCmHbVS-h-cXhE
-
+@user_token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2YTA1ZmY2NGQwMjIzMGI0MThjNTM1MzIiLCJlbWFpbCI6InBydWViYUBnbWFpbC5jb20iLCJpc0FkbWluIjpmYWxzZSwiaWF0IjoxNzc5Mzc4NjE3LCJleHAiOjE3NzkzODIyMTd9.rT5-SQk9oXsTxhzzecZE75tZsFcNCKwV8_v7p4uoUH4
 ###
 ### Get all orders (para obtener los IDs de las órdenes)
 ###
