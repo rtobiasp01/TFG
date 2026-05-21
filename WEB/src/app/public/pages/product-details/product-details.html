@@ -58,6 +58,19 @@
     </div>
     <div class="product-variables">
       <p class="product-title">{{ product()?.title }}</p>
+      <div class="product-rating-summary">
+        <div class="product-rating-summary__stars">
+          @for (star of getRatingStars(5); track star) {
+            <span class="star" [class.filled]="isStarFilled(star, getAverageRating())"> ★ </span>
+          }
+        </div>
+        <span class="product-rating-summary__value">
+          {{ getAverageRating() | number: '1.1-1' }}
+        </span>
+        <span class="product-rating-summary__count">
+          ({{ reviews().length }} {{ reviews().length === 1 ? 'reseña' : 'reseñas' }})
+        </span>
+      </div>
       <p class="product-short-description">{{ product()?.short_description }}</p>
       @if (!stockAvailability()) {
         <p class="product-stock-status">Sin Stock</p>
@@ -190,7 +203,19 @@
   <section class="reviews-section">
     <div class="section-card">
       <div class="reviews-header">
-        <h2 class="section-card__title">Reseñas</h2>
+        <div class="reviews-header__title">
+          <h2 class="section-card__title">Reseñas</h2>
+          @if (reviews().length > 0) {
+            <div class="reviews-header__average">
+              <div class="reviews-header__stars">
+                @for (star of getRatingStars(5); track star) {
+                  <span class="star" [class.filled]="isStarFilled(star, getAverageRating())"> ★ </span>
+                }
+              </div>
+              <span class="reviews-header__value">{{ getAverageRating() | number: '1.1-1' }}</span>
+            </div>
+          }
+        </div>
         @if (isAuthenticated()) {
           <button
             type="button"
