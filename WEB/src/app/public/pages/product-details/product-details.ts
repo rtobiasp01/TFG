@@ -55,6 +55,7 @@ export class ProductDetails {
   private readonly reviewService = inject(ReviewService);
 
   readonly product = signal<Product | null>(null);
+  readonly isLoadingProduct = signal<boolean>(false);
   readonly relatedProducts = signal<Product[]>([]);
   readonly selectedVariant = signal<Variant | undefined>(undefined);
   readonly catalogQueryParams = signal<Record<string, string>>({});
@@ -133,12 +134,15 @@ export class ProductDetails {
     const sku = this.route.snapshot.paramMap.get('sku');
     if (!sku) {
       this.product.set(null);
+      this.isLoadingProduct.set(false);
       return;
     }
 
+    this.isLoadingProduct.set(true);
     this.productService.getBySku(sku).subscribe({
       next: (product) => {
         this.product.set(product);
+        this.isLoadingProduct.set(false);
         this.newReview.set({
           email: this.authService.currentUser()?.email || '',
           product_id: product._id,
@@ -162,6 +166,7 @@ export class ProductDetails {
       },
       error: () => {
         this.product.set(null);
+        this.isLoadingProduct.set(false);
         this.selectedVariant.set(undefined);
         this.relatedProducts.set([]);
       },
