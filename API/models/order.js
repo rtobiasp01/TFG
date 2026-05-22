@@ -10,12 +10,12 @@ class Order {
     discount = 0
   ) {
     this.user_id = user_id;
-    this.items = items; // Array de items del carrito
+    this.items = items;
     this.subtotal = total;
     this.discount = discount || 0;
     this.total = total - discount;
     this.couponCode = couponCode || null;
-    this.status = status; // pendiente, confirmado, enviado, entregado, cancelado
+    this.status = status;
     this.personalData = personalData;
     this.shippingAddress = shippingAddress;
     this.createdAt = new Date();
