@@ -156,6 +156,16 @@
   cursor: not-allowed;
 }
 
+.profile-delete-notice {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.7rem;
+  padding: 0.65rem 0.8rem;
+}
+
 .profile-state {
   margin: 0;
   padding: 1rem;

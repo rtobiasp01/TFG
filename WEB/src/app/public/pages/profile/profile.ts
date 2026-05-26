@@ -16,6 +16,7 @@ export class Profile implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
+  readonly isAdmin = this.authService.isAdmin;
   readonly loadingProfile = signal(true);
   readonly savingProfile = signal(false);
   readonly deletingAccount = signal(false);
@@ -161,6 +162,11 @@ export class Profile implements OnInit {
   deleteAccount(): void {
     this.submitError.set('');
     this.submitSuccess.set('');
+
+    if (this.isAdmin()) {
+      this.submitError.set('Los administradores no pueden eliminar su cuenta desde el perfil.');
+      return;
+    }
 
     if (this.deletingAccount() || this.savingProfile()) {
       return;

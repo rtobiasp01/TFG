@@ -141,14 +141,20 @@
         >
           {{ savingProfile() ? 'Guardando...' : 'Guardar perfil' }}
         </button>
-        <button
-          type="button"
-          class="profile-delete"
-          [disabled]="deletingAccount() || savingProfile()"
-          (click)="deleteAccount()"
-        >
-          {{ deletingAccount() ? 'Borrando cuenta...' : 'Borrar cuenta' }}
-        </button>
+        @if (isAdmin()) {
+          <p class="profile-delete-notice">
+            Los administradores no pueden eliminar su cuenta desde el perfil.
+          </p>
+        } @else {
+          <button
+            type="button"
+            class="profile-delete"
+            [disabled]="deletingAccount() || savingProfile()"
+            (click)="deleteAccount()"
+          >
+            {{ deletingAccount() ? 'Borrando cuenta...' : 'Borrar cuenta' }}
+          </button>
+        }
       </div>
     </form>
   }
