@@ -19,6 +19,7 @@
 }
 
 .product-img {
+    position: relative;
     aspect-ratio: 1 / 1;
     width: 100%;
     overflow: hidden;
@@ -55,6 +56,30 @@
 .product-info .price {
     font-weight: 800;
     color: var(--brand-strong);
+}
+
+.product-card--out-of-stock .product-img img {
+    filter: grayscale(1);
+    opacity: 0.55;
+}
+
+.product-card--out-of-stock .product-info .price {
+    opacity: 0.4;
+}
+
+.out-of-stock-badge {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    color: #fff;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    pointer-events: none;
 }
 
 @media (max-width: 760px) {

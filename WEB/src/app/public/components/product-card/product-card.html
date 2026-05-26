@@ -1,11 +1,15 @@
 <article
   class="product-card"
+  [class.product-card--out-of-stock]="isOutOfStock()"
   [routerLink]="['/productos', productoActual.sku]"
   [queryParams]="queryParams"
   [state]="{ product: productoActual }"
 >
   <div class="product-img">
     <img src="{{ productoActual.image }}" alt="{{ productoActual.sku }}" />
+    @if (isOutOfStock()) {
+      <span class="out-of-stock-badge">Sin stock</span>
+    }
   </div>
   <div class="product-info">
     <p class="title">{{ productoActual.title }}</p>

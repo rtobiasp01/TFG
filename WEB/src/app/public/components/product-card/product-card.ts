@@ -16,6 +16,18 @@ export class ProductCard {
   private readonly locale = navigator.language || 'es-ES';
   private readonly currencyCode = this.detectCurrencyCode(this.locale);
 
+  isOutOfStock(): boolean {
+    const product = this.productoActual;
+    if (!product) return false;
+    if (product.manage_stock === false) return false;
+
+    if (product.variantes && product.variantes.length > 0) {
+      return !product.variantes.some(v => (v.stock_quantity ?? 0) > 0);
+    }
+
+    return (product.stock_quantity ?? 0) <= 0;
+  }
+
   formatPrice(price: number): string {
     return new Intl.NumberFormat(this.locale, {
       style: 'currency',
